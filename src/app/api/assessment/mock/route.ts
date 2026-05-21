@@ -9,10 +9,9 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const subjects = searchParams.get("subjects")?.split(",") ?? ["MATH", "RLA", "SS", "SCI"];
 
-  // Use the pre-assessment questions as mock test questions (10 per subject)
   const assessments = await db.assessment.findMany({
     where: {
-      type: "PRE",
+      type: "MOCK",
       subject: { code: { in: subjects } },
     },
     include: {
@@ -28,6 +27,33 @@ export async function GET(req: NextRequest) {
       },
     },
   });
+
+  if (assessments.length === 0) {
+    const preAssessments = await db.assessment.findMany({
+      where: {
+        type: "PRE",
+        subject: { code: { in: subjects } },
+      },
+      include: {
+        subject: { select: { id: true, name: true, code: true } },
+        questions: {
+          select: {
+            id: true,
+            text: true,
+            options: true,
+            difficulty: true,
+            subtopicId: true,
+          },
+        },
+      },
+    });
+    const res = NextResponse.json({
+      assessments: preAssessments,
+      warning: "Using pre-assessment questions as fallback. Seed MOCK assessments for accurate results.",
+    });
+    res.headers.set("X-Fallback-Assessment", "true");
+    return res;
+  }
 
   return NextResponse.json({ assessments });
 }

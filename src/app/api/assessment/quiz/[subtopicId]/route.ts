@@ -11,7 +11,21 @@ export async function GET(
 
   const { subtopicId } = await params;
 
-  // Find or create a quiz assessment for this subtopic
+  // Always look up the subtopic to get name + subject chain
+  const subtopic = await db.subtopic.findUnique({
+    where: { id: subtopicId },
+    include: {
+      topic: {
+        include: {
+          category: {
+            include: { subject: { select: { code: true, name: true } } },
+          },
+        },
+      },
+    },
+  });
+  if (!subtopic) return NextResponse.json({ error: "Subtopic not found" }, { status: 404 });
+
   let assessment = await db.assessment.findFirst({
     where: { type: "QUIZ", subtopicId },
     include: {
@@ -29,10 +43,7 @@ export async function GET(
   });
 
   if (!assessment) {
-    // Auto-create a 5-question quiz for this subtopic
-    const subtopic = await db.subtopic.findUnique({ where: { id: subtopicId } });
-    if (!subtopic) return NextResponse.json({ error: "Subtopic not found" }, { status: 404 });
-
+    const OPTION_IDS = ["A", "B", "C", "D"] as const;
     assessment = await db.assessment.create({
       data: {
         type: "QUIZ",
@@ -40,20 +51,30 @@ export async function GET(
         title: `${subtopic.name} Quiz`,
         timeLimit: 10,
         questions: {
-          create: Array.from({ length: 5 }, (_, i) => ({
-            subtopicId,
-            text: `Question ${i + 1}: Which of the following best applies to "${subtopic.name}"?`,
-            options: [
-              { id: "A", text: "The correct application of this concept" },
-              { id: "B", text: "An incorrect approach that ignores key principles" },
-              { id: "C", text: "A common misconception about this topic" },
-              { id: "D", text: "An unrelated concept" },
-            ],
-            correctOptionId: "A",
-            explanation: `Understanding ${subtopic.name} is essential for the GED exam.`,
-            source: "AI_GENERATED",
-            difficulty: subtopic.difficultyLevel,
-          })),
+          create: Array.from({ length: 5 }, (_, questionIndex) => {
+            const correctIndex = Math.floor(Math.random() * 4);
+            const correctOptionId = OPTION_IDS[correctIndex];
+            const distractors = [
+              `A common misconception about ${subtopic.name}`,
+              `An approach that ignores key principles of ${subtopic.name}`,
+              `An unrelated concept often confused with ${subtopic.name}`,
+            ];
+            let distractorIdx = 0;
+            return {
+              subtopicId,
+              text: `Question ${questionIndex + 1}: Which of the following best applies to "${subtopic.name}"?`,
+              options: OPTION_IDS.map((id, i) => ({
+                id,
+                text: i === correctIndex
+                  ? `The correct application of ${subtopic.name}`
+                  : distractors[distractorIdx++],
+              })),
+              correctOptionId,
+              explanation: `Understanding ${subtopic.name} is essential for the GED exam.`,
+              source: "AI_GENERATED",
+              difficulty: subtopic.difficultyLevel,
+            };
+          }),
         },
       },
       include: {
@@ -70,5 +91,11 @@ export async function GET(
     });
   }
 
-  return NextResponse.json({ assessment });
+  return NextResponse.json({
+    assessmentId: assessment.id,
+    subjectCode: subtopic.topic.category.subject.code,
+    subjectName: subtopic.topic.category.subject.name,
+    subtopicName: subtopic.name,
+    questions: assessment.questions,
+  });
 }

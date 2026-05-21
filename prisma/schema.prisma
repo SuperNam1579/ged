@@ -189,7 +189,7 @@ model StudyPlan {
   sessions StudySession[]
   gaLogs   GaExecutionLog[]
 
-  @@index([userId, isActive])
+  @@index([userId, isActive, version(sort: Desc)])
 }
 
 model StudySession {
@@ -206,7 +206,7 @@ model StudySession {
   studyPlan StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
   subtopic  Subtopic  @relation(fields: [subtopicId], references: [id])
 
-  @@index([studyPlanId, scheduledDate])
+  @@index([studyPlanId, scheduledDate, status])
 }
 
 model GaExecutionLog {

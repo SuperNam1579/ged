@@ -242,11 +242,29 @@ function MockSessionContent() {
             <h2 className="text-lg font-semibold text-gray-900 leading-relaxed">{question.text}</h2>
           </div>
 
-          <div className="space-y-3">
-            {question.options.map((option: Option) => (
+          <div
+            role="radiogroup"
+            aria-label="Answer choices"
+            className="space-y-3"
+          >
+            {question.options.map((option: Option, i: number) => (
               <button
                 key={option.id}
+                role="radio"
+                aria-checked={selected === option.id}
+                aria-label={`Option ${option.id}: ${option.text}`}
                 onClick={() => setSelected(option.id)}
+                onKeyDown={(e) => {
+                  const total = question.options.length;
+                  if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                    e.preventDefault();
+                    setSelected(question.options[(i + 1) % total].id);
+                  }
+                  if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                    e.preventDefault();
+                    setSelected(question.options[(i - 1 + total) % total].id);
+                  }
+                }}
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all font-medium text-sm ${
                   selected === option.id
                     ? "border-blue-500 bg-blue-50 text-blue-900"

@@ -10,7 +10,10 @@ export function buildAvailableDates(
   targetExamDate: Date,
   availability: Record<string, boolean>
 ): string[] {
-  const dayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const dayKeys = [
+    "sunday", "monday", "tuesday", "wednesday",
+    "thursday", "friday", "saturday"
+  ];
   const dates: string[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);

@@ -1,3 +1,16 @@
+// ─── Availability Types ────────────────────────────────────────────────────────
+
+export type DayKey =
+  | "monday" | "tuesday" | "wednesday" | "thursday"
+  | "friday" | "saturday" | "sunday";
+
+export const DAY_KEYS_ORDERED: DayKey[] = [
+  "sunday", "monday", "tuesday", "wednesday",
+  "thursday", "friday", "saturday",
+];
+
+export type Availability = Record<DayKey, boolean>;
+
 // ─── Domain Types ──────────────────────────────────────────────────────────────
 
 export interface SubjectSummary {

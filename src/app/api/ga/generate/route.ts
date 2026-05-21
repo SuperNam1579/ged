@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUserStrict } from "@/lib/auth";
 import { runGeneticAlgorithm } from "@/lib/ga/engine";
 import type { TriggerReason } from "@/types";
 import { z } from "zod";
@@ -16,7 +16,7 @@ const GenerateSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const authUser = await getAuthUser(req);
+  const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
@@ -77,20 +77,30 @@ export async function POST(req: NextRequest) {
     select: { version: true },
   });
 
+  const GA_TIMEOUT_MS = 25000;
+
   try {
-    const result = await runGeneticAlgorithm({
-      userId: authUser.id,
-      proficiencies: profMap,
-      preferences: {
-        targetExamDate: preferences.targetExamDate,
-        hoursPerDay: preferences.hoursPerDay,
-        availability: preferences.availability as Record<string, boolean>,
-        targetScore: preferences.targetScore,
-      },
-      subtopics: subtopicData,
-      triggerReason: triggerReason as TriggerReason,
-      existingPlanVersion: latestPlan?.version,
-    });
+    const result = await Promise.race([
+      runGeneticAlgorithm({
+        userId: authUser.id,
+        proficiencies: profMap,
+        preferences: {
+          targetExamDate: preferences.targetExamDate,
+          hoursPerDay: preferences.hoursPerDay,
+          availability: preferences.availability as Record<string, boolean>,
+          targetScore: preferences.targetScore,
+        },
+        subtopics: subtopicData,
+        triggerReason: triggerReason as TriggerReason,
+        existingPlanVersion: latestPlan?.version,
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Study plan generation timed out. Please try again.")),
+          GA_TIMEOUT_MS
+        )
+      ),
+    ]);
 
     return NextResponse.json({
       success: true,

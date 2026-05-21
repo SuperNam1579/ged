@@ -113,13 +113,37 @@ export async function GET(req: NextRequest) {
     ? Math.max(0, differenceInDays(user.preferences.targetExamDate, today))
     : 0;
 
+  const recentCompletions = await db.studySession.findMany({
+    where: {
+      studyPlan: { userId: authUser.id },
+      status: "COMPLETED",
+      completedAt: { not: null },
+    },
+    select: { completedAt: true },
+    orderBy: { completedAt: "desc" },
+    take: 60,
+  });
+
+  const completionDateSet = new Set(
+    recentCompletions.map((c) => c.completedAt!.toISOString().split("T")[0])
+  );
+
+  let streakDays = 0;
+  const streakCursor = new Date();
+  streakCursor.setHours(0, 0, 0, 0);
+
+  while (completionDateSet.has(streakCursor.toISOString().split("T")[0])) {
+    streakDays++;
+    streakCursor.setDate(streakCursor.getDate() - 1);
+  }
+
   return NextResponse.json({
     overallProgress,
     todaySessions,
     subjectSummaries,
     currentPlanVersion: activePlan?.version ?? 0,
     daysUntilExam,
-    streakDays: 0, // TODO: calculate from session completion history
+    streakDays,
     lastPlanUpdate: activePlan
       ? {
           reason: activePlan.triggerReason,

@@ -10,13 +10,13 @@ import Spinner from "@/components/ui/Spinner";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 const DAYS = [
-  { key: "mon", label: "Mon" },
-  { key: "tue", label: "Tue" },
-  { key: "wed", label: "Wed" },
-  { key: "thu", label: "Thu" },
-  { key: "fri", label: "Fri" },
-  { key: "sat", label: "Sat" },
-  { key: "sun", label: "Sun" },
+  { key: "monday", label: "Mon" },
+  { key: "tuesday", label: "Tue" },
+  { key: "wednesday", label: "Wed" },
+  { key: "thursday", label: "Thu" },
+  { key: "friday", label: "Fri" },
+  { key: "saturday", label: "Sat" },
+  { key: "sunday", label: "Sun" },
 ];
 
 const GOALS = [
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="range"
-                  min={0.5}
+                  min={1}
                   max={8}
                   step={0.5}
                   value={prefs.hoursPerDay}
@@ -175,7 +175,7 @@ export default function SettingsPage() {
                   className="w-full accent-blue-600"
                 />
                 <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>0.5h</span>
+                  <span>1h</span>
                   <span>8h</span>
                 </div>
               </div>

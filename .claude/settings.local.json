@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node *)",
+      "Bash(Test-Path *)",
+      "Read(//mnt/c/**)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/register -H 'Content-Type: application/json' -d '{\"name\":\"Test User\",\"email\":\"test@example.com\",\"password\":\"Password123!\",\"dateOfBirth\":\"1990-01-01\"}')",
+      "Bash(curl *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Login:', d.get\\('user',{}\\).get\\('name'\\), '| token present:', bool\\(d.get\\('token'\\)\\)\\)\")"
+    ]
+  }
+}

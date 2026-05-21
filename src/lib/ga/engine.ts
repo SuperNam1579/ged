@@ -133,33 +133,37 @@ export async function runGeneticAlgorithm(
 
   const nextVersion = (previousVersion?.version ?? 0) + 1;
 
-  await db.studyPlan.updateMany({
-    where: { userId, isActive: true },
-    data: { isActive: false },
-  });
+  const studyPlan = await db.$transaction(
+    async (tx) => {
+      await tx.studyPlan.updateMany({
+        where: { userId, isActive: true },
+        data: { isActive: false },
+      });
 
-  // Persist new study plan
-  const studyPlan = await db.studyPlan.create({
-    data: {
-      userId,
-      version: nextVersion,
-      fitnessScore: best.fitness,
-      triggerReason,
-      isActive: true,
-      metadata: JSON.parse(JSON.stringify({ config: cfg, fitnessBreakdown: best.fitnessBreakdown })),
-      sessions: {
-        create: best.chromosome.map((gene) => ({
-          subtopicId: gene.subtopicId,
-          scheduledDate: new Date(gene.scheduledDate),
-          durationMins: gene.durationMins,
-          order: gene.order,
-          status: "PENDING" as const,
-        })),
-      },
+      return tx.studyPlan.create({
+        data: {
+          userId,
+          version: nextVersion,
+          fitnessScore: best.fitness,
+          triggerReason,
+          isActive: true,
+          metadata: JSON.parse(JSON.stringify({ config: cfg, fitnessBreakdown: best.fitnessBreakdown })),
+          sessions: {
+            create: best.chromosome.map((gene) => ({
+              subtopicId: gene.subtopicId,
+              scheduledDate: new Date(gene.scheduledDate),
+              durationMins: gene.durationMins,
+              order: gene.order,
+              status: "PENDING" as const,
+            })),
+          },
+        },
+      });
     },
-  });
+    { timeout: 30000 }
+  );
 
-  // Persist generation-level logs for research/convergence analysis
+  // GA logs stay outside transaction — append-only research data, ok if partial
   await db.gaExecutionLog.createMany({
     data: generationLogs.map((log) => ({
       studyPlanId: studyPlan.id,

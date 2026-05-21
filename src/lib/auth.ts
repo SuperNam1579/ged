@@ -1,10 +1,9 @@
 import { NextRequest } from "next/server";
-import * as jose from "jose";
 import bcrypt from "bcryptjs";
+import { verifyToken } from "./auth-edge";
+import { db } from "@/lib/db";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || "dev-secret-change-in-production"
-);
+export { verifyToken, signToken } from "./auth-edge";
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
@@ -15,27 +14,6 @@ export async function verifyPassword(
   hash: string
 ): Promise<boolean> {
   return bcrypt.compare(password, hash);
-}
-
-export async function signToken(
-  payload: Record<string, unknown>
-): Promise<string> {
-  return new jose.SignJWT(payload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(JWT_SECRET);
-}
-
-export async function verifyToken(
-  token: string
-): Promise<Record<string, unknown> | null> {
-  try {
-    const { payload } = await jose.jwtVerify(token, JWT_SECRET);
-    return payload as Record<string, unknown>;
-  } catch {
-    return null;
-  }
 }
 
 export async function getAuthUser(
@@ -58,4 +36,18 @@ export async function getAuthUser(
     email: payload.email as string,
     name: payload.name as string,
   };
+}
+
+export async function getAuthUserStrict(
+  req: NextRequest
+): Promise<{ id: string; email: string; name: string } | null> {
+  const authUser = await getAuthUser(req);
+  if (!authUser) return null;
+
+  const dbUser = await db.user.findUnique({
+    where: { id: authUser.id },
+    select: { id: true, email: true, name: true },
+  });
+
+  return dbUser;
 }

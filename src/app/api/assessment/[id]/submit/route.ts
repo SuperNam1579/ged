@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUserStrict } from "@/lib/auth";
 import { updateProficiency } from "@/lib/utils/proficiency";
 import { checkAdaptiveTrigger } from "@/lib/ga/engine";
 import { z } from "zod";
@@ -19,7 +19,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authUser = await getAuthUser(req);
+  const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: assessmentId } = await params;
@@ -58,7 +58,20 @@ export async function POST(
   const questionMap = new Map<string, QuestionRecord>(
     assessment.questions.map((q) => [q.id, q])
   );
+
   const { responses } = parsed.data;
+
+  // Deduplicate by questionId (keep first occurrence) and drop unknown question IDs
+  const seenIds = new Set<string>();
+  const validResponses = responses.filter((r) => {
+    if (seenIds.has(r.questionId) || !questionMap.has(r.questionId)) return false;
+    seenIds.add(r.questionId);
+    return true;
+  });
+
+  if (validResponses.length === 0) {
+    return NextResponse.json({ error: "No valid responses submitted" }, { status: 400 });
+  }
 
   type GradedResponse = {
     questionId: string;
@@ -71,7 +84,7 @@ export async function POST(
   };
 
   // Grade responses
-  const gradedResponses: GradedResponse[] = responses.flatMap((r) => {
+  const gradedResponses: GradedResponse[] = validResponses.flatMap((r) => {
     const question = questionMap.get(r.questionId);
     if (!question) return [];
     return [{

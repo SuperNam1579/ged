@@ -113,13 +113,14 @@ function prerequisiteOrderScore(
     if (!subtopic) continue;
 
     for (const prereqId of subtopic.prerequisiteIds) {
-      totalPrereqs++;
       const prereqPos = positionMap.get(prereqId);
-      const currentPos = positionMap.get(gene.subtopicId)!;
+      // If prereq is not in the plan at all, skip — not an ordering violation;
+      // missing coverage is handled by the Coverage fitness component.
+      if (prereqPos === undefined) continue;
 
-      if (prereqPos === undefined || prereqPos >= currentPos) {
-        violations++;
-      }
+      const currentPos = positionMap.get(gene.subtopicId)!;
+      totalPrereqs++;
+      if (prereqPos >= currentPos) violations++;
     }
   }
 

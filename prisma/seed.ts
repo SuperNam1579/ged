@@ -661,18 +661,48 @@ async function main() {
 
     for (let i = 0; i < selected.length; i++) {
       const subtopic = selected[i];
+      const q = getSeedQuestion(subtopic.name, i);
       await prisma.question.create({
         data: {
           assessmentId: assessment.id,
           subtopicId: subtopic.id,
-          text: getSampleQuestion(subtopic.name),
-          options: [
-            { id: "A", text: getSampleOptionA(subtopic.name) },
-            { id: "B", text: getSampleOptionB(subtopic.name) },
-            { id: "C", text: getSampleOptionC(subtopic.name) },
-            { id: "D", text: getSampleOptionD(subtopic.name) },
-          ],
-          correctOptionId: "A",
+          ...q,
+          explanation: `This tests your understanding of ${subtopic.name}.`,
+          source: "AI_GENERATED",
+          difficulty: subtopic.difficultyLevel,
+        },
+      });
+    }
+  }
+
+  // ─── Seed MOCK assessments (separate from PRE) ─────────────────────────────
+  console.log("Seeding MOCK assessments...");
+
+  for (const subject of [math, rla, ss, sci]) {
+    const subjectSubtopics = allSubtopics.filter(
+      (s: typeof allSubtopics[0]) => s.topic.category.subjectId === subject.id
+    );
+    const mockSubtopics = subjectSubtopics.length >= 10
+      ? subjectSubtopics.slice(Math.min(5, subjectSubtopics.length - 10), Math.min(15, subjectSubtopics.length))
+      : subjectSubtopics;
+
+    const mockAssessment = await prisma.assessment.create({
+      data: {
+        type: "MOCK",
+        subjectId: subject.id,
+        title: `${subject.name} Mock Test`,
+        timeLimit: 30,
+      },
+    });
+
+    for (let i = 0; i < Math.min(10, mockSubtopics.length); i++) {
+      const subtopic = mockSubtopics[i];
+      const q = getSeedQuestion(subtopic.name, i + 10);
+      await prisma.question.create({
+        data: {
+          assessmentId: mockAssessment.id,
+          subtopicId: subtopic.id,
+          ...q,
           explanation: `This tests your understanding of ${subtopic.name}.`,
           source: "AI_GENERATED",
           difficulty: subtopic.difficultyLevel,
@@ -686,20 +716,28 @@ async function main() {
   console.log(`Subtopics: ${allSubtopics.length}`);
 }
 
-function getSampleQuestion(topicName: string): string {
-  return `Which of the following best describes the core concept of "${topicName}"?`;
-}
-function getSampleOptionA(topicName: string): string {
-  return `The foundational principle of ${topicName} applied correctly`;
-}
-function getSampleOptionB(topicName: string): string {
-  return `An incorrect application of ${topicName} principles`;
-}
-function getSampleOptionC(topicName: string): string {
-  return `A common misconception about ${topicName}`;
-}
-function getSampleOptionD(topicName: string): string {
-  return `An unrelated concept often confused with ${topicName}`;
+const OPTION_IDS = ["A", "B", "C", "D"] as const;
+
+function getSeedQuestion(topicName: string, questionIndex: number) {
+  const correctIndex = questionIndex % 4;
+  const correctOptionId = OPTION_IDS[correctIndex];
+  const distractors = [
+    `An incorrect application of ${topicName} principles`,
+    `A common misconception about ${topicName}`,
+    `An unrelated concept often confused with ${topicName}`,
+  ];
+  let distractorIdx = 0;
+  const options = OPTION_IDS.map((id, i) => ({
+    id,
+    text: i === correctIndex
+      ? `The foundational principle of ${topicName} applied correctly`
+      : distractors[distractorIdx++],
+  }));
+  return {
+    text: `Which of the following best describes the core concept of "${topicName}"?`,
+    options,
+    correctOptionId,
+  };
 }
 
 main()

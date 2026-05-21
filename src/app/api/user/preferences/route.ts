@@ -1,13 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
 import { z } from "zod";
 
 const PreferencesSchema = z.object({
-  targetExamDate: z.string(),
-  hoursPerDay: z.number().min(0.5).max(12),
-  targetScore: z.number().min(145).max(175),
+  targetExamDate: z.string().refine((d) => {
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return false;
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    return date >= tomorrow;
+  }, "Exam date must be at least tomorrow"),
+
+  hoursPerDay: z.number()
+    .min(1, "Must study at least 1 hour per day")
+    .max(12, "Cannot exceed 12 hours per day"),
+
+  targetScore: z.number()
+    .min(145, "Minimum passing score is 145")
+    .max(200, "Maximum GED score is 200"),
+
   studyGoal: z.enum(["PASS", "COLLEGE_READY", "COLLEGE_READY_CREDIT"]),
+
   availability: z.object({
     monday: z.boolean(),
     tuesday: z.boolean(),
@@ -16,11 +31,14 @@ const PreferencesSchema = z.object({
     friday: z.boolean(),
     saturday: z.boolean(),
     sunday: z.boolean(),
-}),
+  }).refine(
+    (a) => Object.values(a).some(Boolean),
+    "Must select at least one available study day"
+  ),
 });
 
 export async function POST(req: NextRequest) {
-  const authUser = await getAuthUser(req);
+  const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();

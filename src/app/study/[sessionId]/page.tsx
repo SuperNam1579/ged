@@ -7,6 +7,7 @@ import { BookOpen, Clock, CheckCircle, ExternalLink, ArrowLeft, ChevronRight } f
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import { cn } from "@/lib/utils/cn";
+import { safeUrl } from "@/lib/utils/sanitize";
 import type { StudySessionWithSubtopic } from "@/types";
 
 const SUBJECT_BADGE_VARIANT: Record<string, "info" | "success" | "warning" | "danger" | "default"> = {
@@ -36,30 +37,38 @@ export default function StudySessionPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // Fetch session from sessions API, filtering by today
-    const today = new Date().toISOString().split("T")[0];
-    fetch(`/api/sessions?date=${today}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const sessions: StudySessionWithSubtopic[] = data.sessions ?? [];
-        const found = sessions.find((s) => s.id === sessionId);
-        if (found) {
-          setSession(found);
-        } else {
-          // Try without date filter
-          return fetch("/api/sessions").then((r) => r.json()).then((d) => {
-            const all: StudySessionWithSubtopic[] = d.sessions ?? [];
-            const s = all.find((s) => s.id === sessionId);
-            if (s) setSession(s);
-            else setError("Session not found.");
-          });
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const res = await fetch(`/api/sessions/${sessionId}`);
+        if (cancelled) return;
+
+        if (res.status === 404) {
+          setError("Session not found.");
+          setLoading(false);
+          return;
         }
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Failed to load session details.");
-        setLoading(false);
-      });
+        if (!res.ok) {
+          setError("Failed to load session details.");
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          setSession(data.session);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Network error loading session.");
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
   }, [sessionId]);
 
   // Start timer
@@ -203,7 +212,7 @@ export default function StudySessionPage() {
 
               {session.learningUrl ? (
                 <a
-                  href={session.learningUrl}
+                  href={safeUrl(session.learningUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-200"

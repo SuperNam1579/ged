@@ -9,7 +9,19 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import Button from "@/components/ui/Button";
 import SubjectBadge from "@/components/ui/SubjectBadge";
 import Spinner from "@/components/ui/Spinner";
-import FitnessConvergenceChart from "@/components/charts/FitnessConvergenceChart";
+import dynamic from "next/dynamic";
+
+const FitnessConvergenceChart = dynamic(
+  () => import("@/components/charts/FitnessConvergenceChart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-60 flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    ),
+  }
+);
 import { useAuth } from "@/lib/hooks/useAuth";
 import { format } from "date-fns";
 

@@ -99,9 +99,9 @@ export default function QuizPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          responses: Object.entries(updatedAnswers).map(([questionId, selectedOptionId]) => ({
+          responses: Object.entries(updatedAnswers).map(([questionId, selectedOption]) => ({
             questionId,
-            selectedOptionId,
+            selectedOption,
           })),
         }),
       });
@@ -159,11 +159,29 @@ export default function QuizPage() {
             </p>
           </div>
 
-          <div className="space-y-3 mb-8">
+          <div
+            role="radiogroup"
+            aria-label="Answer choices"
+            className="space-y-3 mb-8"
+          >
             {currentQuestion.options.map((option, i) => (
               <button
                 key={option.id}
+                role="radio"
+                aria-checked={selectedOption === option.id}
+                aria-label={`Option ${OPTION_LABELS[i]}: ${option.text}`}
                 onClick={() => handleSelect(option.id)}
+                onKeyDown={(e) => {
+                  const total = currentQuestion.options.length;
+                  if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                    e.preventDefault();
+                    handleSelect(currentQuestion.options[(i + 1) % total].id);
+                  }
+                  if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                    e.preventDefault();
+                    handleSelect(currentQuestion.options[(i - 1 + total) % total].id);
+                  }
+                }}
                 className={cn(
                   "w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4",
                   selectedOption === option.id
