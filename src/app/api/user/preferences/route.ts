@@ -9,14 +9,14 @@ const PreferencesSchema = z.object({
   targetScore: z.number().min(145).max(175),
   studyGoal: z.enum(["PASS", "COLLEGE_READY", "COLLEGE_READY_CREDIT"]),
   availability: z.object({
-    mon: z.boolean(),
-    tue: z.boolean(),
-    wed: z.boolean(),
-    thu: z.boolean(),
-    fri: z.boolean(),
-    sat: z.boolean(),
-    sun: z.boolean(),
-  }),
+    monday: z.boolean(),
+    tuesday: z.boolean(),
+    wednesday: z.boolean(),
+    thursday: z.boolean(),
+    friday: z.boolean(),
+    saturday: z.boolean(),
+    sunday: z.boolean(),
+}),
 });
 
 export async function POST(req: NextRequest) {
