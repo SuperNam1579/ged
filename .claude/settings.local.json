@@ -23,7 +23,21 @@
       "PowerShell($env:CI = \"\"; npx prisma migrate dev --name add-subtopic-prerequisite-table 2>&1)",
       "PowerShell(npx prisma db push 2>&1)",
       "PowerShell(npx prisma db push --accept-data-loss 2>&1)",
-      "PowerShell(npm run *)"
+      "PowerShell(npm run *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\ged\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(npm install *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k,v\\) for k,v in {**d.get\\('dependencies',{}\\),**d.get\\('devDependencies',{}\\)}.items\\(\\) if any\\(x in k for x in ['upstash','arcjet','rate','redis']\\)]\")",
+      "Bash(npm run dev > /tmp/next-dev.log 2>&1 & *)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(taskkill /PID 20220 /F)",
+      "PowerShell(Stop-Process -Id 20220 -Force)",
+      "Bash(pkill -f \"next\")",
+      "PowerShell(Stop-Process -Force)",
+      "Bash(CSRF_SECRET=sqr1nVUhd39TE5mM/SbTFXqCE5gfVW1OLPX3qbf4cIM= node -e ' *)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

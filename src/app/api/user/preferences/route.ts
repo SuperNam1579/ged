@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
+import { checkCsrf } from "@/lib/csrf";
+import { audit, extractRequestContext } from "@/lib/audit";
 import { z } from "zod";
 
 const PreferencesSchema = z.object({
@@ -38,6 +40,9 @@ const PreferencesSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const csrfError = checkCsrf(req);
+  if (csrfError) return csrfError;
+
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -60,6 +65,18 @@ export async function POST(req: NextRequest) {
       studyGoal,
       availability,
     },
+  });
+
+  const ctx = extractRequestContext(req);
+  audit({
+    action: "USER_PREFERENCES_UPDATED",
+    userId: authUser.id,
+    entityType: "preferences",
+    entityId: prefs.id,
+    ipAddress: ctx.ipAddress,
+    userAgent: ctx.userAgent,
+    metadata: { targetScore, studyGoal },
+    success: true,
   });
 
   return NextResponse.json({ preferences: prefs });

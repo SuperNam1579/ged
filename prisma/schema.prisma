@@ -18,13 +18,29 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Email verification — all three fields are cleared once emailVerified is set to true.
+  // The token stored here is a SHA-256 hash of the raw token sent to the user.
+  // Storing a hash means a leaked database cannot be used to verify emails directly.
+  emailVerified            Boolean   @default(false)
+  emailVerificationToken   String?   // SHA-256(rawToken) — query by this field to look up a verification attempt
+  emailVerificationExpires DateTime? // 24 h from when the token was issued; drives cooldown logic too
+
+  // Password reset — same hashing strategy as email verification.
+  // Token expires in 1 h (shorter window than email verification — password resets are higher risk).
+  // Both fields are cleared after a successful reset.
+  passwordResetToken   String?   // SHA-256(rawToken)
+  passwordResetExpires DateTime?
+
   preferences        UserPreferences?
   proficiencies      UserSubtopicProficiency[]
   assessmentAttempts UserAssessmentAttempt[]
   questionResponses  UserQuestionResponse[]
   studyPlans         StudyPlan[]
+  auditLogs          AuditLog[]
 
   @@index([email])
+  @@index([emailVerificationToken])
+  @@index([passwordResetToken])
 }
 
 model UserPreferences {
@@ -250,6 +266,44 @@ model RevokedToken {
   @@index([tokenJti])
 }
 
+// ─── AUDIT LOG ─────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  // userId is nullable: unauthenticated events (failed login, unknown-email reset)
+  // still produce audit records with no user identity.
+  // onDelete: SetNull — if a user account is deleted, their logs are KEPT but
+  // anonymised by nulling the FK. Audit logs must never be deleted.
+  userId     String?
+  action     AuditAction
+  // entityType + entityId describe what record was affected.
+  // e.g. entityType="user", entityId="clxxx" or entityType="preferences", entityId="clyyy"
+  entityType String?
+  entityId   String?
+  // Network context — essential for security monitoring and IP-based threat detection.
+  ipAddress  String?
+  userAgent  String?     // truncated to 500 chars at write time
+  // Structured extra context. NEVER contains passwords, tokens, or PII beyond what
+  // is already in the other typed columns. Sanitised before insert.
+  metadata   Json?
+  // Explicit success flag lets you filter "show me all failed logins" without
+  // parsing metadata or action names.
+  success    Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Query patterns we must support efficiently:
+  //   "Show audit trail for user X"         → userId + createdAt
+  //   "Show all failed logins"              → action + createdAt
+  //   "Show all activity from IP Y"         → ipAddress + createdAt
+  //   "Show recent activity across system"  → createdAt alone
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+  @@index([ipAddress, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+}
+
 // ─── ENUMS ─────────────────────────────────────────────────────────────────────
 
 enum AssessmentType {
@@ -276,4 +330,25 @@ enum SessionStatus {
   IN_PROGRESS
   COMPLETED
   SKIPPED
+}
+
+enum AuditAction {
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  AUTH_LOGIN_SUCCESS
+  AUTH_LOGIN_FAILURE
+  AUTH_LOGOUT
+  AUTH_REGISTER
+  // ── Email verification ────────────────────────────────────────────────────
+  AUTH_EMAIL_VERIFIED
+  AUTH_EMAIL_VERIFY_FAILED
+  // ── Password reset ────────────────────────────────────────────────────────
+  AUTH_PASSWORD_RESET_REQUESTED
+  AUTH_PASSWORD_RESET_SUCCESS
+  AUTH_PASSWORD_RESET_FAILED
+  // ── Profile ───────────────────────────────────────────────────────────────
+  USER_PREFERENCES_UPDATED
+  // ── Learning activity ─────────────────────────────────────────────────────
+  ASSESSMENT_SUBMITTED
+  STUDY_SESSION_COMPLETED
+  STUDY_PLAN_GENERATED
 }

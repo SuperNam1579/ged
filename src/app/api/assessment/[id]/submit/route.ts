@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
 import { updateProficiency } from "@/lib/utils/proficiency";
 import { checkAdaptiveTrigger } from "@/lib/ga/engine";
+import { checkCsrf } from "@/lib/csrf";
+import { audit, extractRequestContext } from "@/lib/audit";
 import { z } from "zod";
 
 const SubmitSchema = z.object({
@@ -19,6 +21,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const csrfError = checkCsrf(req);
+  if (csrfError) return csrfError;
+
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -188,6 +193,25 @@ export async function POST(
   const weakSubtopics = Array.from(subtopicScores.entries())
     .filter(([, { correct, total }]) => (correct / total) < 0.6)
     .map(([id]) => id);
+
+  const ctx = extractRequestContext(req);
+  audit({
+    action: "ASSESSMENT_SUBMITTED",
+    userId: authUser.id,
+    entityType: "assessment",
+    entityId: assessmentId,
+    ipAddress: ctx.ipAddress,
+    userAgent: ctx.userAgent,
+    metadata: {
+      attemptId: attempt.id,
+      assessmentType: assessment.type,
+      score,
+      rawScore,
+      maxScore,
+      weakSubtopicsCount: weakSubtopics.length,
+    },
+    success: true,
+  });
 
   return NextResponse.json({
     attemptId: attempt.id,

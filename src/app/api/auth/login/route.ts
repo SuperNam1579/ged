@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyPassword, signToken } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { audit, extractRequestContext } from "@/lib/audit";
 import { z } from "zod";
 
 const LoginSchema = z.object({
@@ -10,6 +12,9 @@ const LoginSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const limited = await checkRateLimit("login", req);
+    if (limited) return limited;
+
     const body = await req.json();
     const parsed = LoginSchema.safeParse(body);
 
@@ -21,14 +26,69 @@ export async function POST(req: NextRequest) {
 
     const user = await db.user.findUnique({
       where: { email },
-      select: { id: true, email: true, name: true, passwordHash: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        passwordHash: true,
+        emailVerified: true,
+      },
     });
 
-    if (!user || !(await verifyPassword(password, user.passwordHash))) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    // Always run verifyPassword even when the user isn't found, to prevent
+    // a timing-based user-enumeration attack via response time differences.
+    const passwordValid = user
+      ? await verifyPassword(password, user.passwordHash)
+      : await verifyPassword(password, "$2b$12$invalidhashpaddingtomaintaintiming00000000000000000000"); // dummy
+
+    const ctx = extractRequestContext(req);
+
+    if (!user || !passwordValid) {
+      audit({
+        action: "AUTH_LOGIN_FAILURE",
+        userId: user?.id ?? null,
+        ipAddress: ctx.ipAddress,
+        userAgent: ctx.userAgent,
+        metadata: { email },
+        success: false,
+      });
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        { status: 401 }
+      );
+    }
+
+    if (!user.emailVerified) {
+      audit({
+        action: "AUTH_LOGIN_FAILURE",
+        userId: user.id,
+        ipAddress: ctx.ipAddress,
+        userAgent: ctx.userAgent,
+        metadata: { email, reason: "EMAIL_NOT_VERIFIED" },
+        success: false,
+      });
+      // Distinct error code so the frontend can show a targeted "resend" prompt
+      // without leaking more information than "your credentials are correct".
+      return NextResponse.json(
+        {
+          error: "Please verify your email address before logging in. Check your inbox for a verification link.",
+          code: "EMAIL_NOT_VERIFIED",
+        },
+        { status: 403 }
+      );
     }
 
     const token = await signToken({ sub: user.id, email: user.email, name: user.name });
+
+    audit({
+      action: "AUTH_LOGIN_SUCCESS",
+      userId: user.id,
+      entityType: "user",
+      entityId: user.id,
+      ipAddress: ctx.ipAddress,
+      userAgent: ctx.userAgent,
+      success: true,
+    });
 
     const response = NextResponse.json(
       { user: { id: user.id, email: user.email, name: user.name }, token },

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
 import { runGeneticAlgorithm } from "@/lib/ga/engine";
+import { checkCsrf } from "@/lib/csrf";
+import { audit, extractRequestContext } from "@/lib/audit";
 import type { TriggerReason } from "@/types";
 import { z } from "zod";
 
@@ -16,6 +18,9 @@ const GenerateSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const csrfError = checkCsrf(req);
+  if (csrfError) return csrfError;
+
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -102,6 +107,22 @@ export async function POST(req: NextRequest) {
         )
       ),
     ]);
+
+    const ctx = extractRequestContext(req);
+    audit({
+      action: "STUDY_PLAN_GENERATED",
+      userId: authUser.id,
+      entityType: "studyPlan",
+      entityId: result.studyPlanId,
+      ipAddress: ctx.ipAddress,
+      userAgent: ctx.userAgent,
+      metadata: {
+        triggerReason,
+        fitnessScore: result.bestFitness,
+        generationsRun: result.generationLogs.length,
+      },
+      success: true,
+    });
 
     return NextResponse.json({
       success: true,

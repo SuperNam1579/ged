@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { hashPassword, signToken } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth";
+import { generateVerificationToken, verificationTokenExpiry } from "@/lib/token";
+import { sendVerificationEmail } from "@/lib/email";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { audit, extractRequestContext } from "@/lib/audit";
 import { z } from "zod";
 
 const RegisterSchema = z.object({
@@ -16,6 +20,9 @@ const RegisterSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const limited = await checkRateLimit("register", req);
+    if (limited) return limited;
+
     const body = await req.json();
     const parsed = RegisterSchema.safeParse(body);
 
@@ -37,27 +44,43 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
-    const user = await db.user.create({
+    const { raw, hashed } = generateVerificationToken();
+
+    const ctx = extractRequestContext(req);
+
+    const newUser = await db.user.create({
       data: {
         name,
         email,
         passwordHash,
         dateOfBirth: new Date(dateOfBirth),
+        emailVerificationToken: hashed,
+        emailVerificationExpires: verificationTokenExpiry(),
+        // emailVerified defaults to false — user cannot log in until they click the link
       },
-      select: { id: true, email: true, name: true },
     });
 
-    const token = await signToken({ sub: user.id, email: user.email, name: user.name });
-
-    const response = NextResponse.json({ user, token }, { status: 201 });
-    response.cookies.set("auth-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+    audit({
+      action: "AUTH_REGISTER",
+      userId: newUser.id,
+      entityType: "user",
+      entityId: newUser.id,
+      ipAddress: ctx.ipAddress,
+      userAgent: ctx.userAgent,
+      metadata: { email },
+      success: true,
     });
 
-    return response;
+    // Fire-and-forget: don't block the response on email delivery.
+    // Log failures so they can be investigated / retried out-of-band.
+    sendVerificationEmail(email, name, raw).catch((err) =>
+      console.error("[register] Failed to send verification email:", err)
+    );
+
+    return NextResponse.json(
+      { message: "Account created. Please check your email to verify your account." },
+      { status: 201 }
+    );
   } catch (err) {
     console.error("Register error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

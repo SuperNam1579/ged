@@ -2,21 +2,26 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BookOpen } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const passwordReset = searchParams.get("reset") === "success";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showResend, setShowResend] = useState(false);
+  const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setShowResend(false);
     setLoading(true);
 
     try {
@@ -29,6 +34,9 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.code === "EMAIL_NOT_VERIFIED") {
+          setShowResend(true);
+        }
         setError(data.error ?? "Login failed. Please try again.");
         setLoading(false);
         return;
@@ -38,6 +46,25 @@ export default function LoginPage() {
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendStatus("sending");
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (res.status === 429) {
+        setResendStatus("error");
+        setError("Please wait a moment before requesting another verification email.");
+      } else {
+        setResendStatus("sent");
+      }
+    } catch {
+      setResendStatus("error");
     }
   };
 
@@ -57,7 +84,30 @@ export default function LoginPage() {
 
         {error && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
-            {error}
+            <p>{error}</p>
+            {showResend && resendStatus === "idle" && (
+              <button
+                onClick={handleResend}
+                className="mt-2 font-medium underline hover:no-underline focus:outline-none"
+              >
+                Resend verification email
+              </button>
+            )}
+            {showResend && resendStatus === "sending" && (
+              <p className="mt-2 text-red-500">Sending…</p>
+            )}
+          </div>
+        )}
+
+        {passwordReset && (
+          <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
+            Password updated successfully. You can now sign in.
+          </div>
+        )}
+
+        {resendStatus === "sent" && (
+          <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
+            Verification email sent. Please check your inbox.
           </div>
         )}
 
@@ -72,16 +122,28 @@ export default function LoginPage() {
             required
             autoComplete="email"
           />
-          <Input
-            id="password"
-            label="Password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-blue-600 font-medium hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </div>
           <Button
             type="submit"
             size="lg"

@@ -66,7 +66,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push("/onboarding");
+      router.push(`/check-email?email=${encodeURIComponent(form.email)}`);
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
