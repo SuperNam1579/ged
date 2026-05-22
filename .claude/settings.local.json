@@ -9,7 +9,21 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
       "Bash(curl -s -X POST http://localhost:3000/api/auth/register -H 'Content-Type: application/json' -d '{\"name\":\"Test User\",\"email\":\"test@example.com\",\"password\":\"Password123!\",\"dateOfBirth\":\"1990-01-01\"}')",
       "Bash(curl *)",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Login:', d.get\\('user',{}\\).get\\('name'\\), '| token present:', bool\\(d.get\\('token'\\)\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Login:', d.get\\('user',{}\\).get\\('name'\\), '| token present:', bool\\(d.get\\('token'\\)\\)\\)\")",
+      "Bash(npx prisma *)",
+      "Bash(findstr /v \"PASSWORD\\\\|password\\\\|secret\\\\|SECRET\\\\|key\\\\|KEY\\\\|token\\\\|TOKEN\")",
+      "PowerShell(psql *)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Get-Content \"C:\\\\ged\\\\.env\" | Where-Object { $_ -match \"DATABASE_URL\" })",
+      "PowerShell(where.exe psql 2>&1; \\(Get-Item \"HKLM:\\\\SOFTWARE\\\\PostgreSQL\\\\Installations\" -ErrorAction SilentlyContinue\\) | Select-Object -ExpandProperty PSChildName)",
+      "PowerShell(Get-WmiObject *)",
+      "PowerShell(Get-CimInstance *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell($env:CI = \"\"; npx prisma migrate dev --name add-subtopic-prerequisite-table 2>&1)",
+      "PowerShell(npx prisma db push 2>&1)",
+      "PowerShell(npx prisma db push --accept-data-loss 2>&1)",
+      "PowerShell(npm run *)"
     ]
   }
 }

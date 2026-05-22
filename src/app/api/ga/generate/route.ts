@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
   // Load all subtopics with subject code
   const subtopics = await db.subtopic.findMany({
     include: {
+      prerequisites: { select: { prerequisiteId: true } },
       topic: {
         include: {
           category: {
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
     subjectCode: s.topic.category.subject.code,
     estimatedMinutes: s.estimatedMinutes,
     difficultyLevel: s.difficultyLevel,
-    prerequisiteIds: s.prerequisiteIds,
+    prerequisiteIds: s.prerequisites.map((p) => p.prerequisiteId), // Changed
   }));
 
   // Load proficiency scores

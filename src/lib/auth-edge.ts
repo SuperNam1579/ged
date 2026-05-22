@@ -25,6 +25,7 @@ export async function signToken(
 ): Promise<string> {
   return new jose.SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
+    .setJti(crypto.randomUUID())
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(JWT_SECRET);

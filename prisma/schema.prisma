@@ -100,13 +100,28 @@ model Subtopic {
   learningUrl      String
   estimatedMinutes Int
   difficultyLevel  Int // 1–5
-  prerequisiteIds  String[] // array of Subtopic IDs
   createdAt        DateTime @default(now())
 
   topic         Topic                     @relation(fields: [topicId], references: [id])
   proficiencies UserSubtopicProficiency[]
   questions     Question[]
   studySessions StudySession[]
+  prerequisites SubtopicPrerequisite[]    @relation("Dependent")
+  dependents    SubtopicPrerequisite[]    @relation("Prerequisite")
+}
+
+model SubtopicPrerequisite {
+  id              String   @id @default(cuid())
+  dependentId     String
+  prerequisiteId  String
+  createdAt       DateTime @default(now())
+
+  dependent    Subtopic @relation("Dependent", fields: [dependentId], references: [id], onDelete: Cascade)
+  prerequisite Subtopic @relation("Prerequisite", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([dependentId, prerequisiteId])
+  @@index([dependentId])
+  @@index([prerequisiteId])
 }
 
 // ─── ASSESSMENT GROUP ──────────────────────────────────────────────────────────
@@ -223,6 +238,16 @@ model GaExecutionLog {
   studyPlan StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
 
   @@index([studyPlanId, generation])
+}
+
+model RevokedToken {
+  id        String   @id @default(cuid())
+  tokenJti  String   @unique
+  userId    String
+  revokedAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([tokenJti])
 }
 
 // ─── ENUMS ─────────────────────────────────────────────────────────────────────

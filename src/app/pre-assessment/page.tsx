@@ -76,11 +76,15 @@ export default function PreAssessmentPage() {
       .then((data) => {
         if (data.assessments) {
           setAssessments(data.assessments);
-          const initAnswers: Record<string, Record<string, string>> = {};
-          data.assessments.forEach((a: Assessment) => {
-            initAnswers[a.id] = {};
+          setAnswers((prev) => {
+            const merged: Record<string, Record<string, string>> = { ...prev };
+            data.assessments.forEach((a: Assessment) => {
+              if (!merged[a.id]) {
+                merged[a.id] = {};
+              }
+            });
+            return merged;
           });
-          setAnswers(initAnswers);
         } else {
           setError("Failed to load assessment questions.");
         }

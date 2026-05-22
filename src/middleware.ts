@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth-edge";
 
-const PUBLIC_PATHS = ["/", "/login", "/register", "/api/auth/login", "/api/auth/register"];
+const PUBLIC_PATHS = ["/", "/login", "/register", "/api/auth/login", "/api/auth/register", "/api/auth/check-revoked"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -37,6 +37,20 @@ export async function middleware(req: NextRequest) {
     const response = NextResponse.redirect(new URL("/login", req.url));
     response.cookies.delete("auth-token");
     return response;
+  }
+
+  // Check revocation only for API routes (to avoid slowing down page navigation)
+  if (pathname.startsWith("/api/") && payload.jti) {
+    const baseUrl = req.nextUrl.origin;
+    const checkRes = await fetch(`${baseUrl}/api/auth/check-revoked`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jti: payload.jti }),
+    });
+    const { revoked } = await checkRes.json();
+    if (revoked) {
+      return NextResponse.json({ error: "Token has been revoked" }, { status: 401 });
+    }
   }
 
   return NextResponse.next();
