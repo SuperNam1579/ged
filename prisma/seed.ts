@@ -32,63 +32,22 @@ async function main() {
 
   // ─── MATH Categories & Topics & Subtopics ──────────────────────────────────
 
-  const mathNumCat = await prisma.category.create({
-    data: { subjectId: math.id, name: "Number & Quantity", weight: 20 },
-  });
-  const mathAlgCat = await prisma.category.create({
-    data: { subjectId: math.id, name: "Algebra", weight: 30 },
-  });
-  const mathFuncCat = await prisma.category.create({
-    data: { subjectId: math.id, name: "Functions", weight: 20 },
+const mathQuantCat = await prisma.category.create({ data: { subjectId: math.id, name: "Quantitative Problem Solving", weight: 45 } });
+const mathAlgCat   = await prisma.category.create({ data: { subjectId: math.id, name: "Algebraic Reasoning", weight: 55 } });
 
-  });
-  const mathGeoCat = await prisma.category.create({
-    data: { subjectId: math.id, name: "Geometry", weight: 20 },
-  });
-  const mathDataCat = await prisma.category.create({
-    data: { subjectId: math.id, name: "Data, Statistics & Probability", weight: 10 },
-  });
-
-  // Number & Quantity Topics
-  const numOpTopic = await prisma.topic.create({
-    data: { categoryId: mathNumCat.id, name: "Number Operations" },
-  });
-  const ratioTopic = await prisma.topic.create({
-    data: { categoryId: mathNumCat.id, name: "Ratios & Proportional Relationships" },
-  });
-
-  // Algebra Topics
-  const exprTopic = await prisma.topic.create({
-    data: { categoryId: mathAlgCat.id, name: "Expressions & Polynomials" },
-  });
-  const eqTopic = await prisma.topic.create({
-    data: { categoryId: mathAlgCat.id, name: "Equations & Inequalities" },
-  });
-
-  // Functions Topics
-  const linFuncTopic = await prisma.topic.create({
-    data: { categoryId: mathFuncCat.id, name: "Linear Functions" },
-  });
-  const quadFuncTopic = await prisma.topic.create({
-    data: { categoryId: mathFuncCat.id, name: "Quadratic & Other Functions" },
-  });
-
-  // Geometry Topics
-  const geoTopic = await prisma.topic.create({
-    data: { categoryId: mathGeoCat.id, name: "Shapes, Area & Volume" },
-  });
-
-  // Data Topics
-  const statTopic = await prisma.topic.create({
-    data: { categoryId: mathDataCat.id, name: "Statistics & Probability" },
-  });
+const numSenseTopic = await prisma.topic.create({ data: { categoryId: mathQuantCat.id, name: "Number Sense" } });
+const dataStatTopic = await prisma.topic.create({ data: { categoryId: mathQuantCat.id, name: "Data and Statistics" } });
+const geoMeasTopic  = await prisma.topic.create({ data: { categoryId: mathQuantCat.id, name: "Geometric Measurement" } });
+const exprTopic     = await prisma.topic.create({ data: { categoryId: mathAlgCat.id,   name: "Expressions and Polynomials" } });
+const eqTopic       = await prisma.topic.create({ data: { categoryId: mathAlgCat.id,   name: "Equations and Inequalities" } });
+const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat.id,   name: "Graphs and Functions" } });
 
   // MATH Subtopics (15 total)
   const mathSubtopics = await Promise.all([
     // Number Operations
     prisma.subtopic.create({
       data: {
-        topicId: numOpTopic.id, name: "Integer Operations",
+        topicId: numSenseTopic.id, name: "Integer Operations",
         description: "Add, subtract, multiply, and divide integers including negative numbers.",
         learningUrl: "https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-negative-number-topic",
         estimatedMinutes: 45, difficultyLevel: 1,
@@ -96,7 +55,7 @@ async function main() {
     }),
     prisma.subtopic.create({
       data: {
-        topicId: numOpTopic.id, name: "Fractions, Decimals & Percents",
+        topicId: numSenseTopic.id, name: "Fractions, Decimals & Percents",
         description: "Convert and compute with fractions, decimals, and percentages.",
         learningUrl: "https://www.khanacademy.org/math/pre-algebra/pre-algebra-fractions",
         estimatedMinutes: 60, difficultyLevel: 2,
@@ -104,7 +63,7 @@ async function main() {
     }),
     prisma.subtopic.create({
       data: {
-        topicId: ratioTopic.id, name: "Ratios & Rates",
+        topicId: numSenseTopic.id, name: "Ratios & Rates",
         description: "Understand and apply ratios, unit rates, and proportional reasoning.",
         learningUrl: "https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-ratios-prop",
         estimatedMinutes: 50, difficultyLevel: 2,
@@ -112,7 +71,7 @@ async function main() {
     }),
     prisma.subtopic.create({
       data: {
-        topicId: ratioTopic.id, name: "Percent Problems",
+        topicId: numSenseTopic.id, name: "Percent Problems",
         description: "Solve percent change, percent of a number, and real-world percent applications.",
         learningUrl: "https://www.khanacademy.org/math/pre-algebra/pre-algebra-ratios-rates",
         estimatedMinutes: 45, difficultyLevel: 2,
@@ -155,7 +114,7 @@ async function main() {
     // Linear Functions
     prisma.subtopic.create({
       data: {
-        topicId: linFuncTopic.id, name: "Slope & Linear Graphs",
+        topicId: graphFuncTopic.id, name: "Slope & Linear Graphs",
         description: "Calculate slope, interpret graphs, and write linear equations.",
         learningUrl: "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:linear-equations-graphs",
         estimatedMinutes: 60, difficultyLevel: 2,
@@ -164,7 +123,7 @@ async function main() {
     // Quadratic & Other Functions
     prisma.subtopic.create({
       data: {
-        topicId: quadFuncTopic.id, name: "Quadratic Functions",
+        topicId: graphFuncTopic.id, name: "Quadratic Functions",
         description: "Graph, solve, and interpret quadratic equations and parabolas.",
         learningUrl: "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratics-multiplying-factoring",
         estimatedMinutes: 75, difficultyLevel: 4,
@@ -173,7 +132,7 @@ async function main() {
     // Geometry
     prisma.subtopic.create({
       data: {
-        topicId: geoTopic.id, name: "Area, Perimeter & Volume",
+        topicId: geoMeasTopic.id, name: "Area, Perimeter & Volume",
         description: "Calculate area, perimeter, surface area, and volume of 2D and 3D figures.",
         learningUrl: "https://www.khanacademy.org/math/geometry/hs-geo-foundations",
         estimatedMinutes: 70, difficultyLevel: 2,
@@ -181,7 +140,7 @@ async function main() {
     }),
     prisma.subtopic.create({
       data: {
-        topicId: geoTopic.id, name: "Pythagorean Theorem",
+        topicId: geoMeasTopic.id, name: "Pythagorean Theorem",
         description: "Apply the Pythagorean theorem and distance formula.",
         learningUrl: "https://www.khanacademy.org/math/basic-geo/basic-geo-pythagorean-topic",
         estimatedMinutes: 50, difficultyLevel: 3,
@@ -189,7 +148,7 @@ async function main() {
     }),
     prisma.subtopic.create({
       data: {
-        topicId: geoTopic.id, name: "Coordinate Geometry",
+        topicId: geoMeasTopic.id, name: "Coordinate Geometry",
         description: "Work with the coordinate plane, midpoints, and transformations.",
         learningUrl: "https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry",
         estimatedMinutes: 55, difficultyLevel: 3,
@@ -198,7 +157,7 @@ async function main() {
     // Statistics
     prisma.subtopic.create({
       data: {
-        topicId: statTopic.id, name: "Data Analysis & Central Tendency",
+        topicId: dataStatTopic.id, name: "Data Analysis & Central Tendency",
         description: "Calculate mean, median, mode, and interpret data displays.",
         learningUrl: "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data",
         estimatedMinutes: 55, difficultyLevel: 2,
@@ -206,7 +165,7 @@ async function main() {
     }),
     prisma.subtopic.create({
       data: {
-        topicId: statTopic.id, name: "Probability",
+        topicId: dataStatTopic.id, name: "Probability",
         description: "Compute and interpret basic and compound probability.",
         learningUrl: "https://www.khanacademy.org/math/statistics-probability/probability-library",
         estimatedMinutes: 55, difficultyLevel: 3,
@@ -636,6 +595,64 @@ async function main() {
       },
     }),
   ]);
+
+  // ─── Seed subtopic prerequisites ─────────────────────────────────────────
+
+  const prereqPairs: Array<[string, string]> = [
+    // MATH
+    ["Fractions, Decimals & Percents", "Integer Operations"],
+    ["Percent Problems", "Ratios & Rates"],
+    ["Algebraic Expressions", "Integer Operations"],
+    ["Polynomial Operations", "Algebraic Expressions"],
+    ["Linear Equations", "Algebraic Expressions"],
+    ["Inequalities & Systems", "Linear Equations"],
+    ["Slope & Linear Graphs", "Linear Equations"],
+    ["Quadratic Functions", "Polynomial Operations"],
+    ["Pythagorean Theorem", "Area, Perimeter & Volume"],
+    ["Coordinate Geometry", "Slope & Linear Graphs"],
+    ["Probability", "Data Analysis & Central Tendency"],
+    // RLA
+    ["Author's Purpose & Point of View", "Main Idea & Supporting Details"],
+    ["Argument Analysis", "Author's Purpose & Point of View"],
+    ["Figurative Language & Tone", "Reading Fiction"],
+    ["Comparing Texts", "Reading Fiction"],
+    ["Writing an Argument Essay", "Argument Analysis"],
+    ["Using Evidence & Citations", "Argument Analysis"],
+    ["Verb Tense & Modifiers", "Subject-Verb Agreement"],
+    // SS
+    ["Branches of Government", "US Constitution & Bill of Rights"],
+    ["Civil Rights & Liberties", "US Constitution & Bill of Rights"],
+    ["Civil War & Reconstruction", "American Revolution & Founding"],
+    ["World Wars & Modern America", "Civil War & Reconstruction"],
+    ["Social Movements of the 20th Century", "World Wars & Modern America"],
+    ["Macro & Microeconomics", "Supply, Demand & Markets"],
+    // SCI
+    ["Genetics & Heredity", "Cell Biology"],
+    ["Evolution & Natural Selection", "Genetics & Heredity"],
+    ["Ecosystems & Energy Flow", "Cell Biology"],
+    ["Chemical Reactions & Bonding", "Atomic Structure & Periodic Table"],
+    ["States of Matter & Solutions", "Atomic Structure & Periodic Table"],
+    ["Energy & Work", "Motion & Forces"],
+    ["Waves, Light & Sound", "Motion & Forces"],
+    ["Weather, Climate & Atmosphere", "Earth's Structure & Plate Tectonics"],
+  ];
+
+  const prereqData: Array<{ dependentId: string; prerequisiteId: string }> = [];
+  for (const [subtopicName, prereqName] of prereqPairs) {
+    const subtopic = await prisma.subtopic.findFirst({ where: { name: subtopicName } });
+    const prereq = await prisma.subtopic.findFirst({ where: { name: prereqName } });
+    if (!subtopic) {
+      console.warn(`Warning: subtopic "${subtopicName}" not found, skipping prerequisite pair.`);
+      continue;
+    }
+    if (!prereq) {
+      console.warn(`Warning: prerequisite subtopic "${prereqName}" not found, skipping prerequisite pair.`);
+      continue;
+    }
+    prereqData.push({ dependentId: subtopic.id, prerequisiteId: prereq.id });
+  }
+  await prisma.subtopicPrerequisite.createMany({ data: prereqData, skipDuplicates: true });
+  console.log(`Prerequisite pairs created: ${prereqData.length}`);
 
   // ─── Seed assessments with sample questions ────────────────────────────────
 

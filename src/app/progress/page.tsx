@@ -113,7 +113,7 @@ export default function ProgressPage() {
 
   return (
     <MainLayout userName={user?.name}>
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">My Progress</h1>
@@ -201,7 +201,7 @@ export default function ProgressPage() {
                               style={{ width: `${st.score}%` }}
                             />
                           </div>
-                          <span className="text-xs text-red-600 font-medium flex-shrink-0">{Math.round(st.score)}%</span>
+                          <span className="text-xs text-red-600 font-medium shrink-0">{Math.round(st.score)}%</span>
                         </div>
                       </div>
                       <Link href={`/quiz/${st.subtopicId}`}>

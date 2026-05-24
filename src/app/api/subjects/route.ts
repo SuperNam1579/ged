@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
                   learningUrl: true,
                   estimatedMinutes: true,
                   difficultyLevel: true,
-                  prerequisiteIds: true,
+                  prerequisites: { select: { prerequisiteId: true } },
                 },
               },
             },
@@ -45,8 +45,9 @@ export async function GET(req: NextRequest) {
       ...cat,
       topics: cat.topics.map((topic) => ({
         ...topic,
-        subtopics: topic.subtopics.map((st) => ({
+        subtopics: topic.subtopics.map(({ prerequisites, ...st }) => ({
           ...st,
+          prerequisiteIds: prerequisites.map((p) => p.prerequisiteId),
           proficiencyScore: profMap.get(st.id) ?? 0,
         })),
       })),

@@ -191,7 +191,7 @@ export default function QuizPage() {
               >
                 <span
                   className={cn(
-                    "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                    "shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
                     selectedOption === option.id
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600"

@@ -21,7 +21,7 @@ export default function PlanUpdateBanner({ reason, generatedAt }: PlanUpdateBann
 
   return (
     <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4">
-      <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+      <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
       <div>
         <p className="text-sm font-semibold text-blue-900">Your study plan has been updated</p>
         <p className="text-sm text-blue-700 mt-0.5">

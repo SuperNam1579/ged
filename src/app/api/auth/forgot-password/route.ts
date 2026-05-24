@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       success: true,
     });
 
-    sendPasswordResetEmail(email, user.name, raw).catch((err) =>
+    sendPasswordResetEmail(email, user.name ?? "", raw).catch((err) =>
       console.error("[forgot-password] Failed to send reset email:", err)
     );
 

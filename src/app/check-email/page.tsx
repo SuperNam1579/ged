@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, Mail } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
-export default function CheckEmailPage() {
+function CheckEmailContent() {
   const searchParams = useSearchParams();
   const initialEmail = searchParams.get("email") ?? "";
 
@@ -16,7 +16,7 @@ export default function CheckEmailPage() {
     "idle"
   );
 
-  const handleResend = async (e: React.FormEvent) => {
+  const handleResend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus("sending");
 
@@ -41,7 +41,6 @@ export default function CheckEmailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
-      {/* Logo */}
       <div className="flex items-center gap-2.5 mb-8">
         <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-white" />
@@ -119,5 +118,13 @@ export default function CheckEmailPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function CheckEmailPage() {
+  return (
+    <Suspense>
+      <CheckEmailContent />
+    </Suspense>
   );
 }

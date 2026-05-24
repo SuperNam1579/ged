@@ -1,24 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { BookOpen } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
-export default function LoginPage() {
+// Map NextAuth ?error= URL params to human-readable messages.
+const NEXTAUTH_ERRORS: Record<string, string> = {
+  EMAIL_NOT_VERIFIED:
+    "Please verify your email address before logging in. Check your inbox for a verification link.",
+  CredentialsSignin: "Invalid email or password.",
+  OAuthAccountNotLinked:
+    "This email is already registered with a different sign-in method.",
+  Default: "Something went wrong. Please try again.",
+};
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58Z"
+      />
+    </svg>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // ?reset=success comes from the reset-password flow
   const passwordReset = searchParams.get("reset") === "success";
+
+  // ?error= comes from NextAuth when credentials authorize() throws or OAuth fails
+  const nextAuthError = searchParams.get("error");
+  const nextAuthErrorMessage = nextAuthError
+    ? (NEXTAUTH_ERRORS[nextAuthError] ?? NEXTAUTH_ERRORS.Default)
+    : null;
+  const nextAuthErrorIsUnverified = nextAuthError === "EMAIL_NOT_VERIFIED";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [showResend, setShowResend] = useState(false);
   const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setShowResend(false);
@@ -49,6 +94,14 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    await signIn("google", { callbackUrl: "/dashboard" });
+    // signIn redirects — setGoogleLoading(false) is not reached on success.
+    // On error NextAuth redirects back to /login?error=... so the spinner
+    // disappears naturally when the page reloads.
+  };
+
   const handleResend = async () => {
     setResendStatus("sending");
     try {
@@ -59,14 +112,22 @@ export default function LoginPage() {
       });
       if (res.status === 429) {
         setResendStatus("error");
-        setError("Please wait a moment before requesting another verification email.");
-      } else {
+        setError("You are requesting this too quickly. Please wait a moment and try again.");
+      } else if (res.ok) {
         setResendStatus("sent");
+      } else {
+        setResendStatus("error");
+        setError("Failed to resend verification email. Please try again.");
       }
     } catch {
       setResendStatus("error");
+      setError("Something went wrong. Please try again.");
     }
   };
+
+  // Show error box if either the custom API or NextAuth reported an error
+  const activeError = error || nextAuthErrorMessage;
+  const activeShowResend = showResend || nextAuthErrorIsUnverified;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
@@ -82,35 +143,57 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>
         <p className="text-sm text-gray-500 mb-6">Sign in to continue your study journey.</p>
 
-        {error && (
+        {/* Error banner */}
+        {activeError && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
-            <p>{error}</p>
-            {showResend && resendStatus === "idle" && (
+            <p>{activeError}</p>
+            {activeShowResend && (resendStatus === "idle" || resendStatus === "sending") && (
               <button
+                type="button"
                 onClick={handleResend}
-                className="mt-2 font-medium underline hover:no-underline focus:outline-none"
+                disabled={resendStatus === "sending"}
+                className="mt-2 font-medium underline hover:no-underline focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed disabled:no-underline"
               >
-                Resend verification email
+                {resendStatus === "sending" ? "Sending…" : "Resend verification email"}
               </button>
-            )}
-            {showResend && resendStatus === "sending" && (
-              <p className="mt-2 text-red-500">Sending…</p>
             )}
           </div>
         )}
 
+        {/* Success banners */}
         {passwordReset && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
             Password updated successfully. You can now sign in.
           </div>
         )}
-
         {resendStatus === "sent" && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
             Verification email sent. Please check your inbox.
           </div>
         )}
 
+        {/* Google OAuth button */}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={googleLoading}
+          className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed mb-5"
+        >
+          <GoogleIcon />
+          {googleLoading ? "Redirecting…" : "Continue with Google"}
+        </button>
+
+        {/* Divider */}
+        <div className="relative mb-5">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-white px-3 text-gray-400 font-medium">or sign in with email</span>
+          </div>
+        </div>
+
+        {/* Credentials form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="email"
@@ -162,5 +245,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -35,15 +35,19 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Always run verifyPassword even when the user isn't found, to prevent
-    // a timing-based user-enumeration attack via response time differences.
-    const passwordValid = user
-      ? await verifyPassword(password, user.passwordHash)
-      : await verifyPassword(password, "$2b$12$invalidhashpaddingtomaintaintiming00000000000000000000"); // dummy
+    // Always run verifyPassword to prevent timing-based user-enumeration attacks.
+    // user.passwordHash is null for OAuth-only accounts — fall back to a dummy hash
+    // so the bcrypt comparison still runs at full cost, then reject via isValid.
+    const dummyHash = "$2b$12$invalidhashpaddingtomaintaintiming00000000000000000000";
+    const passwordValid = await verifyPassword(
+      password,
+      user?.passwordHash ?? dummyHash
+    );
+    const isValid = !!user && !!user.passwordHash && passwordValid;
 
     const ctx = extractRequestContext(req);
 
-    if (!user || !passwordValid) {
+    if (!isValid) {
       audit({
         action: "AUTH_LOGIN_FAILURE",
         userId: user?.id ?? null,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, CheckCircle, XCircle, Clock } from "lucide-react";
@@ -14,7 +14,7 @@ function isValidTokenFormat(t: string): boolean {
 
 type PageState = "form" | "submitting" | "success" | "invalid" | "expired" | "error";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token") ?? "";
@@ -32,7 +32,7 @@ export default function ResetPasswordPage() {
   // which checkCsrf() on the server reads to do the double-submit check.
   useEffect(() => {
     if (!tokenFormatOk) return;
-    fetch("/api/auth/csrf")
+    fetch("/api/csrf")
       .then((r) => r.json())
       .then((data: { csrfToken?: string }) => setCsrfToken(data.csrfToken ?? ""))
       .catch(() => {}); // will refetch on submit if this failed
@@ -76,7 +76,7 @@ export default function ResetPasswordPage() {
 
   // ── Form state (also covers "submitting" and "error") ─────────────────────────
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFieldError("");
 
@@ -96,7 +96,7 @@ export default function ResetPasswordPage() {
       // If the prefetch succeeded, this is a no-op (csrf is already set).
       let csrf = csrfToken;
       if (!csrf) {
-        const csrfRes = await fetch("/api/auth/csrf");
+        const csrfRes = await fetch("/api/csrf");
         const csrfData = (await csrfRes.json()) as { csrfToken?: string };
         csrf = csrfData.csrfToken ?? "";
       }
@@ -256,6 +256,14 @@ function ExpiredState() {
 }
 
 // ── Shared layout ─────────────────────────────────────────────────────────────
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (

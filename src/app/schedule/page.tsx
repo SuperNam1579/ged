@@ -71,7 +71,7 @@ export default function SchedulePage() {
 
   return (
     <MainLayout userName={user?.name}>
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -119,15 +119,16 @@ export default function SchedulePage() {
           ))}
         </div>
 
-        {/* Week grid */}
-        <div className="grid grid-cols-7 gap-3">
+        {/* Week grid — overflow-x-auto so small screens scroll rather than compress */}
+        <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6">
+        <div className="grid grid-cols-7 gap-3 min-w-150">
           {weekDays.map((day, i) => {
             const daySessions = getSessionsForDay(day);
             const isToday = isSameDay(day, new Date());
             const totalMins = daySessions.reduce((a, s) => a + s.durationMins, 0);
 
             return (
-              <div key={i} className="min-h-[200px]">
+              <div key={i} className="min-h-50">
                 {/* Day header */}
                 <div className={cn("text-center mb-2 py-2 rounded-lg", isToday ? "bg-blue-600" : "bg-gray-50")}>
                   <p className={`text-xs font-medium ${isToday ? "text-blue-100" : "text-gray-500"}`}>
@@ -178,6 +179,7 @@ export default function SchedulePage() {
             );
           })}
         </div>
+        </div>{/* end overflow-x-auto */}
 
         {sessions.length === 0 && (
           <Card className="mt-8">

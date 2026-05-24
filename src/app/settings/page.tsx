@@ -112,7 +112,7 @@ export default function SettingsPage() {
 
   return (
     <MainLayout userName={user?.name}>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Settings className="w-6 h-6 text-gray-400" />

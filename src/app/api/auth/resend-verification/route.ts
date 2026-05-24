@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    sendVerificationEmail(email, user.name, raw).catch((err) =>
+    sendVerificationEmail(email, user.name ?? "", raw).catch((err) =>
       console.error("[resend-verification] Failed to send email:", err)
     );
 

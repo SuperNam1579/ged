@@ -42,7 +42,7 @@ export default function StudySessionCard({
       )}
     >
       {/* Status indicator */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         {isCompleted ? (
           <CheckCircle className="w-6 h-6 text-green-500" />
         ) : (
@@ -70,7 +70,7 @@ export default function StudySessionCard({
 
       {/* Actions */}
       {!isCompleted && (
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <Link href={`/study/${id}`}>
             <Button size="sm">Start</Button>
           </Link>

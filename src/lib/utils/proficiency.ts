@@ -25,7 +25,12 @@ export function proficiencyToColor(score: number): string {
   return "text-red-500";
 }
 
-export function scoreToGEDScore(percentage: number, subject: string): number {
+/**
+ * Simple linear approximation: maps 0–100% → GED score 100–200.
+ * Note: this is NOT the official GED scaled-score formula; real scoring
+ * uses item-response-theory calibration per subject.
+ */
+export function scoreToGEDScore(percentage: number): number {
   // GED scores range 100–200, passing = 145
   // Map 0-100% → 100-200
   return Math.round(100 + percentage);

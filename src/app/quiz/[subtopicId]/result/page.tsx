@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Info } from "lucide-react";
@@ -54,7 +55,7 @@ function getLabel(pct: number): { label: string; color: string } {
   return { label: "Weak", color: "text-red-600" };
 }
 
-export default function QuizResultPage() {
+function QuizResultContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const subtopicId = params.subtopicId as string;
@@ -131,9 +132,9 @@ export default function QuizResultPage() {
                       )}
                     >
                       {correct ? (
-                        <CheckCircle className="w-4.5 h-4.5" />
+                        <CheckCircle className="w-5 h-5" />
                       ) : (
-                        <XCircle className="w-4.5 h-4.5" />
+                        <XCircle className="w-5 h-5" />
                       )}
                     </div>
                   );
@@ -171,5 +172,13 @@ export default function QuizResultPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QuizResultPage() {
+  return (
+    <Suspense>
+      <QuizResultContent />
+    </Suspense>
   );
 }

@@ -65,7 +65,7 @@ export default function MockTestPage() {
 
   return (
     <MainLayout userName={user?.name}>
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
@@ -116,7 +116,7 @@ export default function MockTestPage() {
                   isSelected ? subject.bg + " border-current" : "bg-white border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {isSelected ? (
                     <CheckSquare className={`w-5 h-5 ${subject.color}`} />
                   ) : (
@@ -129,7 +129,7 @@ export default function MockTestPage() {
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">{subject.description}</p>
                 </div>
-                <div className="flex-shrink-0 text-right">
+                <div className="shrink-0 text-right">
                   <p className="text-xs text-gray-400">10 questions</p>
                   <p className="text-xs text-gray-400">{subject.duration} min</p>
                 </div>
@@ -141,7 +141,7 @@ export default function MockTestPage() {
         {/* Warning */}
         {selectedSubjects.length === 0 && (
           <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg mb-6">
-            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
             <p className="text-sm text-amber-700">Select at least one subject to continue.</p>
           </div>
         )}

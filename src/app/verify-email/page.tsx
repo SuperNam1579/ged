@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
@@ -9,7 +9,7 @@ import Input from "@/components/ui/Input";
 
 type VerifyStatus = "verifying" | "success" | "expired" | "invalid" | "already-verified";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -51,7 +51,7 @@ export default function VerifyEmailPage() {
       .catch(() => setStatus("invalid"));
   }, [token]);
 
-  const handleResend = async (e: React.FormEvent) => {
+  const handleResend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setResendStatus("sending");
 
@@ -150,12 +150,20 @@ function AlreadyVerifiedState() {
   );
 }
 
+export default function VerifyEmailPage() {
+  return (
+    <Suspense>
+      <VerifyEmailContent />
+    </Suspense>
+  );
+}
+
 interface ExpiredOrInvalidProps {
   isExpired: boolean;
   resendEmail: string;
   setResendEmail: (v: string) => void;
   resendStatus: "idle" | "sending" | "sent" | "rate-limited" | "error";
-  onResend: (e: React.FormEvent) => void;
+  onResend: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 function ExpiredOrInvalidState({

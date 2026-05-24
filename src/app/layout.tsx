@@ -1,5 +1,21 @@
 import type { Metadata } from "next";
+import { Fredoka, Nunito_Sans } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/Providers";
+
+const fredoka = Fredoka({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-feather",
+  display: "swap",
+});
+
+const nunitoSans = Nunito_Sans({
+  weight: ["400", "500", "700", "800"],
+  subsets: ["latin"],
+  variable: "--font-din-round",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "GED Prep — Adaptive Study Platform",
@@ -13,8 +29,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-full">{children}</body>
+    <html lang="en" className={`h-full ${fredoka.variable} ${nunitoSans.variable}`}>
+      <body className="min-h-full font-[family-name:var(--font-din-round)]">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

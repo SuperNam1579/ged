@@ -142,7 +142,7 @@ export default function DashboardPage() {
 
   return (
     <MainLayout userName={user?.name} daysUntilExam={daysUntilExam}>
-      <div className="p-8 max-w-5xl mx-auto">
+      <div className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
         {/* Page header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">

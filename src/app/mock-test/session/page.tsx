@@ -272,7 +272,7 @@ function MockSessionContent() {
                 }`}
               >
                 <span className="inline-flex items-center gap-3">
-                  <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                  <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 ${
                     selected === option.id ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300 text-gray-500"
                   }`}>
                     {option.id}
