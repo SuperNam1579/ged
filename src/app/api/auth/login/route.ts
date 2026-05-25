@@ -62,26 +62,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!user.emailVerified) {
-      audit({
-        action: "AUTH_LOGIN_FAILURE",
-        userId: user.id,
-        ipAddress: ctx.ipAddress,
-        userAgent: ctx.userAgent,
-        metadata: { email, reason: "EMAIL_NOT_VERIFIED" },
-        success: false,
-      });
-      // Distinct error code so the frontend can show a targeted "resend" prompt
-      // without leaking more information than "your credentials are correct".
-      return NextResponse.json(
-        {
-          error: "Please verify your email address before logging in. Check your inbox for a verification link.",
-          code: "EMAIL_NOT_VERIFIED",
-        },
-        { status: 403 }
-      );
-    }
-
     const token = await signToken({ sub: user.id, email: user.email, name: user.name });
 
     audit({

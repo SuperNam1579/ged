@@ -47,7 +47,8 @@
       "PowerShell(node \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\check_verified.cjs\" 2>&1)",
       "PowerShell(Get-ChildItem -Path \"c:\\\\ged\" -Force | Select-Object Name, @{Name=\"Type\"; Expression={if\\($_.PSIsContainer\\) {\"Dir\"} else {\"File\"}}} | Format-Table -AutoSize)",
       "Bash(ls \"C:/Program Files/PostgreSQL/\" 2>/dev/null || echo \"not found\")",
-      "Read(//c/Program Files/PostgreSQL/**)"
+      "Read(//c/Program Files/PostgreSQL/**)",
+      "Bash(Get-ChildItem \"c:\\\\ged\\\\src\\\\app\\\\api\\\\auth\\\\\" 2>&1)"
     ],
     "additionalDirectories": [
       "\\tmp",

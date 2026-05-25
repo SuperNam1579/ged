@@ -56,6 +56,14 @@ function MockSessionContent() {
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState<MockResult[]>([]);
   const [done, setDone] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
+
+  useEffect(() => {
+    fetch("/api/csrf")
+      .then((r) => r.json())
+      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch(`/api/assessment/mock?subjects=${subjects.join(",")}`)
@@ -178,7 +186,7 @@ function MockSessionContent() {
     try {
       const res = await fetch(`/api/assessment/${assessment.id}/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({ responses: newResponses }),
       });
       const data = await res.json();

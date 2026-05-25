@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Target, Calendar, Clock, CheckCircle } from "lucide-react";
 import Button from "@/components/ui/Button";
@@ -50,6 +50,14 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [csrfToken, setCsrfToken] = useState("");
+
+  useEffect(() => {
+    fetch("/api/csrf")
+      .then((r) => r.json())
+      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
+      .catch(() => {});
+  }, []);
 
   const [data, setData] = useState<OnboardingData>({
     studyGoal: "",
@@ -104,7 +112,7 @@ export default function OnboardingPage() {
     try {
       const prefRes = await fetch("/api/user/preferences", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({
           studyGoal: data.studyGoal,
           targetScore: data.targetScore,
@@ -121,7 +129,7 @@ export default function OnboardingPage() {
 
       const gaRes = await fetch("/api/ga/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({ triggerReason: "INITIAL" }),
       });
 
@@ -272,7 +280,7 @@ export default function OnboardingPage() {
                       className={cn(
                         "py-4 rounded-xl text-sm font-semibold transition-all border-2",
                         active
-                          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                          ? "bg-green-600 text-white border-green-600 shadow-sm"
                           : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
                       )}
                     >

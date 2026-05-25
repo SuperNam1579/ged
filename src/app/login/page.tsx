@@ -10,8 +10,6 @@ import Input from "@/components/ui/Input";
 
 // Map NextAuth ?error= URL params to human-readable messages.
 const NEXTAUTH_ERRORS: Record<string, string> = {
-  EMAIL_NOT_VERIFIED:
-    "Please verify your email address before logging in. Check your inbox for a verification link.",
   CredentialsSignin: "Invalid email or password.",
   OAuthAccountNotLinked:
     "This email is already registered with a different sign-in method.",
@@ -53,20 +51,16 @@ function LoginContent() {
   const nextAuthErrorMessage = nextAuthError
     ? (NEXTAUTH_ERRORS[nextAuthError] ?? NEXTAUTH_ERRORS.Default)
     : null;
-  const nextAuthErrorIsUnverified = nextAuthError === "EMAIL_NOT_VERIFIED";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showResend, setShowResend] = useState(false);
-  const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
-    setShowResend(false);
     setLoading(true);
 
     try {
@@ -79,15 +73,14 @@ function LoginContent() {
       const data = await res.json();
 
       if (!res.ok) {
-        if (data.code === "EMAIL_NOT_VERIFIED") {
-          setShowResend(true);
-        }
         setError(data.error ?? "Login failed. Please try again.");
         setLoading(false);
         return;
       }
 
-      router.push("/dashboard");
+      const prefsRes = await fetch("/api/user/preferences");
+      const prefsData = await prefsRes.json();
+      router.push(prefsData.preferences ? "/dashboard" : "/onboarding");
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -97,37 +90,9 @@ function LoginContent() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     await signIn("google", { callbackUrl: "/dashboard" });
-    // signIn redirects — setGoogleLoading(false) is not reached on success.
-    // On error NextAuth redirects back to /login?error=... so the spinner
-    // disappears naturally when the page reloads.
   };
 
-  const handleResend = async () => {
-    setResendStatus("sending");
-    try {
-      const res = await fetch("/api/auth/resend-verification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      if (res.status === 429) {
-        setResendStatus("error");
-        setError("You are requesting this too quickly. Please wait a moment and try again.");
-      } else if (res.ok) {
-        setResendStatus("sent");
-      } else {
-        setResendStatus("error");
-        setError("Failed to resend verification email. Please try again.");
-      }
-    } catch {
-      setResendStatus("error");
-      setError("Something went wrong. Please try again.");
-    }
-  };
-
-  // Show error box if either the custom API or NextAuth reported an error
   const activeError = error || nextAuthErrorMessage;
-  const activeShowResend = showResend || nextAuthErrorIsUnverified;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
@@ -147,16 +112,6 @@ function LoginContent() {
         {activeError && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
             <p>{activeError}</p>
-            {activeShowResend && (resendStatus === "idle" || resendStatus === "sending") && (
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={resendStatus === "sending"}
-                className="mt-2 font-medium underline hover:no-underline focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed disabled:no-underline"
-              >
-                {resendStatus === "sending" ? "Sending…" : "Resend verification email"}
-              </button>
-            )}
           </div>
         )}
 
@@ -164,11 +119,6 @@ function LoginContent() {
         {passwordReset && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
             Password updated successfully. You can now sign in.
-          </div>
-        )}
-        {resendStatus === "sent" && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
-            Verification email sent. Please check your inbox.
           </div>
         )}
 

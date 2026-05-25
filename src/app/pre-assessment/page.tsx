@@ -42,6 +42,14 @@ export default function PreAssessmentPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
+
+  useEffect(() => {
+    fetch("/api/csrf")
+      .then((r) => r.json())
+      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
+      .catch(() => {});
+  }, []);
 
   const STORAGE_KEY = "ged-pre-assessment-v1";
 
@@ -188,7 +196,7 @@ export default function PreAssessmentPage() {
       try {
         await fetch(`/api/assessment/${currentAssessment.id}/submit`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
           body: JSON.stringify({
             responses: Object.entries(currentAnswers).map(
               ([questionId, selectedOption]) => ({

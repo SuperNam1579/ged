@@ -34,7 +34,7 @@ export default function HeroIllustration() {
       <circle cx="298.5" cy="152" r="8" fill="#ffc700" />
 
       {/* Arms */}
-      <ellipse cx="148" cy="310" rx="28" ry="52" rx="28" ry="52" fill="#58cc02" transform="rotate(-15 148 310)" />
+      <ellipse cx="148" cy="310" rx="28" ry="52" fill="#58cc02" transform="rotate(-15 148 310)" />
       <ellipse cx="332" cy="310" rx="28" ry="52" fill="#58cc02" transform="rotate(15 332 310)" />
 
       {/* Hands holding book */}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ClipboardList, Calendar, TrendingUp, Play, AlertCircle, BookOpen, Info } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/ui/Button";
@@ -88,9 +89,18 @@ function StatCard({ label, value, sub, icon: Icon, color }: {
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (authLoading) return;
+    fetch("/api/user/preferences")
+      .then((r) => r.json())
+      .then((data) => { if (!data.preferences) router.replace("/onboarding"); })
+      .catch(() => {});
+  }, [authLoading, router]);
 
   useEffect(() => {
     if (authLoading) return;
