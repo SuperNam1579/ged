@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 // Lightweight NextAuth instance — edge-safe (no Prisma, no bcrypt).
 // Used only to verify the authjs.session-token JWT cookie via AUTH_SECRET.
+// (formerly middleware.ts — renamed to proxy.ts per Next.js 16 convention)
 const { auth } = NextAuth(authConfig);
 
 // Pages that are always accessible without authentication.

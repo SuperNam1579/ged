@@ -7,7 +7,7 @@ import Google from "next-auth/providers/google";
  *
  * This file is imported by both:
  *   - src/auth.ts (full server config, adds PrismaAdapter + real authorize logic)
- *   - src/middleware.ts (edge runtime, creates a lightweight NextAuth instance
+ *   - src/proxy.ts (edge runtime, creates a lightweight NextAuth instance
  *     purely for verifying the authjs.session-token JWT cookie)
  *
  * The `authorize` stub here is never called by the middleware — only the JWT
