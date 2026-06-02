@@ -40,7 +40,16 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [regenSuccess, setRegenSuccess] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
+
+  useEffect(() => {
+    fetch("/api/csrf")
+      .then((r) => r.json())
+      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -66,14 +75,22 @@ export default function SettingsPage() {
     if (!prefs) return;
     setSaving(true);
     setSaveSuccess(false);
+    setSaveError("");
     try {
-      await fetch("/api/user/preferences", {
+      const res = await fetch("/api/user/preferences", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify(prefs),
       });
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      if (!res.ok) {
+        const d = await res.json();
+        setSaveError(d.error ?? "Failed to save preferences.");
+      } else {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch {
+      setSaveError("Network error. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -85,7 +102,7 @@ export default function SettingsPage() {
     try {
       await fetch("/api/ga/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({ triggerReason: "MANUAL_REQUEST" }),
       });
       setRegenSuccess(true);
@@ -228,6 +245,9 @@ export default function SettingsPage() {
                     <Check className="w-4 h-4" />
                     Preferences saved!
                   </div>
+                )}
+                {saveError && (
+                  <p className="text-red-600 text-sm">{saveError}</p>
                 )}
                 <div className="ml-auto">
                   <Button onClick={handleSave} loading={saving}>

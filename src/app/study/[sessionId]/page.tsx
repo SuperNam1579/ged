@@ -34,7 +34,15 @@ export default function StudySessionPage() {
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [csrfToken, setCsrfToken] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    fetch("/api/csrf")
+      .then((r) => r.json())
+      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -86,15 +94,17 @@ export default function StudySessionPage() {
     setCompleting(true);
 
     try {
-      await fetch(`/api/sessions/${sessionId}/complete`, {
+      const res = await fetch(`/api/sessions/${sessionId}/complete`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({ elapsedSeconds: elapsed }),
       });
-      setCompleted(true);
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (res.ok || res.status === 409) {
+        setCompleted(true);
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
     } catch {
-      // fail silently, still show completed
+      // network error — still mark UI as completed, will sync on next load
       setCompleted(true);
     } finally {
       setCompleting(false);

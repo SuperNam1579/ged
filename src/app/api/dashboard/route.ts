@@ -113,15 +113,17 @@ export async function GET(req: NextRequest) {
     ? Math.max(0, differenceInDays(user.preferences.targetExamDate, today))
     : 0;
 
+  const ninetyDaysAgo = new Date(today);
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
   const recentCompletions = await db.studySession.findMany({
     where: {
       studyPlan: { userId: authUser.id },
       status: "COMPLETED",
-      completedAt: { not: null },
+      completedAt: { not: null, gte: ninetyDaysAgo },
     },
     select: { completedAt: true },
     orderBy: { completedAt: "desc" },
-    take: 60,
   });
 
   const completionDateSet = new Set(
