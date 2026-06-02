@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
 import Button from "@/components/ui/Button";
@@ -10,16 +10,19 @@ import Input from "@/components/ui/Input";
 type VerifyStatus = "verifying" | "success" | "expired" | "invalid" | "already-verified";
 
 function VerifyEmailContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
   const [status, setStatus] = useState<VerifyStatus>("verifying");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+  const [countdown, setCountdown] = useState(3);
   const [resendEmail, setResendEmail] = useState("");
   const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent" | "rate-limited" | "error">(
     "idle"
   );
 
-  const didVerify = useRef(false); // prevent double-invocation in React Strict Mode
+  const didVerify = useRef(false);
 
   useEffect(() => {
     if (!token || didVerify.current) return;
@@ -38,7 +41,9 @@ function VerifyEmailContent() {
       body: JSON.stringify({ token }),
     })
       .then(async (res) => {
+        const data = await res.json();
         if (res.ok) {
+          setVerifiedEmail(data.email ?? "");
           setStatus("success");
         } else if (res.status === 410) {
           setStatus("expired");
@@ -50,6 +55,18 @@ function VerifyEmailContent() {
       })
       .catch(() => setStatus("invalid"));
   }, [token]);
+
+  useEffect(() => {
+    if (status !== "success") return;
+    if (countdown <= 0) {
+      const params = new URLSearchParams({ verified: "true" });
+      if (verifiedEmail) params.set("email", verifiedEmail);
+      router.push(`/login?${params.toString()}`);
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [status, countdown, verifiedEmail, router]);
 
   const handleResend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -86,7 +103,7 @@ function VerifyEmailContent() {
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
         {status === "verifying" && <VerifyingState />}
-        {status === "success" && <SuccessState />}
+        {status === "success" && <SuccessState countdown={countdown} />}
         {status === "already-verified" && <AlreadyVerifiedState />}
         {(status === "expired" || status === "invalid") && (
           <ExpiredOrInvalidState
@@ -112,19 +129,20 @@ function VerifyingState() {
   );
 }
 
-function SuccessState() {
+function SuccessState({ countdown }: { countdown: number }) {
   return (
     <div className="py-4">
       <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
         <CheckCircle className="w-8 h-8 text-green-500" />
       </div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Email verified!</h1>
-      <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-        Your account is now active. You can sign in and start your GED prep journey.
+      <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+        Your account is now active. Redirecting you to sign in…
       </p>
+      <p className="text-4xl font-bold text-blue-600 mb-6">{countdown}</p>
       <Link href="/login">
         <Button size="lg" className="w-full">
-          Go to Sign In
+          Go to Sign In now
         </Button>
       </Link>
     </div>

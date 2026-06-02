@@ -45,6 +45,8 @@ function LoginContent() {
 
   // ?reset=success comes from the reset-password flow
   const passwordReset = searchParams.get("reset") === "success";
+  // ?verified=true comes from the email verification flow
+  const emailVerified = searchParams.get("verified") === "true";
 
   // ?error= comes from NextAuth when credentials authorize() throws or OAuth fails
   const nextAuthError = searchParams.get("error");
@@ -52,7 +54,7 @@ function LoginContent() {
     ? (NEXTAUTH_ERRORS[nextAuthError] ?? NEXTAUTH_ERRORS.Default)
     : null;
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -116,6 +118,11 @@ function LoginContent() {
         )}
 
         {/* Success banners */}
+        {emailVerified && (
+          <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
+            Email verified! Sign in to set up your study plan.
+          </div>
+        )}
         {passwordReset && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
             Password updated successfully. You can now sign in.

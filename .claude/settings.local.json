@@ -48,7 +48,11 @@
       "PowerShell(Get-ChildItem -Path \"c:\\\\ged\" -Force | Select-Object Name, @{Name=\"Type\"; Expression={if\\($_.PSIsContainer\\) {\"Dir\"} else {\"File\"}}} | Format-Table -AutoSize)",
       "Bash(ls \"C:/Program Files/PostgreSQL/\" 2>/dev/null || echo \"not found\")",
       "Read(//c/Program Files/PostgreSQL/**)",
-      "Bash(Get-ChildItem \"c:\\\\ged\\\\src\\\\app\\\\api\\\\auth\\\\\" 2>&1)"
+      "Bash(Get-ChildItem \"c:\\\\ged\\\\src\\\\app\\\\api\\\\auth\\\\\" 2>&1)",
+      "Bash(Get-ChildItem -Path \"c:\\\\ged\\\\src\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(xargs grep -l \"verify-email\")",
+      "Bash(xargs grep -l \"study.*plan\\\\|onboarding\\\\|onboard\")"
     ],
     "additionalDirectories": [
       "\\tmp",

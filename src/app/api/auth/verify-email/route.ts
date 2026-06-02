@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const user = await db.user.findFirst({
       where: { emailVerificationToken: hashed },
-      select: { id: true, emailVerified: true, emailVerificationExpires: true },
+      select: { id: true, email: true, emailVerified: true, emailVerificationExpires: true },
     });
 
     const ctx = extractRequestContext(req);
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       success: true,
     });
 
-    return NextResponse.json({ message: "Email verified successfully." });
+    return NextResponse.json({ message: "Email verified successfully.", email: user.email });
   } catch (err) {
     console.error("Verify email error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
