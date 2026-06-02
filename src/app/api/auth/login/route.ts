@@ -62,6 +62,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { error: "Please verify your email before logging in." },
+        { status: 403 }
+      );
+    }
+
     const token = await signToken({ sub: user.id, email: user.email, name: user.name });
 
     audit({
