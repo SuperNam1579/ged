@@ -130,9 +130,11 @@ export function checkCsrf(req: NextRequest): NextResponse | null {
   // calls from our own backend won't have it either.
   const origin = req.headers.get("origin");
   if (origin) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? `https://${req.headers.get("host")}`;
+    const host = req.headers.get("host") ?? "";
+    const proto = req.headers.get("x-forwarded-proto") ?? "https";
+    const expectedOrigin = `${proto}://${host}`;
     try {
-      if (new URL(origin).origin !== new URL(appUrl).origin) {
+      if (new URL(origin).origin !== expectedOrigin) {
         return NextResponse.json(
           { error: "Forbidden: request origin is not allowed." },
           { status: 403 }
