@@ -32,6 +32,14 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
+
+  useEffect(() => {
+    fetch("/api/csrf")
+      .then((r) => r.json())
+      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch(`/api/assessment/quiz/${subtopicId}`)
@@ -97,7 +105,7 @@ export default function QuizPage() {
     try {
       const res = await fetch(`/api/assessment/${quiz.assessmentId}/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({
           responses: Object.entries(updatedAnswers).map(([questionId, selectedOption]) => ({
             questionId,

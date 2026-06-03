@@ -42,6 +42,9 @@ interface SubjectSummary {
   code: string;
   passingScore: number;
   proficiencyScore: number;
+  coveragePercent: number;
+  attemptedCount: number;
+  totalCount: number;
 }
 
 interface AttemptEntry {
@@ -93,6 +96,7 @@ export default function ProgressPage() {
       setOverallProgress(dashData.overallProgress ?? 0);
       setAttempts(attemptsData.attempts ?? []);
       setGaLogs(gaData.logs ?? []);
+    }).catch(() => {}).finally(() => {
       setLoading(false);
     });
   }, [authLoading]);
@@ -146,24 +150,62 @@ export default function ProgressPage() {
             {subjectSummaries.map((subject) => {
               const gedScore = 100 + subject.proficiencyScore;
               const isPassing = gedScore >= 145;
+              const hasAttempts = subject.attemptedCount > 0;
               return (
                 <div key={subject.id}>
-                  <div className="flex items-center justify-between mb-2">
+                  {/* Subject header */}
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2.5">
                       <div className={`w-3 h-3 rounded-full ${SUBJECT_COLORS[subject.code] ?? "bg-gray-400"}`} />
-                      <span className="font-medium text-gray-800 text-sm">{subject.name}</span>
+                      <span className="font-semibold text-gray-800 text-sm">{subject.name}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded ${isPassing ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                    {hasAttempts ? (
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isPassing ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                         GED est. {gedScore}/200
                       </span>
+                    ) : (
+                      <span className="text-xs text-gray-400 italic">No attempts yet</span>
+                    )}
+                  </div>
+
+                  {/* Score row */}
+                  <div className="mb-2.5">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs font-medium text-gray-500">Score on attempted</span>
+                      <span className={`text-xs font-bold ${
+                        !hasAttempts ? "text-gray-300" :
+                        subject.proficiencyScore >= 70 ? "text-green-600" :
+                        subject.proficiencyScore >= 50 ? "text-orange-500" : "text-red-500"
+                      }`}>
+                        {hasAttempts ? `${subject.proficiencyScore}%` : "—"}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          subject.proficiencyScore >= 70 ? "bg-green-500" :
+                          subject.proficiencyScore >= 50 ? "bg-orange-400" : "bg-red-400"
+                        }`}
+                        style={{ width: `${subject.proficiencyScore}%` }}
+                      />
                     </div>
                   </div>
-                  <ProgressBar value={subject.proficiencyScore} showPercent={false} />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-xs text-gray-400">0</span>
-                    <span className="text-xs text-gray-500 font-medium">{subject.proficiencyScore}% proficiency</span>
-                    <span className="text-xs text-gray-400">100</span>
+
+                  {/* Coverage row */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs font-medium text-gray-500">Curriculum covered</span>
+                      <span className="text-xs text-gray-500">
+                        {subject.attemptedCount} / {subject.totalCount} subtopics
+                        <span className="ml-1 text-blue-500 font-semibold">({subject.coveragePercent}%)</span>
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                        style={{ width: `${subject.coveragePercent}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               );

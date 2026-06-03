@@ -80,16 +80,30 @@ export async function GET(req: NextRequest) {
     const allSubtopicIds = subject.categories.flatMap((c) =>
       c.topics.flatMap((t) => t.subtopics.map((s) => s.id))
     );
-    const scores = allSubtopicIds.map((id) => profMap.get(id) ?? 0);
-    const avgScore = scores.length > 0 ? scores.reduce((a: number, b: number) => a + b, 0) / scores.length : 0;
+    const totalCount = allSubtopicIds.length;
+
+    const attemptedScores = allSubtopicIds
+      .map((id) => profMap.get(id))
+      .filter((score): score is number => score !== undefined);
+
+    const attemptedCount = attemptedScores.length;
+    const proficiencyScore = attemptedCount > 0
+      ? Math.round(attemptedScores.reduce((a, b) => a + b, 0) / attemptedCount)
+      : 0;
+    const coveragePercent = totalCount > 0
+      ? Math.round((attemptedCount / totalCount) * 100)
+      : 0;
 
     return {
       id: subject.id,
       name: subject.name,
       code: subject.code,
       passingScore: subject.passingScore,
-      proficiencyScore: Math.round(avgScore),
-      progress: Math.round(avgScore),
+      proficiencyScore,
+      coveragePercent,
+      attemptedCount,
+      totalCount,
+      progress: coveragePercent,
     };
   });
 

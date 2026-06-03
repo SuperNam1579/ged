@@ -78,13 +78,6 @@ export async function POST(
     return NextResponse.json({ error: "No valid responses submitted" }, { status: 400 });
   }
 
-  if (validResponses.length < assessment.questions.length) {
-    return NextResponse.json(
-      { error: "Please answer all questions before submitting." },
-      { status: 400 }
-    );
-  }
-
   type GradedResponse = {
     questionId: string;
     selectedOption: string;

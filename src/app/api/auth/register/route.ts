@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { hashPassword } from "@/lib/auth";
 import { generateVerificationToken, verificationTokenExpiry } from "@/lib/token";
 import { sendVerificationEmail } from "@/lib/email";
@@ -82,6 +83,12 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json(
+        { error: "An account with this email already exists" },
+        { status: 409 }
+      );
+    }
     console.error("Register error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

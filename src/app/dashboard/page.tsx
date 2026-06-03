@@ -256,25 +256,59 @@ export default function DashboardPage() {
               <CardBody className="space-y-5">
                 {subjectSummaries.map((subject) => (
                   <div key={subject.code}>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "px-2 py-0.5 rounded text-xs font-semibold",
-                            SUBJECT_COLORS[subject.code] ?? "bg-gray-100 text-gray-700"
-                          )}
-                        >
+                        <span className={cn("px-2 py-0.5 rounded text-xs font-semibold", SUBJECT_COLORS[subject.code] ?? "bg-gray-100 text-gray-700")}>
                           {subject.code}
                         </span>
-                        {subject.proficiencyScore < 60 && (
-                          <span className="text-xs text-orange-600 font-medium">Weak</span>
+                        {subject.attemptedCount > 0 && subject.proficiencyScore < 60 && (
+                          <span className="text-xs text-orange-500 font-medium">Needs work</span>
                         )}
                       </div>
-                      <span className="text-xs font-semibold text-gray-700">
-                        {Math.round(subject.proficiencyScore)}
-                      </span>
+                      {subject.attemptedCount === 0 && (
+                        <span className="text-xs text-gray-400 italic">Not started</span>
+                      )}
                     </div>
-                    <ProgressBar value={subject.progress} showPercent={false} size="sm" />
+
+                    {/* Score bar */}
+                    <div className="mb-1.5">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-gray-400">Score</span>
+                        <span className={cn(
+                          "text-xs font-semibold",
+                          subject.attemptedCount === 0 ? "text-gray-300" :
+                          subject.proficiencyScore >= 70 ? "text-green-600" :
+                          subject.proficiencyScore >= 50 ? "text-orange-500" : "text-red-500"
+                        )}>
+                          {subject.attemptedCount === 0 ? "—" : `${subject.proficiencyScore}%`}
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={cn("h-full rounded-full transition-all",
+                            subject.proficiencyScore >= 70 ? "bg-green-500" :
+                            subject.proficiencyScore >= 50 ? "bg-orange-400" : "bg-red-400"
+                          )}
+                          style={{ width: `${subject.proficiencyScore}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Coverage bar */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-gray-400">Coverage</span>
+                        <span className="text-xs text-gray-500">
+                          {subject.attemptedCount}/{subject.totalCount}
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-400 rounded-full transition-all"
+                          style={{ width: `${subject.coveragePercent}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </CardBody>

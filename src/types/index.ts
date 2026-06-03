@@ -18,8 +18,11 @@ export interface SubjectSummary {
   name: string;
   code: string;
   passingScore: number;
-  proficiencyScore: number; // 0–100, derived from user proficiency
-  progress: number; // 0–100, % of sessions completed
+  proficiencyScore: number; // 0–100, avg score of attempted subtopics only
+  coveragePercent: number;  // 0–100, % of curriculum subtopics attempted
+  attemptedCount: number;   // number of subtopics with at least one attempt
+  totalCount: number;       // total subtopics in curriculum for this subject
+  progress: number;         // 0–100, % of sessions completed
 }
 
 export interface StudySessionWithSubtopic {

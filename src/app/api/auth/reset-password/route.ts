@@ -64,16 +64,24 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await hashPassword(password);
 
-    // Update password and clear the token atomically.
-    // Clearing prevents token replay — a used token returns 404 on the next attempt.
-    await db.user.update({
-      where: { id: user.id },
+    // updateMany with the token in WHERE makes this atomic — if two concurrent
+    // requests race, only the first writer matches the row (the second finds the
+    // token already nulled) and gets count=1; the second gets count=0 → 404.
+    const result = await db.user.updateMany({
+      where: { id: user.id, passwordResetToken: hashed },
       data: {
         passwordHash,
         passwordResetToken: null,
         passwordResetExpires: null,
       },
     });
+
+    if (result.count === 0) {
+      return NextResponse.json(
+        { error: "This reset link is invalid or has already been used." },
+        { status: 404 }
+      );
+    }
 
     audit({
       action: "AUTH_PASSWORD_RESET_SUCCESS",

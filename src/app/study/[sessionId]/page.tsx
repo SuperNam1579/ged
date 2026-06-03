@@ -265,7 +265,7 @@ export default function StudySessionPage() {
                 variant="secondary"
                 onClick={handleComplete}
                 loading={completing}
-                disabled={completing}
+                disabled={completing || !csrfToken}
               >
                 <CheckCircle className="w-4 h-4 mr-1.5" />
                 Mark as Complete
