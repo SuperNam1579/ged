@@ -13,6 +13,10 @@ const NEXTAUTH_ERRORS: Record<string, string> = {
   CredentialsSignin: "Invalid email or password.",
   OAuthAccountNotLinked:
     "This email is already registered with a different sign-in method.",
+  EMAIL_NOT_VERIFIED:
+    "Please verify your email before signing in. Check your inbox for the verification link.",
+  OAuthSignin: "Could not sign in with Google. Please try again.",
+  OAuthCallback: "Could not sign in with Google. Please try again.",
   Default: "Something went wrong. Please try again.",
 };
 
