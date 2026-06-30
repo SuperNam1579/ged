@@ -54,6 +54,7 @@ function MockSessionContent() {
   const [responses, setResponses] = useState<Record<string, Response[]>>({});
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [results, setResults] = useState<MockResult[]>([]);
   const [done, setDone] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
@@ -183,12 +184,18 @@ function MockSessionContent() {
 
     // Submit this assessment
     setSubmitting(true);
+    setSubmitError("");
     try {
       const res = await fetch(`/api/assessment/${assessment.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({ responses: newResponses }),
       });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setSubmitError(d.error ?? "Failed to submit. Please try again.");
+        return;
+      }
       const data = await res.json();
       const result: MockResult = {
         subjectCode: assessment.subject.code,
@@ -208,6 +215,8 @@ function MockSessionContent() {
         setCurrentAssessmentIndex((a) => a + 1);
         setCurrentQuestionIndex(0);
       }
+    } catch {
+      setSubmitError("Network error. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -291,7 +300,10 @@ function MockSessionContent() {
             ))}
           </div>
 
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex flex-col items-end gap-3">
+            {submitError && (
+              <p className="text-red-600 text-sm">{submitError}</p>
+            )}
             <Button
               onClick={handleNext}
               disabled={!selected}

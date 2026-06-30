@@ -11,6 +11,17 @@ export const DAY_KEYS_ORDERED: DayKey[] = [
 
 export type Availability = Record<DayKey, boolean>;
 
+export interface AvailabilitySlotInput {
+  dayOfWeek: number; // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  startTime: string; // "14:00"
+  endTime: string;   // "16:00"
+}
+
+export interface WeeklyAvailabilityInput {
+  weekStartDate: string; // ISO date of Monday of that week
+  slots: AvailabilitySlotInput[];
+}
+
 // ─── Domain Types ──────────────────────────────────────────────────────────────
 
 export interface SubjectSummary {
@@ -79,6 +90,7 @@ export interface FitnessBreakdown {
   weaknessFocus: number; // 0–1
   timeFeasibility: number; // 0–1
   prerequisiteOrder: number; // 0–1
+  variety: number; // 0–1
   balance: number; // 0–1
   total: number; // weighted sum 0–1
 }
@@ -97,10 +109,11 @@ export interface GAInput {
   proficiencies: ProficiencyMap;
   preferences: {
     targetExamDate: Date;
-    hoursPerDay: number;
-    availability: Record<string, boolean>;
     targetScore: number;
   };
+  weeklyAvailability: AvailabilitySlotInput[];
+  weekStartDate?: Date;         // if set → generate only 7 days of that week
+  weeklyAvailabilityId?: string; // links the saved StudyPlan to the WeeklyAvailability row
   subtopics: SubtopicData[];
   triggerReason: TriggerReason;
   existingPlanVersion?: number;

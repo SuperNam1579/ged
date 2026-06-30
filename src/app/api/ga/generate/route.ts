@@ -44,6 +44,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Load latest weekly availability (most recent week the user entered)
+  const weeklyAvail = await db.weeklyAvailability.findFirst({
+    where: { userId: authUser.id },
+    orderBy: { weekStartDate: "desc" },
+    include: { slots: true },
+  });
+
+  if (!weeklyAvail || weeklyAvail.slots.length === 0) {
+    return NextResponse.json(
+      { error: "Weekly availability not set. Please enter your available time slots first." },
+      { status: 400 }
+    );
+  }
+
+  const weeklyAvailabilitySlots = weeklyAvail.slots.map((s) => ({
+    dayOfWeek: s.dayOfWeek,
+    startTime: s.startTime,
+    endTime: s.endTime,
+  }));
+
   // Load all subtopics with subject code
   const subtopics = await db.subtopic.findMany({
     include: {
@@ -92,10 +112,9 @@ export async function POST(req: NextRequest) {
         proficiencies: profMap,
         preferences: {
           targetExamDate: preferences.targetExamDate,
-          hoursPerDay: preferences.hoursPerDay,
-          availability: preferences.availability as Record<string, boolean>,
           targetScore: preferences.targetScore,
         },
+        weeklyAvailability: weeklyAvailabilitySlots,
         subtopics: subtopicData,
         triggerReason: triggerReason as TriggerReason,
         existingPlanVersion: latestPlan?.version,

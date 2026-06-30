@@ -15,28 +15,11 @@ const PreferencesSchema = z.object({
     return date >= tomorrow;
   }, "Exam date must be at least tomorrow"),
 
-  hoursPerDay: z.number()
-    .min(1, "Must study at least 1 hour per day")
-    .max(12, "Cannot exceed 12 hours per day"),
-
   targetScore: z.number()
     .min(145, "Minimum passing score is 145")
     .max(200, "Maximum GED score is 200"),
 
   studyGoal: z.enum(["PASS", "COLLEGE_READY", "COLLEGE_READY_CREDIT"]),
-
-  availability: z.object({
-    monday: z.boolean(),
-    tuesday: z.boolean(),
-    wednesday: z.boolean(),
-    thursday: z.boolean(),
-    friday: z.boolean(),
-    saturday: z.boolean(),
-    sunday: z.boolean(),
-  }).refine(
-    (a) => Object.values(a).some(Boolean),
-    "Must select at least one available study day"
-  ),
 });
 
 export async function POST(req: NextRequest) {
@@ -52,18 +35,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { targetExamDate, hoursPerDay, targetScore, studyGoal, availability } = parsed.data;
+  const { targetExamDate, targetScore, studyGoal } = parsed.data;
 
   const prefs = await db.userPreferences.upsert({
     where: { userId: authUser.id },
-    update: { targetExamDate: new Date(targetExamDate), hoursPerDay, targetScore, studyGoal, availability },
+    update: { targetExamDate: new Date(targetExamDate), targetScore, studyGoal },
     create: {
       userId: authUser.id,
       targetExamDate: new Date(targetExamDate),
-      hoursPerDay,
       targetScore,
       studyGoal,
-      availability,
     },
   });
 

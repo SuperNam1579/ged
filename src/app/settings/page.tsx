@@ -9,16 +9,6 @@ import Input from "@/components/ui/Input";
 import Spinner from "@/components/ui/Spinner";
 import { useAuth } from "@/lib/hooks/useAuth";
 
-const DAYS = [
-  { key: "monday", label: "Mon" },
-  { key: "tuesday", label: "Tue" },
-  { key: "wednesday", label: "Wed" },
-  { key: "thursday", label: "Thu" },
-  { key: "friday", label: "Fri" },
-  { key: "saturday", label: "Sat" },
-  { key: "sunday", label: "Sun" },
-];
-
 const GOALS = [
   { value: "PASS", label: "Pass", score: 145, desc: "Minimum passing score" },
   { value: "COLLEGE_READY", label: "College Ready", score: 165, desc: "College-level work" },
@@ -27,10 +17,8 @@ const GOALS = [
 
 interface Preferences {
   targetExamDate: string;
-  hoursPerDay: number;
   targetScore: number;
   studyGoal: string;
-  availability: Record<string, boolean>;
 }
 
 export default function SettingsPage() {
@@ -42,6 +30,7 @@ export default function SettingsPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [regenSuccess, setRegenSuccess] = useState(false);
+  const [regenError, setRegenError] = useState("");
   const [csrfToken, setCsrfToken] = useState("");
 
   useEffect(() => {
@@ -60,10 +49,8 @@ export default function SettingsPage() {
           const p = data.preferences;
           setPrefs({
             targetExamDate: p.targetExamDate?.split("T")[0] ?? "",
-            hoursPerDay: p.hoursPerDay,
             targetScore: p.targetScore,
             studyGoal: p.studyGoal,
-            availability: p.availability,
           });
         }
         setLoading(false);
@@ -80,7 +67,11 @@ export default function SettingsPage() {
       const res = await fetch("/api/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify(prefs),
+        body: JSON.stringify({
+          targetExamDate: prefs.targetExamDate,
+          targetScore: prefs.targetScore,
+          studyGoal: prefs.studyGoal,
+        }),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -99,22 +90,25 @@ export default function SettingsPage() {
   const handleRegenerate = async () => {
     setRegenerating(true);
     setRegenSuccess(false);
+    setRegenError("");
     try {
-      await fetch("/api/ga/generate", {
+      const res = await fetch("/api/ga/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({ triggerReason: "MANUAL_REQUEST" }),
       });
-      setRegenSuccess(true);
-      setTimeout(() => setRegenSuccess(false), 5000);
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setRegenError(d.error ?? "Failed to regenerate study plan. Please try again.");
+      } else {
+        setRegenSuccess(true);
+        setTimeout(() => setRegenSuccess(false), 5000);
+      }
+    } catch {
+      setRegenError("Network error. Please try again.");
     } finally {
       setRegenerating(false);
     }
-  };
-
-  const toggleDay = (key: string) => {
-    if (!prefs) return;
-    setPrefs({ ...prefs, availability: { ...prefs.availability, [key]: !prefs.availability[key] } });
   };
 
   if (authLoading || loading) {
@@ -177,26 +171,6 @@ export default function SettingsPage() {
                 onChange={(e) => setPrefs({ ...prefs, targetExamDate: e.target.value })}
               />
 
-              {/* Hours per day */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Study Hours per Day: <span className="text-blue-600 font-bold">{prefs.hoursPerDay}h</span>
-                </label>
-                <input
-                  type="range"
-                  min={1}
-                  max={8}
-                  step={0.5}
-                  value={prefs.hoursPerDay}
-                  onChange={(e) => setPrefs({ ...prefs, hoursPerDay: parseFloat(e.target.value) })}
-                  className="w-full accent-blue-600"
-                />
-                <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>1h</span>
-                  <span>8h</span>
-                </div>
-              </div>
-
               {/* Study goal */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Study Goal</label>
@@ -214,26 +188,6 @@ export default function SettingsPage() {
                       <p className="text-xs font-bold text-gray-800">{goal.label}</p>
                       <p className="text-xs text-blue-600 font-semibold">{goal.score}/200</p>
                       <p className="text-xs text-gray-400 mt-0.5">{goal.desc}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Availability */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Study Days</label>
-                <div className="flex gap-2 flex-wrap">
-                  {DAYS.map((day) => (
-                    <button
-                      key={day.key}
-                      onClick={() => toggleDay(day.key)}
-                      className={`w-12 h-10 rounded-lg text-sm font-semibold border-2 transition-all ${
-                        prefs.availability[day.key]
-                          ? "bg-blue-600 border-blue-600 text-white"
-                          : "bg-white border-gray-200 text-gray-400 hover:border-blue-200"
-                      }`}
-                    >
-                      {day.label}
                     </button>
                   ))}
                 </div>
@@ -259,7 +213,7 @@ export default function SettingsPage() {
           </Card>
         )}
 
-        {/* Danger zone / Plan regeneration */}
+        {/* Study Plan regeneration */}
         <Card className="border-orange-200">
           <CardHeader className="border-orange-100">
             <div className="flex items-center gap-2">
@@ -277,6 +231,9 @@ export default function SettingsPage() {
                 <Check className="w-4 h-4" />
                 New study plan generated! Visit your dashboard to see it.
               </div>
+            )}
+            {regenError && (
+              <p className="text-red-600 text-sm mb-4">{regenError}</p>
             )}
             <Button
               variant="secondary"

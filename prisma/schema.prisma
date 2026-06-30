@@ -33,14 +33,15 @@ model User {
   passwordResetToken   String? // SHA-256(rawToken)
   passwordResetExpires DateTime?
 
-  accounts           Account[]
-  preferences        UserPreferences?
-  proficiencies      UserSubtopicProficiency[]
-  assessmentAttempts UserAssessmentAttempt[]
-  questionResponses  UserQuestionResponse[]
-  studyPlans         StudyPlan[]
-  auditLogs          AuditLog[]
-  Session            Session[]
+  accounts             Account[]
+  preferences          UserPreferences?
+  proficiencies        UserSubtopicProficiency[]
+  assessmentAttempts   UserAssessmentAttempt[]
+  questionResponses    UserQuestionResponse[]
+  studyPlans           StudyPlan[]
+  weeklyAvailabilities WeeklyAvailability[]
+  auditLogs            AuditLog[]
+  Session              Session[]
 
   @@index([email])
   @@index([emailVerificationToken])
@@ -100,9 +101,7 @@ model UserPreferences {
   id             String   @id @default(cuid())
   userId         String   @unique
   targetExamDate DateTime
-  hoursPerDay    Float
   targetScore    Int      @default(145)
-  availability   Json // { mon: bool, tue: bool, wed: bool, thu: bool, fri: bool, sat: bool, sun: bool }
   studyGoal      String   @default("PASS") // PASS | COLLEGE_READY | COLLEGE_READY_CREDIT
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -257,21 +256,52 @@ model UserQuestionResponse {
   question Question              @relation(fields: [questionId], references: [id])
 }
 
+// ─── AVAILABILITY GROUP ────────────────────────────────────────────────────────
+
+model WeeklyAvailability {
+  id            String   @id @default(cuid())
+  userId        String
+  weekStartDate DateTime // วันจันทร์ต้นสัปดาห์ที่กำหนด (เป็นแค่วันที่ ไม่ใช่ datetime เต็ม)
+  createdAt     DateTime @default(now())
+
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slots     AvailabilitySlot[]
+  studyPlan StudyPlan?
+
+  @@unique([userId, weekStartDate])
+  @@index([userId, weekStartDate(sort: Desc)])
+}
+
+model AvailabilitySlot {
+  id                   String   @id @default(cuid())
+  weeklyAvailabilityId String
+  dayOfWeek            Int // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  startTime            String // "14:00" — เก็บเป็น text ง่ายสุด ไม่ยุ่ง timezone
+  endTime              String // "16:00"
+  createdAt            DateTime @default(now())
+
+  weeklyAvailability WeeklyAvailability @relation(fields: [weeklyAvailabilityId], references: [id], onDelete: Cascade)
+
+  @@index([weeklyAvailabilityId, dayOfWeek])
+}
+
 // ─── GA ENGINE GROUP ───────────────────────────────────────────────────────────
 
 model StudyPlan {
-  id            String        @id @default(cuid())
-  userId        String
-  version       Int           @default(1)
-  fitnessScore  Float
-  triggerReason TriggerReason
-  isActive      Boolean       @default(true)
-  generatedAt   DateTime      @default(now())
-  metadata      Json? // GA configuration used
+  id                   String        @id @default(cuid())
+  userId               String
+  version              Int           @default(1)
+  fitnessScore         Float
+  triggerReason        TriggerReason
+  isActive             Boolean       @default(true)
+  generatedAt          DateTime      @default(now())
+  metadata             Json? // GA configuration used
+  weeklyAvailabilityId String?       @unique // availability ที่ใช้ generate รอบนี้
 
-  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sessions StudySession[]
-  gaLogs   GaExecutionLog[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions           StudySession[]
+  gaLogs             GaExecutionLog[]
+  weeklyAvailability WeeklyAvailability? @relation(fields: [weeklyAvailabilityId], references: [id])
 
   @@index([userId, isActive, version(sort: Desc)])
 }

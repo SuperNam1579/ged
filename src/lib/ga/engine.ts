@@ -39,12 +39,16 @@ export async function runGeneticAlgorithm(
   config: Partial<GAConfig> = {}
 ): Promise<GAResult> {
   const cfg: GAConfig = { ...DEFAULT_CONFIG, ...config };
-  const { userId, proficiencies, preferences, subtopics, triggerReason } = input;
+  const { userId, proficiencies, preferences, weeklyAvailability, weekStartDate, weeklyAvailabilityId, subtopics, triggerReason } = input;
 
-  const availableDates = buildAvailableDates(
-    preferences.targetExamDate,
-    preferences.availability
-  );
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDate = weekStartDate ?? today;
+  const endDate = weekStartDate
+    ? new Date(weekStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+    : preferences.targetExamDate;
+
+  const availableDates = buildAvailableDates(weeklyAvailability, startDate, endDate);
 
   if (availableDates.length === 0) {
     throw new Error("No available study dates found. Check exam date and availability.");
@@ -53,8 +57,7 @@ export async function runGeneticAlgorithm(
   const fitnessCtx = {
     subtopics,
     proficiencies,
-    hoursPerDay: preferences.hoursPerDay,
-    availability: preferences.availability,
+    slots: weeklyAvailability,
     availableDates,
     subjectCodes: [...new Set(subtopics.map((s) => s.subjectCode))],
   };
@@ -65,7 +68,7 @@ export async function runGeneticAlgorithm(
     subtopics,
     proficiencies,
     availableDates,
-    preferences.hoursPerDay
+    weeklyAvailability
   ).map((chromosome) => {
     const breakdown = computeFitness(chromosome, fitnessCtx);
     return { chromosome, fitness: breakdown.total, fitnessBreakdown: breakdown };
@@ -148,6 +151,7 @@ export async function runGeneticAlgorithm(
           triggerReason,
           isActive: true,
           metadata: JSON.parse(JSON.stringify({ config: cfg, fitnessBreakdown: best.fitnessBreakdown })),
+          ...(weeklyAvailabilityId ? { weeklyAvailabilityId } : {}),
           sessions: {
             create: best.chromosome.map((gene) => ({
               subtopicId: gene.subtopicId,

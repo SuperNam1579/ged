@@ -2,48 +2,126 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Target, Calendar, Clock, CheckCircle } from "lucide-react";
+import {
+  BookOpen, Calculator, Globe, Atom,
+  Clock, Calendar, X, Plus, Check, CheckCircle,
+} from "lucide-react";
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+// ─── Subject definitions ────────────────────────────────────────────────────
 
-const GOALS = [
+// Order follows standard GED test sequence: RLA → Math → Science → Social Studies
+const SUBJECTS = [
   {
-    value: "PASS",
-    score: 145,
-    label: "Pass the GED",
-    description: "Minimum passing score. Get your GED diploma and open new opportunities.",
-    color: "border-green-500 bg-green-50",
-    badge: "bg-green-100 text-green-700",
+    code: "RLA",
+    name: "Reasoning Through Language Arts",
+    description: "Reading informational & literary texts, writing argument essays, grammar and language usage.",
+    Icon: BookOpen,
+    iconBg: "bg-green-500",
+    cardSelected: "border-green-400 bg-green-50",
+    checkSelected: "bg-green-500 border-green-500",
   },
   {
-    value: "COLLEGE_READY",
-    score: 165,
-    label: "College Ready",
-    description: "Demonstrate college readiness to skip remedial courses.",
-    color: "border-blue-500 bg-blue-50",
-    badge: "bg-blue-100 text-blue-700",
+    code: "MATH",
+    name: "Mathematical Reasoning",
+    description: "Number sense, algebraic reasoning, geometry, data analysis, and graphing functions.",
+    Icon: Calculator,
+    iconBg: "bg-blue-500",
+    cardSelected: "border-blue-400 bg-blue-50",
+    checkSelected: "bg-blue-500 border-blue-500",
   },
   {
-    value: "COLLEGE_READY_CREDIT",
-    score: 175,
-    label: "College Credit",
-    description: "Score high enough to earn college credit for completed courses.",
-    color: "border-purple-500 bg-purple-50",
-    badge: "bg-purple-100 text-purple-700",
+    code: "SCI",
+    name: "Science",
+    description: "Life science (biology, genetics, ecology), physical science (chemistry, physics), and earth & space science.",
+    Icon: Atom,
+    iconBg: "bg-purple-500",
+    cardSelected: "border-purple-400 bg-purple-50",
+    checkSelected: "bg-purple-500 border-purple-500",
+  },
+  {
+    code: "SS",
+    name: "Social Studies",
+    description: "US civics & government, American history, economics, and world geography.",
+    Icon: Globe,
+    iconBg: "bg-amber-500",
+    cardSelected: "border-amber-400 bg-amber-50",
+    checkSelected: "bg-amber-500 border-amber-500",
   },
 ];
 
-interface OnboardingData {
-  studyGoal: string;
-  targetScore: number;
-  examDate: string;
-  hoursPerDay: number;
-  availability: Record<string, boolean>;
+// ─── Schedule types ─────────────────────────────────────────────────────────
+
+type TimeSlot = { id: string; start: string; end: string };
+type DaySchedule = { enabled: boolean; slots: TimeSlot[] };
+type Schedule = Record<number, DaySchedule>; // keyed by dayOfWeek (0=Sun..6=Sat)
+
+// 30-min interval options in 24h format: 00:00 … 23:30
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 === 0 ? "00" : "30";
+  const value = `${String(h).padStart(2, "0")}:${m}`;
+  return { value, label: value };
+});
+
+const WEEK_DAYS = [
+  { label: "Mon", dow: 1 },
+  { label: "Tue", dow: 2 },
+  { label: "Wed", dow: 3 },
+  { label: "Thu", dow: 4 },
+  { label: "Fri", dow: 5 },
+  { label: "Sat", dow: 6 },
+  { label: "Sun", dow: 0 },
+];
+
+const DEFAULT_SCHEDULE: Schedule = {
+  1: { enabled: false, slots: [] },
+  2: { enabled: false, slots: [] },
+  3: { enabled: false, slots: [] },
+  4: { enabled: false, slots: [] },
+  5: { enabled: false, slots: [] },
+  6: { enabled: false, slots: [] },
+  0: { enabled: false, slots: [] },
+};
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function slotMins(slot: TimeSlot): number {
+  const [sh, sm] = slot.start.split(":").map(Number);
+  const [eh, em] = slot.end.split(":").map(Number);
+  return Math.max(0, eh * 60 + em - (sh * 60 + sm));
 }
+
+function weeklyStats(schedule: Schedule) {
+  let totalMins = 0;
+  let activeDays = 0;
+  for (const day of Object.values(schedule)) {
+    if (!day.enabled) continue;
+    const validSlots = day.slots.filter((s) => s.start < s.end);
+    if (validSlots.length === 0) continue;
+    activeDays++;
+    for (const s of validSlots) totalMins += slotMins(s);
+  }
+  return { totalHours: Math.round(totalMins / 6) / 10, activeDays };
+}
+
+function fmt12h(t: string): string {
+  const [h, m] = t.split(":").map(Number);
+  const period = h >= 12 ? "PM" : "AM";
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
+function thisMonday(): string {
+  const today = new Date();
+  const diff = today.getDay() === 0 ? 6 : today.getDay() - 1;
+  const mon = new Date(today);
+  mon.setDate(today.getDate() - diff);
+  return `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, "0")}-${String(mon.getDate()).padStart(2, "0")}`;
+}
+
+// ─── Main component ─────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -52,6 +130,10 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
   const [csrfToken, setCsrfToken] = useState("");
 
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [examDate, setExamDate] = useState("");
+  const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
+
   useEffect(() => {
     fetch("/api/csrf")
       .then((r) => r.json())
@@ -59,348 +141,508 @@ export default function OnboardingPage() {
       .catch(() => {});
   }, []);
 
-  const [data, setData] = useState<OnboardingData>({
-    studyGoal: "",
-    targetScore: 145,
-    examDate: "",
-    hoursPerDay: 2,
-    availability: {
-      monday: true,
-      tuesday: true,
-      wednesday: true,
-      thursday: true,
-      friday: true,
-      saturday: false,
-      sunday: false,
-    },
-  });
+  // ── Schedule mutations ──────────────────────────────────────────────────
 
-  const totalSteps = 4;
-  const progressValue = (step / totalSteps) * 100;
-
-  const canProceed = () => {
-    if (step === 1) return data.studyGoal !== "";
-    if (step === 2) return data.examDate !== "";
-    if (step === 3) return Object.values(data.availability).some(Boolean);
-    return true;
+  const toggleDay = (dow: number) => {
+    setSchedule((prev) => {
+      const day = prev[dow];
+      const enabled = !day.enabled;
+      const slots =
+        enabled && day.slots.length === 0
+          ? [{ id: `${dow}-${Date.now()}`, start: "00:00", end: "00:00" }]
+          : day.slots;
+      return { ...prev, [dow]: { enabled, slots } };
+    });
   };
 
-  const handleNext = () => {
-    if (step < totalSteps) {
-      setStep((s) => s + 1);
-    }
+  const addSlot = (dow: number) => {
+    setSchedule((prev) => {
+      const day = prev[dow];
+      const newSlot = { id: `${dow}-${Date.now()}`, start: "00:00", end: "00:00" };
+      return {
+        ...prev,
+        [dow]: { enabled: true, slots: [...day.slots, newSlot] },
+      };
+    });
   };
 
-  const handleBack = () => {
-    if (step > 1) setStep((s) => s - 1);
+  const removeSlot = (dow: number, id: string) => {
+    setSchedule((prev) => {
+      const slots = prev[dow].slots.filter((s) => s.id !== id);
+      return { ...prev, [dow]: { enabled: slots.length > 0, slots } };
+    });
   };
 
-  const toggleDay = (key: string) => {
-    setData((prev) => ({
+  const updateSlot = (dow: number, id: string, field: "start" | "end", value: string) => {
+    setSchedule((prev) => ({
       ...prev,
-      availability: {
-        ...prev.availability,
-        [key]: !prev.availability[key],
+      [dow]: {
+        ...prev[dow],
+        slots: prev[dow].slots.map((s) => (s.id === id ? { ...s, [field]: value } : s)),
       },
     }));
   };
 
+  // ── Validation ──────────────────────────────────────────────────────────
+
+  const canProceed = () => {
+    if (step === 1) return selectedSubjects.length > 0;
+    if (step === 2) {
+      if (!examDate) return false;
+      return Object.values(schedule).some((d) => d.enabled && d.slots.length > 0);
+    }
+    return true;
+  };
+
+  // ── Submit ──────────────────────────────────────────────────────────────
+
   const handleFinish = async () => {
     setError("");
     setLoading(true);
-
     try {
       const prefRes = await fetch("/api/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({
-          studyGoal: data.studyGoal,
-          targetScore: data.targetScore,
-          targetExamDate: data.examDate,
-          hoursPerDay: data.hoursPerDay,
-          availability: data.availability,
-        }),
+        body: JSON.stringify({ studyGoal: "PASS", targetScore: 145, targetExamDate: examDate }),
       });
+      if (!prefRes.ok) throw new Error((await prefRes.json()).error ?? "Failed to save preferences");
 
-      if (!prefRes.ok) {
-        const d = await prefRes.json();
-        throw new Error(d.error ?? "Failed to save preferences");
+      const slots: { dayOfWeek: number; startTime: string; endTime: string }[] = [];
+      for (const [dowStr, day] of Object.entries(schedule)) {
+        if (!day.enabled) continue;
+        for (const s of day.slots) {
+          if (slotMins(s) > 0) slots.push({ dayOfWeek: parseInt(dowStr), startTime: s.start, endTime: s.end });
+        }
       }
 
-      const gaRes = await fetch("/api/ga/generate", {
+      const availRes = await fetch("/api/user/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({ triggerReason: "INITIAL" }),
+        body: JSON.stringify({ weekStartDate: thisMonday(), slots }),
       });
+      if (!availRes.ok) throw new Error((await availRes.json()).error ?? "Failed to generate plan");
 
-      if (!gaRes.ok) {
-        const d = await gaRes.json();
-        throw new Error(d.error ?? "Failed to generate study plan");
-      }
-
-      router.push("/pre-assessment");
+      setStep(4);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
 
-  const selectedGoal = GOALS.find((g) => g.value === data.studyGoal);
+  const { totalHours, activeDays } = weeklyStats(schedule);
+  const daysUntilExam = examDate
+    ? Math.ceil((new Date(examDate).getTime() - Date.now()) / 86400000)
+    : 0;
+  const weeksUntilExam = Math.ceil(daysUntilExam / 7);
+
+  const minDate = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+
+  // ── Render ──────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <BookOpen className="w-4 h-4 text-white" />
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-lg font-bold text-gray-900">GED Prep</span>
           </div>
-          <span className="text-lg font-bold text-gray-900">GED Prep</span>
+          {step < 4 && (
+            <span className="text-sm text-gray-500">
+              Step {step} of 3 &middot; {Math.round((step / 3) * 100)}% complete
+            </span>
+          )}
+          {step === 4 && (
+            <span className="text-sm text-gray-500">Step 4 of 4 &middot; 100% complete</span>
+          )}
         </div>
       </header>
 
-      {/* Progress */}
-      <div className="bg-white border-b border-gray-100 px-6 py-3">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500 font-medium">Step {step} of {totalSteps}</span>
-            <span className="text-xs text-gray-500 font-medium">{Math.round(progressValue)}% complete</span>
+      {step < 4 && (
+        <div className="bg-white border-b border-gray-100 px-6 py-2">
+          <div className="max-w-3xl mx-auto">
+            <ProgressBar value={(step / 3) * 100} showPercent={false} variant="blue" size="sm" />
           </div>
-          <ProgressBar value={progressValue} showPercent={false} variant="blue" size="sm" />
         </div>
-      </div>
+      )}
 
       {/* Content */}
-      <div className="flex-1 flex items-start justify-center px-6 py-12">
-        <div className="w-full max-w-2xl">
-          {/* Step 1: Goal */}
+      <div className="flex-1 px-6 py-10">
+        <div className="max-w-3xl mx-auto">
+
+          {/* ── Step 1: Subjects ───────────────────────────────────────── */}
           {step === 1 && (
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Target className="w-6 h-6 text-blue-600" />
-                <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">Step 1</span>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">What's your target score?</h1>
-              <p className="text-gray-500 mb-8">Choose the score level you want to achieve. You can always adjust this later.</p>
+              <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">Step 1</p>
+              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Which subjects do you want to study?</h1>
+              <p className="text-gray-500 mb-8">Select one or more subjects. We&apos;ll personalize your study plan.</p>
 
-              <div className="space-y-4">
-                {GOALS.map((goal) => (
-                  <button
-                    key={goal.value}
-                    onClick={() => setData((prev) => ({ ...prev, studyGoal: goal.value, targetScore: goal.score }))}
-                    className={cn(
-                      "w-full text-left p-5 rounded-xl border-2 transition-all",
-                      data.studyGoal === goal.value
-                        ? goal.color
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-base font-semibold text-gray-900">{goal.label}</span>
-                      <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full", goal.badge)}>
-                        {goal.score}+ score
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500">{goal.description}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Exam Date & Hours */}
-          {step === 2 && (
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Calendar className="w-6 h-6 text-blue-600" />
-                <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">Step 2</span>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">When is your exam?</h1>
-              <p className="text-gray-500 mb-8">We'll use this to create a realistic study schedule that fits your timeline.</p>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Target exam date
-                  </label>
-                  <input
-                    type="date"
-                    value={data.examDate}
-                    min={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
-                    onChange={(e) => setData((prev) => ({ ...prev, examDate: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Hours available to study per day
-                    <span className="ml-2 text-blue-600 font-bold">{data.hoursPerDay}h</span>
-                  </label>
-                  <input
-                    type="range"
-                    min={1}
-                    max={8}
-                    step={0.5}
-                    value={data.hoursPerDay}
-                    onChange={(e) => setData((prev) => ({ ...prev, hoursPerDay: parseFloat(e.target.value) }))}
-                    className="w-full accent-blue-600"
-                  />
-                  <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>1 hour</span>
-                    <span>8 hours</span>
-                  </div>
-                  <div className="mt-3 bg-blue-50 rounded-lg px-4 py-3 text-sm text-blue-700">
-                    <Clock className="inline w-4 h-4 mr-1.5 -mt-0.5" />
-                    {data.hoursPerDay} hour{data.hoursPerDay !== 1 ? "s" : ""} per study day — your plan will be optimized to fit this schedule.
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Study Days */}
-          {step === 3 && (
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Calendar className="w-6 h-6 text-blue-600" />
-                <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">Step 3</span>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Which days can you study?</h1>
-              <p className="text-gray-500 mb-8">Select all the days you're typically available to study each week.</p>
-
-              <div className="grid grid-cols-7 gap-2">
-                {DAYS.map((day, i) => {
-                  const key = DAY_KEYS[i];
-                  const active = data.availability[key];
+              <div className="space-y-3">
+                {SUBJECTS.map(({ code, name, description, Icon, iconBg, cardSelected, checkSelected }) => {
+                  const selected = selectedSubjects.includes(code);
                   return (
                     <button
-                      key={key}
-                      onClick={() => toggleDay(key)}
+                      key={code}
+                      onClick={() =>
+                        setSelectedSubjects((prev) =>
+                          prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+                        )
+                      }
                       className={cn(
-                        "py-4 rounded-xl text-sm font-semibold transition-all border-2",
-                        active
-                          ? "bg-green-600 text-white border-green-600 shadow-sm"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                        "w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all",
+                        selected ? cardSelected : "border-gray-200 bg-white hover:border-gray-300"
                       )}
                     >
-                      {day}
+                      {/* Checkbox */}
+                      <div
+                        className={cn(
+                          "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
+                          selected ? checkSelected : "border-gray-300 bg-white"
+                        )}
+                      >
+                        {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                      </div>
+
+                      {/* Icon */}
+                      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", iconBg)}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+
+                      {/* Text */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-semibold text-gray-900">{name}</p>
+                        <p className="text-sm text-gray-500">{description}</p>
+                      </div>
                     </button>
                   );
                 })}
               </div>
-
-              <p className="mt-4 text-sm text-gray-500">
-                {Object.values(data.availability).filter(Boolean).length} day
-                {Object.values(data.availability).filter(Boolean).length !== 1 ? "s" : ""} selected per week
-              </p>
             </div>
           )}
 
-          {/* Step 4: Summary */}
-          {step === 4 && (
+          {/* ── Step 2: Exam date + Schedule ───────────────────────────── */}
+          {step === 2 && (
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-                <span className="text-sm font-medium text-green-600 uppercase tracking-wide">Step 4</span>
+              <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">Step 2</p>
+              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">When is your exam?</h1>
+              <p className="text-gray-500 mb-8">We&apos;ll use this to create a realistic study schedule that fits your timeline.</p>
+
+              {/* Exam date */}
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Target exam date
+                </label>
+                <input
+                  type="date"
+                  value={examDate}
+                  min={minDate}
+                  onChange={(e) => setExamDate(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">All set! Let's build your study plan</h1>
-              <p className="text-gray-500 mb-8">Here's a summary of your study preferences. Our AI will use these to generate your personalized plan.</p>
+
+              {/* Schedule builder */}
+              <div>
+                <p className="text-sm font-semibold text-gray-700 mb-0.5">Set your study schedule</p>
+                <p className="text-sm text-gray-500 mb-4">Add the days and times you&apos;re available to study.</p>
+
+                <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+                  {WEEK_DAYS.map(({ label, dow }) => {
+                    const day = schedule[dow];
+                    return (
+                      <div key={dow} className="px-4 py-3">
+                        <div className="flex items-start gap-3">
+                          {/* Day toggle */}
+                          <button
+                            onClick={() => toggleDay(dow)}
+                            className="mt-0.5 shrink-0"
+                            aria-label={`Toggle ${label}`}
+                          >
+                            <div className={cn(
+                              "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                              day.enabled ? "bg-green-500 border-green-500" : "border-gray-300"
+                            )}>
+                              {day.enabled && <div className="w-2 h-2 bg-white rounded-full" />}
+                            </div>
+                          </button>
+
+                          {/* Day label */}
+                          <span className={cn(
+                            "w-8 text-sm font-semibold shrink-0 mt-0.5",
+                            day.enabled ? "text-gray-900" : "text-gray-400"
+                          )}>
+                            {label}
+                          </span>
+
+                          {/* Slots */}
+                          <div className="flex-1 space-y-2">
+                            {day.enabled && day.slots.map((slot) => {
+                              const invalid = slot.start >= slot.end;
+                              const selectCls = (invalid: boolean) => cn(
+                                "px-2.5 py-1.5 rounded-lg border bg-white text-sm focus:outline-none focus:ring-2 cursor-pointer",
+                                invalid
+                                  ? "border-red-400 focus:ring-red-300 text-red-600"
+                                  : "border-gray-200 focus:ring-blue-400"
+                              );
+                              return (
+                              <div key={slot.id} className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                <select
+                                  value={slot.start}
+                                  onChange={(e) => updateSlot(dow, slot.id, "start", e.target.value)}
+                                  className={selectCls(invalid)}
+                                >
+                                  {TIME_OPTIONS.map((o) => (
+                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                  ))}
+                                </select>
+                                <span className="text-gray-400 text-sm">—</span>
+                                <select
+                                  value={slot.end}
+                                  onChange={(e) => updateSlot(dow, slot.id, "end", e.target.value)}
+                                  className={selectCls(invalid)}
+                                >
+                                  {TIME_OPTIONS.map((o) => (
+                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                  ))}
+                                </select>
+                                <button
+                                  onClick={() => removeSlot(dow, slot.id)}
+                                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                              {invalid && (
+                                <p className="text-xs text-red-500 pl-1">End time must be after start time</p>
+                              )}
+                              </div>
+                              );
+                            })}
+
+                            {/* Add time button */}
+                            <button
+                              onClick={() => addSlot(dow)}
+                              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Add time
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Weekly summary */}
+                <div className="mt-4 flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl px-4 py-3">
+                  <Clock className="w-5 h-5 text-green-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Your weekly study time</p>
+                    <p className="text-sm text-gray-500">
+                      {totalHours} hour{totalHours !== 1 ? "s" : ""} &middot; {activeDays} day{activeDays !== 1 ? "s" : ""} per week
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 3: Review ─────────────────────────────────────────── */}
+          {step === 3 && (
+            <div>
+              <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">Step 3</p>
+              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Review your plan.</h1>
+              <p className="text-gray-500 mb-8">Here&apos;s a summary of your study plan. You can go back to make changes.</p>
 
               {error && (
-                <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+                <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
                   {error}
                 </div>
               )}
 
-              <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 mb-8">
-                <div className="px-5 py-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-0.5">Study Goal</p>
-                    <p className="text-sm font-semibold text-gray-900">{selectedGoal?.label}</p>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {/* Left: Subjects */}
+                <div className="md:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-semibold text-gray-900">Subjects</p>
+                    <button onClick={() => setStep(1)} className="text-sm text-blue-600 hover:underline font-medium">Edit</button>
                   </div>
-                  <span className="text-sm font-bold text-blue-600">{data.targetScore}+ score</span>
-                </div>
-                <div className="px-5 py-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-0.5">Exam Date</p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {data.examDate ? new Date(data.examDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Not set"}
-                    </p>
-                  </div>
-                  <span className="text-sm font-bold text-blue-600">
-                    {data.examDate ? Math.ceil((new Date(data.examDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0} days away
-                  </span>
-                </div>
-                <div className="px-5 py-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-0.5">Daily Study Time</p>
-                    <p className="text-sm font-semibold text-gray-900">{data.hoursPerDay} hour{data.hoursPerDay !== 1 ? "s" : ""} per day</p>
-                  </div>
-                </div>
-                <div className="px-5 py-4">
-                  <p className="text-xs text-gray-500 mb-2">Study Days</p>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {DAYS.map((day, i) => {
-                      const key = DAY_KEYS[i];
-                      const active = data.availability[key];
+                  <p className="text-xs text-gray-500 mb-3">{selectedSubjects.length} of {SUBJECTS.length} selected</p>
+                  <div className="space-y-2.5">
+                    {SUBJECTS.map(({ code, name, Icon, iconBg }) => {
+                      const sel = selectedSubjects.includes(code);
                       return (
-                        <span
-                          key={key}
-                          className={cn(
-                            "px-2.5 py-1 rounded-md text-xs font-medium",
-                            active ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-400 line-through"
-                          )}
-                        >
-                          {day}
-                        </span>
+                        <div key={code} className="flex items-center gap-2.5">
+                          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", sel ? iconBg : "bg-gray-100")}>
+                            <Icon className={cn("w-4 h-4", sel ? "text-white" : "text-gray-400")} />
+                          </div>
+                          <span className={cn("text-sm flex-1", sel ? "text-gray-900 font-medium" : "text-gray-400")}>{name}</span>
+                          {sel && <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />}
+                        </div>
                       );
                     })}
                   </div>
                 </div>
-              </div>
 
-              <Button
-                size="lg"
-                onClick={handleFinish}
-                loading={loading}
-                className="w-full"
-              >
-                Generate My Study Plan
-              </Button>
-              <p className="mt-3 text-center text-xs text-gray-400">
-                This will take a few seconds while our AI builds your personalized plan.
-              </p>
+                {/* Right: Exam + Schedule + Estimate */}
+                <div className="md:col-span-3 space-y-4">
+                  {/* Exam Date */}
+                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        Exam Date
+                      </div>
+                      <button onClick={() => setStep(2)} className="text-sm text-blue-600 hover:underline font-medium">Edit</button>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">
+                      {examDate
+                        ? new Date(examDate + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+                        : "—"}
+                    </p>
+                    {daysUntilExam > 0 && (
+                      <p className="text-sm text-gray-500 mt-0.5">(In {daysUntilExam} days)</p>
+                    )}
+                  </div>
+
+                  {/* Study Schedule */}
+                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        Study Schedule
+                      </div>
+                      <button onClick={() => setStep(2)} className="text-sm text-blue-600 hover:underline font-medium">Edit</button>
+                    </div>
+                    <div className="space-y-1.5">
+                      {WEEK_DAYS.filter(({ dow }) => schedule[dow].enabled).map(({ label, dow }) => (
+                        <div key={dow} className="flex gap-3 text-sm">
+                          <span className="w-8 font-medium text-gray-700">{label}</span>
+                          <span className="text-gray-500">
+                            {schedule[dow].slots
+                              .filter((s) => slotMins(s) > 0)
+                              .map((s) => `${fmt12h(s.start)}–${fmt12h(s.end)}`)
+                              .join(", ")}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Estimate */}
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
+                    <p className="text-sm font-semibold text-amber-800 mb-1">Estimated Study Plan</p>
+                    <p className="text-sm text-amber-700">
+                      Based on your availability, we recommend a plan of about{" "}
+                      <strong>{totalHours} hours per week</strong> for{" "}
+                      <strong>{weeksUntilExam} weeks</strong>.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Navigation */}
-          {step < 4 && (
+          {/* ── Step 4: Complete ───────────────────────────────────────── */}
+          {step === 4 && (
+            <div className="flex flex-col items-center text-center py-8">
+              {/* Confetti-style decoration */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {[
+                    { color: "bg-yellow-400", x: "-left-8", y: "-top-4", size: "w-3 h-3" },
+                    { color: "bg-blue-400",   x: "left-0",  y: "-top-8", size: "w-2 h-2" },
+                    { color: "bg-green-400",  x: "left-8",  y: "-top-2", size: "w-2.5 h-2.5" },
+                    { color: "bg-purple-400", x: "-left-2", y: "top-8",  size: "w-2 h-2" },
+                    { color: "bg-pink-400",   x: "right-0", y: "-top-6", size: "w-2 h-2" },
+                    { color: "bg-teal-400",   x: "right-6", y: "top-4",  size: "w-3 h-3" },
+                    { color: "bg-orange-400", x: "-right-2",y: "-top-2", size: "w-2 h-2" },
+                  ].map((dot, i) => (
+                    <div
+                      key={i}
+                      className={cn("absolute rounded-full", dot.color, dot.size, dot.x, dot.y)}
+                    />
+                  ))}
+                </div>
+                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center relative z-10">
+                  <CheckCircle className="w-10 h-10 text-white" />
+                </div>
+              </div>
+
+              <h1 className="text-3xl font-extrabold text-gray-900 mb-2">You&apos;re all set!</h1>
+              <p className="text-gray-500 mb-10">Your personalized study plan is ready.</p>
+
+              {/* Summary card */}
+              <div className="w-full max-w-md bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 mb-6 text-left">
+                {[
+                  { label: "Subjects", value: `${selectedSubjects.length} selected` },
+                  {
+                    label: "Exam Date",
+                    value: examDate
+                      ? new Date(examDate + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+                      : "—",
+                  },
+                  { label: "Study Schedule", value: `${activeDays} days per week` },
+                  { label: "Total Study Time", value: `${totalHours} hours per week` },
+                  { label: "Estimated Duration", value: `${weeksUntilExam} weeks` },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center justify-between px-5 py-3.5">
+                    <span className="text-sm text-gray-500">{label}</span>
+                    <span className="text-sm font-semibold text-gray-900">{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tip */}
+              <div className="w-full max-w-md bg-amber-50 border border-amber-100 rounded-xl px-5 py-4 text-left mb-8">
+                <p className="text-sm font-semibold text-amber-800 mb-0.5">💡 Tip</p>
+                <p className="text-sm text-amber-700">
+                  Consistency is key! Stick to your schedule and you&apos;ll be ready to achieve your goal.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => router.push("/dashboard")}>
+                  Go to Dashboard
+                </Button>
+                <Button onClick={() => router.push("/pre-assessment")}>
+                  Start My Plan
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Navigation ─────────────────────────────────────────────── */}
+          {step < 3 && (
             <div className="flex items-center justify-between mt-10">
               <Button
                 variant="ghost"
-                onClick={handleBack}
-                disabled={step === 1}
+                onClick={() => setStep((s) => s - 1)}
                 className={step === 1 ? "invisible" : ""}
               >
                 Back
               </Button>
-              <Button
-                onClick={handleNext}
-                disabled={!canProceed()}
-              >
+              <Button onClick={() => setStep((s) => s + 1)} disabled={!canProceed()}>
                 Continue
               </Button>
             </div>
           )}
-          {step === 4 && (
-            <div className="mt-4">
-              <button
-                onClick={handleBack}
-                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                ← Go back
-              </button>
+
+          {step === 3 && (
+            <div className="flex items-center justify-between mt-10">
+              <Button variant="ghost" onClick={() => setStep(2)}>
+                Back
+              </Button>
+              <Button onClick={handleFinish} loading={loading} disabled={loading}>
+                Continue
+              </Button>
             </div>
           )}
         </div>
