@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { runGeneticAlgorithm } from "@/lib/ga/engine";
+import { recommendOrder } from "@/lib/ga/ordering";
 import type { TriggerReason } from "@/types";
 
 const SlotSchema = z.object({
@@ -100,6 +101,45 @@ export async function POST(req: NextRequest) {
     proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score])
   );
 
+  // ── Week budget: total available minutes from slots ──────────────────────
+  const totalSlotMins = slots.reduce((sum, s) => {
+    const [sh, sm] = s.startTime.split(":").map(Number);
+    const [eh, em] = s.endTime.split(":").map(Number);
+    return sum + Math.max(0, eh * 60 + em - (sh * 60 + sm));
+  }, 0);
+
+  // ── Exclude only COMPLETED subtopics (unfinished ones can be re-scheduled) ─
+  const completed = await db.studySession.findMany({
+    where: { studyPlan: { userId: authUser.id }, status: "COMPLETED" },
+    select: { subtopicId: true },
+    distinct: ["subtopicId"],
+  });
+  const completedIds = new Set(
+    completed.map((s: { subtopicId: string }) => s.subtopicId)
+  );
+  const remaining = subtopicData.filter((s) => !completedIds.has(s.id));
+
+  if (remaining.length === 0) {
+    return NextResponse.json({
+      message: "All subtopics have been scheduled. Great work!",
+      weeklyAvailabilityId: weeklyAvail.id,
+    });
+  }
+
+  // ── Pick subtopics that fit within this week's budget (95% of capacity) ─
+  const budget = Math.max(Math.floor(totalSlotMins * 0.95), 30);
+  const ordered = recommendOrder({ subtopics: remaining, proficiencies: profMap });
+  let cumMins = 0;
+  const weekSubtopics = ordered.filter((s) => {
+    if (cumMins + s.estimatedMinutes <= budget) {
+      cumMins += s.estimatedMinutes;
+      return true;
+    }
+    return false;
+  });
+  // Always schedule at least one subtopic even if it exceeds budget
+  if (weekSubtopics.length === 0) weekSubtopics.push(ordered[0]);
+
   const latestPlan = await db.studyPlan.findFirst({
     where: { userId: authUser.id },
     orderBy: { version: "desc" },
@@ -120,7 +160,7 @@ export async function POST(req: NextRequest) {
         weeklyAvailability: slots,
         weekStartDate: weekStart,
         weeklyAvailabilityId: weeklyAvail.id,
-        subtopics: subtopicData,
+        subtopics: weekSubtopics,
         triggerReason: "SCHEDULE_CHANGE" as TriggerReason,
         existingPlanVersion: latestPlan?.version,
       }),
