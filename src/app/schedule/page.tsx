@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { addDays, format, startOfWeek, isSameDay, parseISO } from "date-fns";
+import { addDays, format, startOfWeek, isSameDay, parseISO, differenceInCalendarWeeks } from "date-fns";
 import { ChevronLeft, ChevronRight, Clock, CheckCircle2, Circle, BookOpen } from "lucide-react";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
@@ -62,6 +62,15 @@ export default function SchedulePage() {
       .catch(() => setLoading(false));
   }, [authLoading]);
 
+  // Week number relative to the earliest session date in the plan
+  const planWeekStart = sessions.length > 0
+    ? startOfWeek(
+        parseISO(sessions.reduce((min, s) => s.scheduledDate < min ? s.scheduledDate : min, sessions[0].scheduledDate)),
+        { weekStartsOn: 1 }
+      )
+    : weekStart;
+  const weekNumber = differenceInCalendarWeeks(weekStart, planWeekStart, { weekStartsOn: 1 }) + 1;
+
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   const getSessionsForDay = (date: Date) =>
@@ -88,7 +97,14 @@ export default function SchedulePage() {
         {/* ── Header ─────────────────────────────────────────────────── */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Study Schedule</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">Study Schedule</h1>
+              {weekNumber >= 1 && (
+                <span className="px-2.5 py-0.5 rounded-full text-sm font-semibold bg-blue-100 text-blue-700">
+                  Week {weekNumber}
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray-500 mt-0.5">
               {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d, yyyy")}
             </p>
@@ -104,7 +120,7 @@ export default function SchedulePage() {
               onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
               className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
             >
-              Today
+              This week
             </button>
             <button
               onClick={() => setWeekStart((w) => addDays(w, 7))}
