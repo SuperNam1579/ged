@@ -35,11 +35,11 @@ interface GenerationLog {
 }
 
 export async function runGeneticAlgorithm(
-  input: GAInput,
+  input: GAInput & { appendToExisting?: boolean },
   config: Partial<GAConfig> = {}
 ): Promise<GAResult> {
   const cfg: GAConfig = { ...DEFAULT_CONFIG, ...config };
-  const { userId, proficiencies, preferences, weeklyAvailability, weekStartDate, weeklyAvailabilityId, subtopics, triggerReason } = input;
+  const { userId, proficiencies, preferences, weeklyAvailability, weekStartDate, weeklyAvailabilityId, subtopics, triggerReason, appendToExisting } = input;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -127,7 +127,36 @@ export async function runGeneticAlgorithm(
   // Select best individual
   const best = selectElites(population, 1)[0];
 
-  // Deactivate previous plans
+  // ── Append mode: add sessions to existing active plan (preserves past weeks) ─
+  if (appendToExisting) {
+    const activePlan = await db.studyPlan.findFirst({
+      where: { userId, isActive: true },
+      orderBy: { version: "desc" },
+    });
+
+    if (activePlan) {
+      await db.studySession.createMany({
+        data: best.chromosome.map((gene) => ({
+          studyPlanId: activePlan.id,
+          subtopicId: gene.subtopicId,
+          scheduledDate: new Date(gene.scheduledDate),
+          durationMins: gene.durationMins,
+          order: gene.order,
+          status: "PENDING" as const,
+        })),
+      });
+
+      return {
+        studyPlanId: activePlan.id,
+        bestFitness: best.fitness,
+        fitnessBreakdown: best.fitnessBreakdown,
+        generationLogs,
+      };
+    }
+    // Fall through to create a new plan if no active plan exists
+  }
+
+  // ── Replace mode: deactivate old plan, create fresh one ──────────────────
   const previousVersion = await db.studyPlan.findFirst({
     where: { userId, isActive: true },
     orderBy: { version: "desc" },
@@ -140,7 +169,7 @@ export async function runGeneticAlgorithm(
     async (tx) => {
       await tx.studyPlan.updateMany({
         where: { userId, isActive: true },
-        data: { isActive: false },
+        data: { isActive: false, weeklyAvailabilityId: null },
       });
 
       return tx.studyPlan.create({

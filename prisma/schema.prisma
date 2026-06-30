@@ -264,9 +264,9 @@ model WeeklyAvailability {
   weekStartDate DateTime // วันจันทร์ต้นสัปดาห์ที่กำหนด (เป็นแค่วันที่ ไม่ใช่ datetime เต็ม)
   createdAt     DateTime @default(now())
 
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slots     AvailabilitySlot[]
-  studyPlan StudyPlan?
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slots      AvailabilitySlot[]
+  studyPlans StudyPlan[]        @relation("WeeklyAvailabilityPlans")
 
   @@unique([userId, weekStartDate])
   @@index([userId, weekStartDate(sort: Desc)])
@@ -296,12 +296,12 @@ model StudyPlan {
   isActive             Boolean       @default(true)
   generatedAt          DateTime      @default(now())
   metadata             Json? // GA configuration used
-  weeklyAvailabilityId String?       @unique // availability ที่ใช้ generate รอบนี้
+  weeklyAvailabilityId String? // availability ที่ใช้ generate รอบนี้
 
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   sessions           StudySession[]
   gaLogs             GaExecutionLog[]
-  weeklyAvailability WeeklyAvailability? @relation(fields: [weeklyAvailabilityId], references: [id])
+  weeklyAvailability WeeklyAvailability? @relation("WeeklyAvailabilityPlans", fields: [weeklyAvailabilityId], references: [id])
 
   @@index([userId, isActive, version(sort: Desc)])
 }

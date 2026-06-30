@@ -18,6 +18,14 @@ const GenerateSchema = z.object({
   ]),
 });
 
+function calcSlotMins(slots: { startTime: string; endTime: string }[]): number {
+  return slots.reduce((sum, s) => {
+    const [sh, sm] = s.startTime.split(":").map(Number);
+    const [eh, em] = s.endTime.split(":").map(Number);
+    return sum + Math.max(0, eh * 60 + em - (sh * 60 + sm));
+  }, 0);
+}
+
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req);
   if (csrfError) return csrfError;
@@ -33,11 +41,9 @@ export async function POST(req: NextRequest) {
 
   const { triggerReason } = parsed.data;
 
-  // Load user preferences
   const preferences = await db.userPreferences.findUnique({
     where: { userId: authUser.id },
   });
-
   if (!preferences) {
     return NextResponse.json(
       { error: "User preferences not found. Complete onboarding first." },
@@ -45,40 +51,38 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Load latest weekly availability (most recent week the user entered)
-  const weeklyAvail = await db.weeklyAvailability.findFirst({
-    where: { userId: authUser.id },
-    orderBy: { weekStartDate: "desc" },
-    include: { slots: true },
+  // Current week's Monday in UTC (matches stored weekStartDate which is also UTC midnight)
+  const now = new Date();
+  const dayUTC = now.getUTCDay();
+  const daysBack = dayUTC === 0 ? 6 : dayUTC - 1;
+  const currentMonday = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysBack)
+  );
+
+  // All weeks from this week onwards that have availability set
+  const allWeeks = await db.weeklyAvailability.findMany({
+    where: { userId: authUser.id, weekStartDate: { gte: currentMonday } },
+    orderBy: { weekStartDate: "asc" },
+    include: { slots: { orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }] } },
   });
 
-  if (!weeklyAvail || weeklyAvail.slots.length === 0) {
+  const validWeeks = allWeeks.filter((w) => w.slots.length > 0);
+  if (validWeeks.length === 0) {
     return NextResponse.json(
       { error: "Weekly availability not set. Please enter your available time slots first." },
       { status: 400 }
     );
   }
 
-  const weeklyAvailabilitySlots = weeklyAvail.slots.map((s) => ({
-    dayOfWeek: s.dayOfWeek,
-    startTime: s.startTime,
-    endTime: s.endTime,
-  }));
-
-  // Load all subtopics with subject code
+  // Load all subtopics
   const subtopics = await db.subtopic.findMany({
     include: {
       prerequisites: { select: { prerequisiteId: true } },
       topic: {
-        include: {
-          category: {
-            include: { subject: { select: { code: true } } },
-          },
-        },
+        include: { category: { include: { subject: { select: { code: true } } } } },
       },
     },
   });
-
   const subtopicData = subtopics.map((s: typeof subtopics[0]) => ({
     id: s.id,
     name: s.name,
@@ -86,7 +90,7 @@ export async function POST(req: NextRequest) {
     subjectCode: s.topic.category.subject.code,
     estimatedMinutes: s.estimatedMinutes,
     difficultyLevel: s.difficultyLevel,
-    prerequisiteIds: s.prerequisites.map((p) => p.prerequisiteId), // Changed
+    prerequisiteIds: s.prerequisites.map((p) => p.prerequisiteId),
   }));
 
   // Load proficiency scores
@@ -94,100 +98,122 @@ export async function POST(req: NextRequest) {
     where: { userId: authUser.id },
     select: { subtopicId: true, score: true },
   });
+  const profMap = Object.fromEntries(
+    proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score])
+  );
 
-  const profMap = Object.fromEntries(proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score]));
-
-  // ── Limit subtopics to what fits in this week's time budget ─────────────
-  const totalSlotMins = weeklyAvailabilitySlots.reduce((sum, s) => {
-    const [sh, sm] = s.startTime.split(":").map(Number);
-    const [eh, em] = s.endTime.split(":").map(Number);
-    return sum + Math.max(0, eh * 60 + em - (sh * 60 + sm));
-  }, 0);
-
+  // Start exclusion set from already-completed subtopics only (fresh regeneration)
   const completed = await db.studySession.findMany({
     where: { studyPlan: { userId: authUser.id }, status: "COMPLETED" },
     select: { subtopicId: true },
     distinct: ["subtopicId"],
   });
-  const completedIds = new Set(
+  const assignedIds = new Set<string>(
     completed.map((s: { subtopicId: string }) => s.subtopicId)
   );
-  const remaining = subtopicData.filter((s) => !completedIds.has(s.id));
 
-  if (remaining.length === 0) {
+  if (assignedIds.size >= subtopicData.length) {
     return NextResponse.json({ message: "All subtopics have been scheduled. Great work!" });
   }
 
-  const budget = Math.max(Math.floor(totalSlotMins * 0.95), 30);
-  const ordered = recommendOrder({ subtopics: remaining, proficiencies: profMap });
-  let cumMins = 0;
-  const weekSubtopics = ordered.filter((s) => {
-    if (cumMins + s.estimatedMinutes <= budget) {
-      cumMins += s.estimatedMinutes;
-      return true;
-    }
-    return false;
-  });
-  if (weekSubtopics.length === 0) weekSubtopics.push(ordered[0]);
-  // ─────────────────────────────────────────────────────────────────────────
-
-  // Current plan version
   const latestPlan = await db.studyPlan.findFirst({
     where: { userId: authUser.id },
     orderBy: { version: "desc" },
     select: { version: true },
   });
 
-  const GA_TIMEOUT_MS = 25000;
+  // 20s per week — allows up to 3 weeks before hitting a 60s function limit
+  const GA_TIMEOUT_MS = 20000;
 
-  try {
-    const result = await Promise.race([
-      runGeneticAlgorithm({
-        userId: authUser.id,
-        proficiencies: profMap,
-        preferences: {
-          targetExamDate: preferences.targetExamDate,
-          targetScore: preferences.targetScore,
-        },
-        weeklyAvailability: weeklyAvailabilitySlots,
-        subtopics: weekSubtopics,
-        triggerReason: triggerReason as TriggerReason,
-        existingPlanVersion: latestPlan?.version,
-      }),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Study plan generation timed out. Please try again.")),
-          GA_TIMEOUT_MS
-        )
-      ),
-    ]);
+  let lastResult: { studyPlanId: string; bestFitness: number; fitnessBreakdown: object; generationLogs: unknown[] } | null = null;
 
-    const ctx = extractRequestContext(req);
-    audit({
-      action: "STUDY_PLAN_GENERATED",
-      userId: authUser.id,
-      entityType: "studyPlan",
-      entityId: result.studyPlanId,
-      ipAddress: ctx.ipAddress,
-      userAgent: ctx.userAgent,
-      metadata: {
-        triggerReason,
-        fitnessScore: result.bestFitness,
-        generationsRun: result.generationLogs.length,
-      },
-      success: true,
+  for (let i = 0; i < validWeeks.length; i++) {
+    const week = validWeeks[i];
+    const weekSlots = week.slots.map((s) => ({
+      dayOfWeek: s.dayOfWeek,
+      startTime: s.startTime,
+      endTime: s.endTime,
+    }));
+
+    const remaining = subtopicData.filter((s) => !assignedIds.has(s.id));
+    if (remaining.length === 0) break;
+
+    const budget = Math.max(Math.floor(calcSlotMins(weekSlots) * 0.95), 30);
+    const ordered = recommendOrder({ subtopics: remaining, proficiencies: profMap });
+    let cumMins = 0;
+    const weekSubtopics = ordered.filter((s) => {
+      if (cumMins + s.estimatedMinutes <= budget) {
+        cumMins += s.estimatedMinutes;
+        return true;
+      }
+      return false;
     });
+    if (weekSubtopics.length === 0) weekSubtopics.push(ordered[0]);
 
-    return NextResponse.json({
-      success: true,
-      studyPlanId: result.studyPlanId,
-      fitnessScore: result.bestFitness,
-      fitnessBreakdown: result.fitnessBreakdown,
-      generationsRun: result.generationLogs.length,
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "GA execution failed";
-    console.error("GA error:", err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Reserve these subtopics for this week so next weeks don't re-use them
+    weekSubtopics.forEach((s) => assignedIds.add(s.id));
+
+    try {
+      const result = await Promise.race([
+        runGeneticAlgorithm({
+          userId: authUser.id,
+          proficiencies: profMap,
+          preferences: {
+            targetExamDate: preferences.targetExamDate,
+            targetScore: preferences.targetScore,
+          },
+          weeklyAvailability: weekSlots,
+          weekStartDate: week.weekStartDate,
+          weeklyAvailabilityId: week.id,
+          subtopics: weekSubtopics,
+          triggerReason: triggerReason as TriggerReason,
+          existingPlanVersion: latestPlan?.version,
+          // Week 0: replace mode (deactivates old plan, creates fresh one)
+          // Week 1+: append mode (adds sessions to the new plan)
+          appendToExisting: i > 0,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`Week ${i + 1} generation timed out.`)),
+            GA_TIMEOUT_MS
+          )
+        ),
+      ]);
+      lastResult = result;
+    } catch (err) {
+      console.error(`GA failed for week starting ${week.weekStartDate.toISOString()}:`, err);
+      // If week 0 fails, abort entirely; subsequent weeks are best-effort
+      if (i === 0) {
+        const message = err instanceof Error ? err.message : "GA execution failed";
+        return NextResponse.json({ error: message }, { status: 500 });
+      }
+    }
   }
+
+  if (!lastResult) {
+    return NextResponse.json({ error: "Failed to generate study plan." }, { status: 500 });
+  }
+
+  const ctx = extractRequestContext(req);
+  audit({
+    action: "STUDY_PLAN_GENERATED",
+    userId: authUser.id,
+    entityType: "studyPlan",
+    entityId: lastResult.studyPlanId,
+    ipAddress: ctx.ipAddress,
+    userAgent: ctx.userAgent,
+    metadata: {
+      triggerReason,
+      fitnessScore: lastResult.bestFitness,
+      weeksGenerated: validWeeks.length,
+    },
+    success: true,
+  });
+
+  return NextResponse.json({
+    success: true,
+    studyPlanId: lastResult.studyPlanId,
+    fitnessScore: lastResult.bestFitness,
+    weeksGenerated: validWeeks.length,
+  });
 }

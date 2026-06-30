@@ -108,16 +108,17 @@ export async function POST(req: NextRequest) {
     return sum + Math.max(0, eh * 60 + em - (sh * 60 + sm));
   }, 0);
 
-  // ── Exclude only COMPLETED subtopics (unfinished ones can be re-scheduled) ─
-  const completed = await db.studySession.findMany({
-    where: { studyPlan: { userId: authUser.id }, status: "COMPLETED" },
+  // ── Exclude subtopics already in the active plan (completed OR still pending) ─
+  // This prevents the same topic from appearing twice across weeks.
+  const alreadyInPlan = await db.studySession.findMany({
+    where: { studyPlan: { userId: authUser.id, isActive: true } },
     select: { subtopicId: true },
     distinct: ["subtopicId"],
   });
-  const completedIds = new Set(
-    completed.map((s: { subtopicId: string }) => s.subtopicId)
+  const alreadyIds = new Set(
+    alreadyInPlan.map((s: { subtopicId: string }) => s.subtopicId)
   );
-  const remaining = subtopicData.filter((s) => !completedIds.has(s.id));
+  const remaining = subtopicData.filter((s) => !alreadyIds.has(s.id));
 
   if (remaining.length === 0) {
     return NextResponse.json({
@@ -163,6 +164,7 @@ export async function POST(req: NextRequest) {
         subtopics: weekSubtopics,
         triggerReason: "SCHEDULE_CHANGE" as TriggerReason,
         existingPlanVersion: latestPlan?.version,
+        appendToExisting: true,
       }),
       new Promise<never>((_, reject) =>
         setTimeout(
