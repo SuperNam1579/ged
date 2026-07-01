@@ -29,8 +29,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`h-full ${fredoka.variable} ${nunitoSans.variable}`}>
-      <body className="min-h-full font-[family-name:var(--font-din-round)]">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`h-full bg-background ${fredoka.variable} ${nunitoSans.variable}`}
+    >
+      <body className="min-h-full bg-background text-foreground font-[family-name:var(--font-din-round)]">
         <Providers>{children}</Providers>
       </body>
     </html>

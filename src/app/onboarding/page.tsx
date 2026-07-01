@@ -28,18 +28,18 @@ const SUBJECTS = [
     name: "Mathematical Reasoning",
     description: "Number sense, algebraic reasoning, geometry, data analysis, and graphing functions.",
     Icon: Calculator,
-    iconBg: "bg-blue-500",
-    cardSelected: "border-blue-400 bg-blue-50",
-    checkSelected: "bg-blue-500 border-blue-500",
+    iconBg: "bg-primary",
+    cardSelected: "border-primary bg-primary-light",
+    checkSelected: "bg-primary border-primary",
   },
   {
     code: "SCI",
     name: "Science",
     description: "Life science (biology, genetics, ecology), physical science (chemistry, physics), and earth & space science.",
     Icon: Atom,
-    iconBg: "bg-purple-500",
-    cardSelected: "border-purple-400 bg-purple-50",
-    checkSelected: "bg-purple-500 border-purple-500",
+    iconBg: "bg-accent",
+    cardSelected: "border-accent bg-primary-light",
+    checkSelected: "bg-accent border-accent",
   },
   {
     code: "SS",
@@ -241,29 +241,29 @@ export default function OnboardingPage() {
   // ── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4">
+      <header className="bg-card border-b border-border px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
               <BookOpen className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">GED Prep</span>
+            <span className="text-lg font-bold text-foreground">GED Prep</span>
           </div>
           {step < 4 && (
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-muted-foreground">
               Step {step} of 3 &middot; {Math.round((step / 3) * 100)}% complete
             </span>
           )}
           {step === 4 && (
-            <span className="text-sm text-gray-500">Step 4 of 4 &middot; 100% complete</span>
+            <span className="text-sm text-muted-foreground">Step 4 of 4 &middot; 100% complete</span>
           )}
         </div>
       </header>
 
       {step < 4 && (
-        <div className="bg-white border-b border-gray-100 px-6 py-2">
+        <div className="bg-card border-b border-border px-6 py-2">
           <div className="max-w-3xl mx-auto">
             <ProgressBar value={(step / 3) * 100} showPercent={false} variant="blue" size="sm" />
           </div>
@@ -277,9 +277,9 @@ export default function OnboardingPage() {
           {/* ── Step 1: Subjects ───────────────────────────────────────── */}
           {step === 1 && (
             <div>
-              <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">Step 1</p>
-              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Which subjects do you want to study?</h1>
-              <p className="text-gray-500 mb-8">Select one or more subjects. We&apos;ll personalize your study plan.</p>
+              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">Step 1</p>
+              <h1 className="text-3xl font-extrabold text-foreground mb-1">Which subjects do you want to study?</h1>
+              <p className="text-muted-foreground mb-8">Select one or more subjects. We&apos;ll personalize your study plan.</p>
 
               <div className="space-y-3">
                 {SUBJECTS.map(({ code, name, description, Icon, iconBg, cardSelected, checkSelected }) => {
@@ -294,14 +294,14 @@ export default function OnboardingPage() {
                       }
                       className={cn(
                         "w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all",
-                        selected ? cardSelected : "border-gray-200 bg-white hover:border-gray-300"
+                        selected ? cardSelected : "border-border bg-card hover:border-border"
                       )}
                     >
                       {/* Checkbox */}
                       <div
                         className={cn(
                           "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
-                          selected ? checkSelected : "border-gray-300 bg-white"
+                          selected ? checkSelected : "border-border bg-card"
                         )}
                       >
                         {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
@@ -314,8 +314,8 @@ export default function OnboardingPage() {
 
                       {/* Text */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-base font-semibold text-gray-900">{name}</p>
-                        <p className="text-sm text-gray-500">{description}</p>
+                        <p className="text-base font-semibold text-foreground">{name}</p>
+                        <p className="text-sm text-muted-foreground">{description}</p>
                       </div>
                     </button>
                   );
@@ -327,13 +327,13 @@ export default function OnboardingPage() {
           {/* ── Step 2: Exam date + Schedule ───────────────────────────── */}
           {step === 2 && (
             <div>
-              <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">Step 2</p>
-              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">When is your exam?</h1>
-              <p className="text-gray-500 mb-8">We&apos;ll use this to create a realistic study schedule that fits your timeline.</p>
+              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">Step 2</p>
+              <h1 className="text-3xl font-extrabold text-foreground mb-1">When is your exam?</h1>
+              <p className="text-muted-foreground mb-8">We&apos;ll use this to create a realistic study schedule that fits your timeline.</p>
 
               {/* Exam date */}
               <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-foreground mb-1.5">
                   Target exam date
                 </label>
                 <input
@@ -341,16 +341,16 @@ export default function OnboardingPage() {
                   value={examDate}
                   min={minDate}
                   onChange={(e) => setExamDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
 
               {/* Schedule builder */}
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-0.5">Set your study schedule</p>
-                <p className="text-sm text-gray-500 mb-4">Add the days and times you&apos;re available to study.</p>
+                <p className="text-sm font-semibold text-foreground mb-0.5">Set your study schedule</p>
+                <p className="text-sm text-muted-foreground mb-4">Add the days and times you&apos;re available to study.</p>
 
-                <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+                <div className="bg-card rounded-xl border border-border divide-y divide-border">
                   {WEEK_DAYS.map(({ label, dow }) => {
                     const day = schedule[dow];
                     return (
@@ -364,16 +364,16 @@ export default function OnboardingPage() {
                           >
                             <div className={cn(
                               "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                              day.enabled ? "bg-green-500 border-green-500" : "border-gray-300"
+                              day.enabled ? "bg-green-500 border-green-500" : "border-border"
                             )}>
-                              {day.enabled && <div className="w-2 h-2 bg-white rounded-full" />}
+                              {day.enabled && <div className="w-2 h-2 bg-card rounded-full" />}
                             </div>
                           </button>
 
                           {/* Day label */}
                           <span className={cn(
                             "w-8 text-sm font-semibold shrink-0 mt-0.5",
-                            day.enabled ? "text-gray-900" : "text-gray-400"
+                            day.enabled ? "text-foreground" : "text-muted-foreground"
                           )}>
                             {label}
                           </span>
@@ -383,10 +383,10 @@ export default function OnboardingPage() {
                             {day.enabled && day.slots.map((slot) => {
                               const invalid = slot.start >= slot.end;
                               const selectCls = (invalid: boolean) => cn(
-                                "px-2.5 py-1.5 rounded-lg border bg-white text-sm focus:outline-none focus:ring-2 cursor-pointer",
+                                "px-2.5 py-1.5 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 cursor-pointer",
                                 invalid
                                   ? "border-red-400 focus:ring-red-300 text-red-600"
-                                  : "border-gray-200 focus:ring-blue-400"
+                                  : "border-border focus:ring-ring"
                               );
                               return (
                               <div key={slot.id} className="flex flex-col gap-0.5">
@@ -400,7 +400,7 @@ export default function OnboardingPage() {
                                     <option key={o.value} value={o.value}>{o.label}</option>
                                   ))}
                                 </select>
-                                <span className="text-gray-400 text-sm">—</span>
+                                <span className="text-muted-foreground text-sm">—</span>
                                 <select
                                   value={slot.end}
                                   onChange={(e) => updateSlot(dow, slot.id, "end", e.target.value)}
@@ -412,7 +412,7 @@ export default function OnboardingPage() {
                                 </select>
                                 <button
                                   onClick={() => removeSlot(dow, slot.id)}
-                                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                                  className="p-1 text-muted-foreground hover:text-muted-foreground transition-colors"
                                 >
                                   <X className="w-4 h-4" />
                                 </button>
@@ -427,7 +427,7 @@ export default function OnboardingPage() {
                             {/* Add time button */}
                             <button
                               onClick={() => addSlot(dow)}
-                              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                              className="flex items-center gap-1 text-sm text-primary hover:text-primary font-medium transition-colors"
                             >
                               <Plus className="w-4 h-4" />
                               Add time
@@ -443,8 +443,8 @@ export default function OnboardingPage() {
                 <div className="mt-4 flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl px-4 py-3">
                   <Clock className="w-5 h-5 text-green-600 shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">Your weekly study time</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm font-semibold text-foreground">Your weekly study time</p>
+                    <p className="text-sm text-muted-foreground">
                       {totalHours} hour{totalHours !== 1 ? "s" : ""} &middot; {activeDays} day{activeDays !== 1 ? "s" : ""} per week
                     </p>
                   </div>
@@ -456,9 +456,9 @@ export default function OnboardingPage() {
           {/* ── Step 3: Review ─────────────────────────────────────────── */}
           {step === 3 && (
             <div>
-              <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">Step 3</p>
-              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Review your plan.</h1>
-              <p className="text-gray-500 mb-8">Here&apos;s a summary of your study plan. You can go back to make changes.</p>
+              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">Step 3</p>
+              <h1 className="text-3xl font-extrabold text-foreground mb-1">Review your plan.</h1>
+              <p className="text-muted-foreground mb-8">Here&apos;s a summary of your study plan. You can go back to make changes.</p>
 
               {error && (
                 <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
@@ -468,21 +468,21 @@ export default function OnboardingPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Left: Subjects */}
-                <div className="md:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
+                <div className="md:col-span-2 bg-card rounded-xl border border-border p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-semibold text-gray-900">Subjects</p>
-                    <button onClick={() => setStep(1)} className="text-sm text-blue-600 hover:underline font-medium">Edit</button>
+                    <p className="text-sm font-semibold text-foreground">Subjects</p>
+                    <button onClick={() => setStep(1)} className="text-sm text-primary hover:underline font-medium">Edit</button>
                   </div>
-                  <p className="text-xs text-gray-500 mb-3">{selectedSubjects.length} of {SUBJECTS.length} selected</p>
+                  <p className="text-xs text-muted-foreground mb-3">{selectedSubjects.length} of {SUBJECTS.length} selected</p>
                   <div className="space-y-2.5">
                     {SUBJECTS.map(({ code, name, Icon, iconBg }) => {
                       const sel = selectedSubjects.includes(code);
                       return (
                         <div key={code} className="flex items-center gap-2.5">
-                          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", sel ? iconBg : "bg-gray-100")}>
-                            <Icon className={cn("w-4 h-4", sel ? "text-white" : "text-gray-400")} />
+                          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", sel ? iconBg : "bg-muted")}>
+                            <Icon className={cn("w-4 h-4", sel ? "text-white" : "text-muted-foreground")} />
                           </div>
-                          <span className={cn("text-sm flex-1", sel ? "text-gray-900 font-medium" : "text-gray-400")}>{name}</span>
+                          <span className={cn("text-sm flex-1", sel ? "text-foreground font-medium" : "text-muted-foreground")}>{name}</span>
                           {sel && <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />}
                         </div>
                       );
@@ -493,38 +493,38 @@ export default function OnboardingPage() {
                 {/* Right: Exam + Schedule + Estimate */}
                 <div className="md:col-span-3 space-y-4">
                   {/* Exam Date */}
-                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                  <div className="bg-card rounded-xl border border-border p-5">
                     <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                        <Calendar className="w-4 h-4 text-gray-400" />
+                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
                         Exam Date
                       </div>
-                      <button onClick={() => setStep(2)} className="text-sm text-blue-600 hover:underline font-medium">Edit</button>
+                      <button onClick={() => setStep(2)} className="text-sm text-primary hover:underline font-medium">Edit</button>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">
+                    <p className="text-2xl font-bold text-foreground mt-2">
                       {examDate
                         ? new Date(examDate + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
                         : "—"}
                     </p>
                     {daysUntilExam > 0 && (
-                      <p className="text-sm text-gray-500 mt-0.5">(In {daysUntilExam} days)</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">(In {daysUntilExam} days)</p>
                     )}
                   </div>
 
                   {/* Study Schedule */}
-                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                  <div className="bg-card rounded-xl border border-border p-5">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                        <Clock className="w-4 h-4 text-gray-400" />
+                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
                         Study Schedule
                       </div>
-                      <button onClick={() => setStep(2)} className="text-sm text-blue-600 hover:underline font-medium">Edit</button>
+                      <button onClick={() => setStep(2)} className="text-sm text-primary hover:underline font-medium">Edit</button>
                     </div>
                     <div className="space-y-1.5">
                       {WEEK_DAYS.filter(({ dow }) => schedule[dow].enabled).map(({ label, dow }) => (
                         <div key={dow} className="flex gap-3 text-sm">
-                          <span className="w-8 font-medium text-gray-700">{label}</span>
-                          <span className="text-gray-500">
+                          <span className="w-8 font-medium text-foreground">{label}</span>
+                          <span className="text-muted-foreground">
                             {schedule[dow].slots
                               .filter((s) => slotMins(s) > 0)
                               .map((s) => `${fmt12h(s.start)}–${fmt12h(s.end)}`)
@@ -557,9 +557,9 @@ export default function OnboardingPage() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   {[
                     { color: "bg-yellow-400", x: "-left-8", y: "-top-4", size: "w-3 h-3" },
-                    { color: "bg-blue-400",   x: "left-0",  y: "-top-8", size: "w-2 h-2" },
+                    { color: "bg-primary",   x: "left-0",  y: "-top-8", size: "w-2 h-2" },
                     { color: "bg-green-400",  x: "left-8",  y: "-top-2", size: "w-2.5 h-2.5" },
-                    { color: "bg-purple-400", x: "-left-2", y: "top-8",  size: "w-2 h-2" },
+                    { color: "bg-accent", x: "-left-2", y: "top-8",  size: "w-2 h-2" },
                     { color: "bg-pink-400",   x: "right-0", y: "-top-6", size: "w-2 h-2" },
                     { color: "bg-teal-400",   x: "right-6", y: "top-4",  size: "w-3 h-3" },
                     { color: "bg-orange-400", x: "-right-2",y: "-top-2", size: "w-2 h-2" },
@@ -575,11 +575,11 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              <h1 className="text-3xl font-extrabold text-gray-900 mb-2">You&apos;re all set!</h1>
-              <p className="text-gray-500 mb-10">Your personalized study plan is ready.</p>
+              <h1 className="text-3xl font-extrabold text-foreground mb-2">You&apos;re all set!</h1>
+              <p className="text-muted-foreground mb-10">Your personalized study plan is ready.</p>
 
               {/* Summary card */}
-              <div className="w-full max-w-md bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 mb-6 text-left">
+              <div className="w-full max-w-md bg-card rounded-xl border border-border divide-y divide-border mb-6 text-left">
                 {[
                   { label: "Subjects", value: `${selectedSubjects.length} selected` },
                   {
@@ -593,8 +593,8 @@ export default function OnboardingPage() {
                   { label: "Estimated Duration", value: `${weeksUntilExam} weeks` },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between px-5 py-3.5">
-                    <span className="text-sm text-gray-500">{label}</span>
-                    <span className="text-sm font-semibold text-gray-900">{value}</span>
+                    <span className="text-sm text-muted-foreground">{label}</span>
+                    <span className="text-sm font-semibold text-foreground">{value}</span>
                   </div>
                 ))}
               </div>

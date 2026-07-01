@@ -13,7 +13,7 @@ export default function DifficultyDots({ level, className }: DifficultyDotsProps
           key={i}
           className={cn(
             "w-1.5 h-1.5 rounded-full",
-            i < level ? "bg-blue-500" : "bg-gray-200"
+            i < level ? "bg-primary" : "bg-muted"
           )}
         />
       ))}

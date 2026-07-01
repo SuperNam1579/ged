@@ -7,10 +7,10 @@ interface SubjectBadgeProps {
 }
 
 const subjectStyles: Record<string, string> = {
-  MATH: "bg-blue-100 text-blue-700",
-  RLA: "bg-green-100 text-green-700",
-  SS: "bg-orange-100 text-orange-700",
-  SCI: "bg-purple-100 text-purple-700",
+  MATH: "bg-primary/15 text-primary",
+  RLA: "bg-success/15 text-success",
+  SS: "bg-warning/15 text-warning",
+  SCI: "bg-accent/15 text-accent",
 };
 
 const subjectNames: Record<string, string> = {
@@ -21,7 +21,7 @@ const subjectNames: Record<string, string> = {
 };
 
 export default function SubjectBadge({ code, name, className }: SubjectBadgeProps) {
-  const style = subjectStyles[code] ?? "bg-gray-100 text-gray-700";
+  const style = subjectStyles[code] ?? "bg-muted text-muted-foreground";
   const label = name ?? subjectNames[code] ?? code;
 
   return (

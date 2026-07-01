@@ -17,17 +17,17 @@ interface ProficiencyBarChartProps {
 }
 
 function getBarColor(score: number): string {
-  if (score >= 80) return "#10b981";
-  if (score >= 60) return "#2563eb";
-  if (score >= 40) return "#f59e0b";
-  return "#ef4444";
+  if (score >= 80) return "var(--success)";
+  if (score >= 60) return "var(--primary)";
+  if (score >= 40) return "var(--warning)";
+  return "var(--danger)";
 }
 
 export default function ProficiencyBarChart({ data, height = 200 }: ProficiencyBarChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 40 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" />
         <XAxis
           dataKey="name"
           tick={{ fontSize: 10 }}

@@ -33,7 +33,7 @@ export default function FitnessConvergenceChart({ data }: FitnessConvergenceChar
   return (
     <ResponsiveContainer width="100%" height={240}>
       <LineChart data={formatted} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" />
         <XAxis dataKey="gen" tick={{ fontSize: 12 }} label={{ value: "Generation", position: "insideBottom", offset: -2 }} />
         <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} unit="%" />
         <Tooltip
@@ -41,9 +41,9 @@ export default function FitnessConvergenceChart({ data }: FitnessConvergenceChar
           labelFormatter={(gen) => `Generation ${gen}`}
         />
         <Legend />
-        <Line type="monotone" dataKey="Best" stroke="#2563eb" strokeWidth={2} dot={false} />
-        <Line type="monotone" dataKey="Average" stroke="#10b981" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
-        <Line type="monotone" dataKey="Worst" stroke="#f59e0b" strokeWidth={1} dot={false} strokeDasharray="2 2" />
+        <Line type="monotone" dataKey="Best" stroke="var(--primary)" strokeWidth={2} dot={false} />
+        <Line type="monotone" dataKey="Average" stroke="var(--success)" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
+        <Line type="monotone" dataKey="Worst" stroke="var(--warning)" strokeWidth={1} dot={false} strokeDasharray="2 2" />
       </LineChart>
     </ResponsiveContainer>
   );

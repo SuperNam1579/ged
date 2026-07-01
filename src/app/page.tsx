@@ -8,17 +8,17 @@ import AssessmentIllustration from "@/components/illustrations/AssessmentIllustr
 
 function DuoNavbar() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b-2 border-[#e5e5e5]">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-card border-b-2 border-[var(--border)]">
       <div className="max-w-[1140px] mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-[#58cc02] rounded-xl flex items-center justify-center shadow-[0_3px_0_#3f8f01]">
+          <div className="w-10 h-10 bg-[var(--primary)] rounded-xl flex items-center justify-center shadow-[0_3px_0_var(--primary-dark)]">
             <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" aria-hidden="true">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white" />
             </svg>
           </div>
           <span
-            className="text-xl font-bold text-[#3c3c3c]"
+            className="text-xl font-bold text-[var(--foreground)]"
             style={{ fontFamily: "var(--font-feather)" }}
           >
             GED Prep
@@ -26,23 +26,23 @@ function DuoNavbar() {
         </div>
 
         {/* Nav links */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-bold text-[#777777]" style={{ letterSpacing: "0.053em" }}>
-          <a href="#features" className="hover:text-[#3c3c3c] transition-colors">Features</a>
-          <a href="#how-it-works" className="hover:text-[#3c3c3c] transition-colors">How it works</a>
+        <div className="hidden md:flex items-center gap-6 text-sm font-bold text-[var(--muted-foreground)]" style={{ letterSpacing: "0.053em" }}>
+          <a href="#features" className="hover:text-[var(--foreground)] transition-colors">Features</a>
+          <a href="#how-it-works" className="hover:text-[var(--foreground)] transition-colors">How it works</a>
         </div>
 
         {/* CTAs */}
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="px-5 py-2.5 text-sm font-bold text-[#1cb0f6] border-2 border-[#e5e5e5] rounded-xl hover:border-[#1cb0f6] transition-colors btn-duo-secondary"
+            className="px-5 py-2.5 text-sm font-bold text-[var(--accent)] border-2 border-[var(--border)] rounded-xl hover:border-[var(--accent)] transition-colors btn-duo-secondary"
             style={{ letterSpacing: "0.053em" }}
           >
             SIGN IN
           </Link>
           <Link
             href="/register"
-            className="px-5 py-2.5 text-sm font-bold text-white bg-[#58cc02] rounded-xl shadow-[0_4px_0_#3f8f01] hover:bg-[#4ab001] transition-colors btn-duo-primary"
+            className="px-5 py-2.5 text-sm font-bold text-white bg-[var(--primary)] rounded-xl shadow-[0_4px_0_var(--primary-dark)] hover:bg-[var(--primary)] transition-colors btn-duo-primary"
             style={{ letterSpacing: "0.053em" }}
           >
             GET STARTED
@@ -65,7 +65,7 @@ function DuoPrimaryButton({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-[#58cc02] rounded-xl shadow-[0_4px_0_#3f8f01] hover:bg-[#4ab001] hover:shadow-[0_3px_0_#3f8f01] active:shadow-[0_2px_0_#3f8f01] active:translate-y-[2px] transition-all btn-duo-primary ${className}`}
+      className={`inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-[var(--primary)] rounded-xl shadow-[0_4px_0_var(--primary-dark)] hover:bg-[var(--primary)] hover:shadow-[0_3px_0_var(--primary-dark)] active:shadow-[0_2px_0_var(--primary-dark)] active:translate-y-[2px] transition-all btn-duo-primary ${className}`}
       style={{ letterSpacing: "0.053em" }}
     >
       {children}
@@ -85,7 +85,7 @@ function DuoOutlineButton({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center justify-center px-8 py-4 text-base font-bold text-[#1cb0f6] bg-white border-2 border-[#e5e5e5] rounded-xl shadow-[0_4px_0_#e5e5e5] hover:border-[#1cb0f6] hover:shadow-[0_3px_0_#e5e5e5] active:translate-y-[2px] transition-all btn-duo-secondary ${className}`}
+      className={`inline-flex items-center justify-center px-8 py-4 text-base font-bold text-[var(--accent)] bg-card border-2 border-[var(--border)] rounded-xl shadow-[0_4px_0_var(--border)] hover:border-[var(--accent)] hover:shadow-[0_3px_0_var(--border)] active:translate-y-[2px] transition-all btn-duo-secondary ${className}`}
       style={{ letterSpacing: "0.053em" }}
     >
       {children}
@@ -102,7 +102,7 @@ function HeroSection() {
         {/* Text side */}
         <div className="flex-1 text-center md:text-left">
           <h1
-            className="text-[48px] md:text-[64px] font-bold text-[#58cc02] leading-[1.2] mb-6"
+            className="text-[48px] md:text-[64px] font-bold text-[var(--primary)] leading-[1.2] mb-6"
             style={{
               fontFamily: "var(--font-feather)",
               letterSpacing: "-1.28px",
@@ -110,14 +110,14 @@ function HeroSection() {
           >
             free. fun.
             <br />
-            <span className="text-[#3c3c3c]">pass your GED.</span>
+            <span className="text-[var(--foreground)]">pass your GED.</span>
           </h1>
           <p
-            className="text-[17px] text-[#777777] leading-[1.4] mb-10 max-w-md mx-auto md:mx-0"
+            className="text-[17px] text-[var(--muted-foreground)] leading-[1.4] mb-10 max-w-md mx-auto md:mx-0"
             style={{ letterSpacing: "0.053em" }}
           >
             Our AI uses your strengths and gaps to build a study plan that{" "}
-            <span className="text-[#1cb0f6] font-bold underline underline-offset-2 cursor-pointer">
+            <span className="text-[var(--accent)] font-bold underline underline-offset-2 cursor-pointer">
               actually works
             </span>
             . No wasted time. No guesswork.
@@ -146,18 +146,18 @@ function StatsSection() {
   ];
 
   return (
-    <section className="py-10 border-t-2 border-b-2 border-[#e5e5e5]">
+    <section className="py-10 border-t-2 border-b-2 border-[var(--border)]">
       <div className="max-w-[1140px] mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
         {stats.map((s) => (
           <div key={s.label} className="text-center">
             <p
-              className="text-[32px] font-bold text-[#58cc02] leading-[1.2]"
+              className="text-[32px] font-bold text-[var(--primary)] leading-[1.2]"
               style={{ fontFamily: "var(--font-feather)", letterSpacing: "-0.5px" }}
             >
               {s.value}
             </p>
             <p
-              className="text-[14px] text-[#777777] font-bold mt-1"
+              className="text-[14px] text-[var(--muted-foreground)] font-bold mt-1"
               style={{ letterSpacing: "0.053em" }}
             >
               {s.label}
@@ -191,19 +191,19 @@ function FeatureRow({
       <div className="flex-1 max-w-[400px] w-full mx-auto">{illustration}</div>
       <div className="flex-1 text-center md:text-left">
         <p
-          className="text-[13px] font-bold text-[#58cc02] uppercase mb-3"
+          className="text-[13px] font-bold text-[var(--primary)] uppercase mb-3"
           style={{ letterSpacing: "0.15em" }}
         >
           {eyebrow}
         </p>
         <h2
-          className="text-[32px] md:text-[48px] font-bold text-[#3c3c3c] leading-[1.2] mb-5"
+          className="text-[32px] md:text-[48px] font-bold text-[var(--foreground)] leading-[1.2] mb-5"
           style={{ fontFamily: "var(--font-feather)", letterSpacing: "-0.96px" }}
         >
           {headline}
         </h2>
         <p
-          className="text-[17px] text-[#777777] leading-[1.5] max-w-md mx-auto md:mx-0"
+          className="text-[17px] text-[var(--muted-foreground)] leading-[1.5] max-w-md mx-auto md:mx-0"
           style={{ letterSpacing: "0.053em" }}
         >
           {body}
@@ -245,39 +245,39 @@ function HowItWorksSection() {
   const steps = [
     {
       num: "1",
-      color: "#58cc02",
-      shadow: "#3f8f01",
+      color: "var(--primary)",
+      shadow: "var(--primary-dark)",
       title: "Take the assessment",
       body: "40 quick questions map your current knowledge across Math, Science, Social Studies, and Language Arts.",
     },
     {
       num: "2",
-      color: "#1cb0f6",
-      shadow: "#0d91d4",
+      color: "var(--accent)",
+      shadow: "var(--accent-dark)",
       title: "Get your AI study plan",
       body: "Our genetic algorithm builds an optimal, personalized schedule based on your gaps and your target exam date.",
     },
     {
       num: "3",
-      color: "#ffc700",
-      shadow: "#cc9c00",
+      color: "var(--gold)",
+      shadow: "var(--warning)",
       title: "Study, quiz, repeat",
       body: "Follow daily sessions, complete quizzes, and watch your plan adapt automatically until you are ready for exam day.",
     },
   ];
 
   return (
-    <section id="how-it-works" className="py-20 px-6 bg-[#f7fff0]">
+    <section id="how-it-works" className="py-20 px-6 bg-[var(--primary-light)]">
       <div className="max-w-[1140px] mx-auto">
         <div className="text-center mb-16">
           <h2
-            className="text-[48px] font-bold text-[#3c3c3c] leading-[1.2]"
+            className="text-[48px] font-bold text-[var(--foreground)] leading-[1.2]"
             style={{ fontFamily: "var(--font-feather)", letterSpacing: "-0.96px" }}
           >
             How it works
           </h2>
           <p
-            className="text-[17px] text-[#777777] mt-4"
+            className="text-[17px] text-[var(--muted-foreground)] mt-4"
             style={{ letterSpacing: "0.053em" }}
           >
             Three steps to your GED diploma.
@@ -288,7 +288,7 @@ function HowItWorksSection() {
           {steps.map((s) => (
             <div
               key={s.num}
-              className="bg-white rounded-xl p-8 border-2 border-[#e5e5e5] text-center"
+              className="bg-card rounded-xl p-8 border-2 border-[var(--border)] text-center"
             >
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold"
@@ -301,13 +301,13 @@ function HowItWorksSection() {
                 {s.num}
               </div>
               <h3
-                className="text-[19px] font-bold text-[#3c3c3c] mb-3"
+                className="text-[19px] font-bold text-[var(--foreground)] mb-3"
                 style={{ fontFamily: "var(--font-feather)" }}
               >
                 {s.title}
               </h3>
               <p
-                className="text-[15px] text-[#777777] leading-[1.5]"
+                className="text-[15px] text-[var(--muted-foreground)] leading-[1.5]"
                 style={{ letterSpacing: "0.053em" }}
               >
                 {s.body}
@@ -322,23 +322,23 @@ function HowItWorksSection() {
 
 function SubjectBadgesSection() {
   const subjects = [
-    { name: "Mathematical Reasoning", emoji: "🔢", bg: "#d7ffb8", text: "#3f8f01" },
-    { name: "Reasoning Through Language Arts", emoji: "📝", bg: "#e8f7ff", text: "#0d91d4" },
-    { name: "Science", emoji: "🔬", bg: "#f0eaff", text: "#7044cc" },
-    { name: "Social Studies", emoji: "🌍", bg: "#fff5e0", text: "#cc7a00" },
+    { name: "Mathematical Reasoning", emoji: "🔢", bg: "var(--primary-light)", text: "var(--primary-dark)" },
+    { name: "Reasoning Through Language Arts", emoji: "📝", bg: "var(--primary-light)", text: "var(--accent-dark)" },
+    { name: "Science", emoji: "🔬", bg: "var(--primary-light)", text: "var(--accent)" },
+    { name: "Social Studies", emoji: "🌍", bg: "var(--muted)", text: "var(--warning)" },
   ];
 
   return (
     <section className="py-20 px-6">
       <div className="max-w-[1140px] mx-auto text-center">
         <h2
-          className="text-[32px] md:text-[48px] font-bold text-[#3c3c3c] leading-[1.2] mb-4"
+          className="text-[32px] md:text-[48px] font-bold text-[var(--foreground)] leading-[1.2] mb-4"
           style={{ fontFamily: "var(--font-feather)", letterSpacing: "-0.96px" }}
         >
           All 4 GED subjects covered.
         </h2>
         <p
-          className="text-[17px] text-[#777777] mb-12"
+          className="text-[17px] text-[var(--muted-foreground)] mb-12"
           style={{ letterSpacing: "0.053em" }}
         >
           57 topics. Full coverage. Nothing left out.
@@ -348,7 +348,7 @@ function SubjectBadgesSection() {
           {subjects.map((s) => (
             <div
               key={s.name}
-              className="rounded-xl p-6 border-2 border-[#e5e5e5] text-left hover:border-[#58cc02] hover:-translate-y-1 transition-all"
+              className="rounded-xl p-6 border-2 border-[var(--border)] text-left hover:border-[var(--primary)] hover:-translate-y-1 transition-all"
               style={{ backgroundColor: s.bg }}
             >
               <div className="text-3xl mb-4">{s.emoji}</div>
@@ -368,7 +368,7 @@ function SubjectBadgesSection() {
 
 function CtaSection() {
   return (
-    <section className="py-24 px-6 bg-[#58cc02]">
+    <section className="py-24 px-6 bg-[var(--primary)]">
       <div className="max-w-[720px] mx-auto text-center">
         <h2
           className="text-[48px] md:text-[64px] font-bold text-white leading-[1.2] mb-6"
@@ -385,7 +385,7 @@ function CtaSection() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/register"
-            className="inline-flex items-center justify-center px-10 py-4 text-base font-bold text-[#58cc02] bg-white rounded-xl shadow-[0_4px_0_#3f8f01] hover:shadow-[0_3px_0_#3f8f01] hover:-translate-y-[1px] active:translate-y-[2px] active:shadow-[0_2px_0_#3f8f01] transition-all btn-duo-primary"
+            className="inline-flex items-center justify-center px-10 py-4 text-base font-bold text-[var(--primary)] bg-card rounded-xl shadow-[0_4px_0_var(--primary-dark)] hover:shadow-[0_3px_0_var(--primary-dark)] hover:-translate-y-[1px] active:translate-y-[2px] active:shadow-[0_2px_0_var(--primary-dark)] transition-all btn-duo-primary"
             style={{ letterSpacing: "0.053em" }}
           >
             CREATE FREE ACCOUNT
@@ -398,16 +398,16 @@ function CtaSection() {
 
 function Footer() {
   return (
-    <footer className="py-10 px-6 border-t-2 border-[#e5e5e5]">
+    <footer className="py-10 px-6 border-t-2 border-[var(--border)]">
       <div className="max-w-[1140px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-[#58cc02] rounded-xl flex items-center justify-center shadow-[0_3px_0_#3f8f01]">
+          <div className="w-9 h-9 bg-[var(--primary)] rounded-xl flex items-center justify-center shadow-[0_3px_0_var(--primary-dark)]">
             <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden="true">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white" />
             </svg>
           </div>
           <span
-            className="text-lg font-bold text-[#3c3c3c]"
+            className="text-lg font-bold text-[var(--foreground)]"
             style={{ fontFamily: "var(--font-feather)" }}
           >
             GED Prep
@@ -415,20 +415,20 @@ function Footer() {
         </div>
 
         <p
-          className="text-[13px] text-[#afafaf]"
+          className="text-[13px] text-[var(--muted-foreground)]"
           style={{ letterSpacing: "0.053em" }}
         >
           &copy; {new Date().getFullYear()} GED Prep. Adaptive learning powered by AI.
         </p>
 
         <div
-          className="flex items-center gap-6 text-[14px] font-bold text-[#777777]"
+          className="flex items-center gap-6 text-[14px] font-bold text-[var(--muted-foreground)]"
           style={{ letterSpacing: "0.053em" }}
         >
-          <Link href="/login" className="text-[#1cb0f6] hover:underline transition-colors">
+          <Link href="/login" className="text-[var(--accent)] hover:underline transition-colors">
             Sign In
           </Link>
-          <Link href="/register" className="text-[#1cb0f6] hover:underline transition-colors">
+          <Link href="/register" className="text-[var(--accent)] hover:underline transition-colors">
             Get Started
           </Link>
         </div>
@@ -441,7 +441,7 @@ function Footer() {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-card">
       <DuoNavbar />
       <main>
         <HeroSection />

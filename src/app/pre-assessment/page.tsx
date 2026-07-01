@@ -16,10 +16,10 @@ interface Assessment {
 }
 
 const SUBJECT_COLORS: Record<string, string> = {
-  MATH: "bg-blue-100 text-blue-700",
+  MATH: "bg-primary-light text-primary",
   RLA: "bg-green-100 text-green-700",
   SS: "bg-orange-100 text-orange-700",
-  SCI: "bg-purple-100 text-purple-700",
+  SCI: "bg-primary-light text-accent",
 };
 
 const OPTION_LABELS = ["A", "B", "C", "D"];
@@ -106,10 +106,10 @@ export default function PreAssessmentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading assessment...</p>
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground font-medium">Loading assessment...</p>
         </div>
       </div>
     );
@@ -117,7 +117,7 @@ export default function PreAssessmentPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <p className="text-red-600 font-medium mb-4">{error}</p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
@@ -128,13 +128,13 @@ export default function PreAssessmentPage() {
 
   if (analyzing) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-sm px-4">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+          <h2 className="text-xl font-bold text-foreground mb-2">
             Analyzing your performance...
           </h2>
-          <p className="text-gray-500 text-sm">
+          <p className="text-muted-foreground text-sm">
             Our AI is reviewing your answers and setting up your personalized
             study plan. This will just take a moment.
           </p>
@@ -231,15 +231,15 @@ export default function PreAssessmentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4">
+      <header className="bg-card border-b border-border px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <BookOpen className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">
+            <span className="text-lg font-bold text-foreground">
               Pre-Assessment
             </span>
           </div>
@@ -248,7 +248,7 @@ export default function PreAssessmentPage() {
               className={cn(
                 "px-2.5 py-1 rounded-full text-xs font-semibold",
                 SUBJECT_COLORS[currentAssessment.subjectCode] ??
-                  "bg-gray-100 text-gray-700",
+                  "bg-muted text-foreground",
               )}
             >
               {currentAssessment.subjectName}
@@ -258,13 +258,13 @@ export default function PreAssessmentPage() {
       </header>
 
       {/* Progress */}
-      <div className="bg-white border-b border-gray-100 px-6 py-3">
+      <div className="bg-card border-b border-border px-6 py-3">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500 font-medium">
+            <span className="text-xs text-muted-foreground font-medium">
               Question {globalQuestionNumber} of {totalQuestions}
             </span>
-            <span className="text-xs text-gray-500 font-medium">
+            <span className="text-xs text-muted-foreground font-medium">
               {Math.round((answeredCount / totalQuestions) * 100)}%
             </span>
           </div>
@@ -278,7 +278,7 @@ export default function PreAssessmentPage() {
       </div>
 
       {/* Subject tabs */}
-      <div className="bg-white border-b border-gray-100 px-6 py-2">
+      <div className="bg-card border-b border-border px-6 py-2">
         <div className="max-w-2xl mx-auto flex gap-2">
           {assessments.map((a, i) => (
             <div
@@ -287,10 +287,10 @@ export default function PreAssessmentPage() {
                 "px-3 py-1 rounded-md text-xs font-medium",
                 i === currentAssessmentIdx
                   ? (SUBJECT_COLORS[a.subjectCode] ??
-                      "bg-blue-100 text-blue-700")
+                      "bg-primary-light text-primary")
                   : i < currentAssessmentIdx
                     ? "bg-green-100 text-green-700"
-                    : "bg-gray-100 text-gray-400",
+                    : "bg-muted text-muted-foreground",
               )}
             >
               {i < currentAssessmentIdx ? "✓ " : ""}
@@ -303,12 +303,12 @@ export default function PreAssessmentPage() {
       {/* Question */}
       <div className="flex-1 flex items-start justify-center px-6 py-10">
         <div className="w-full max-w-2xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-6">
-            <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-4">
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-8 mb-6">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-4">
               Question {currentQuestionIdx + 1} of{" "}
               {currentAssessment.questions.length}
             </p>
-            <p className="text-lg font-medium text-gray-900 leading-relaxed">
+            <p className="text-lg font-medium text-foreground leading-relaxed">
               {currentQuestion.text}
             </p>
           </div>
@@ -339,16 +339,16 @@ export default function PreAssessmentPage() {
                 className={cn(
                   "w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4",
                   selectedOption === option.id
-                    ? "border-blue-500 bg-blue-50 shadow-sm"
-                    : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50",
+                    ? "border-primary bg-primary-light shadow-sm"
+                    : "border-border bg-card hover:border-border hover:bg-background",
                 )}
               >
                 <span
                   className={cn(
                     "shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
                     selectedOption === option.id
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-600",
+                      ? "bg-primary text-white"
+                      : "bg-muted text-muted-foreground",
                   )}
                 >
                   {OPTION_LABELS[i]}
@@ -357,8 +357,8 @@ export default function PreAssessmentPage() {
                   className={cn(
                     "text-sm font-medium",
                     selectedOption === option.id
-                      ? "text-blue-900"
-                      : "text-gray-700",
+                      ? "text-primary"
+                      : "text-foreground",
                   )}
                 >
                   {option.text}

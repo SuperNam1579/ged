@@ -81,7 +81,7 @@ function MockSessionContent() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Spinner size="lg" className="mx-auto mb-4" />
-          <p className="text-gray-500">Loading mock test...</p>
+          <p className="text-muted-foreground">Loading mock test...</p>
         </div>
       </div>
     );
@@ -90,7 +90,7 @@ function MockSessionContent() {
   if (assessments.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-gray-500">No assessments available. Please seed the database first.</p>
+        <p className="text-muted-foreground">No assessments available. Please seed the database first.</p>
         <Link href="/mock-test"><Button variant="secondary">Back</Button></Link>
       </div>
     );
@@ -101,9 +101,9 @@ function MockSessionContent() {
     const triggered = results.some((r) => r.triggered?.gaRerun);
 
     return (
-      <div className="min-h-screen bg-gray-50 py-10 px-6">
+      <div className="min-h-screen bg-background py-10 px-6">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center mb-6">
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-8 text-center mb-6">
             <div
               className={`w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-white ${
                 totalScore >= 70 ? "bg-green-500" : totalScore >= 50 ? "bg-orange-500" : "bg-red-500"
@@ -111,12 +111,12 @@ function MockSessionContent() {
             >
               {Math.round(totalScore)}%
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Mock Test Complete</h1>
-            <p className="text-gray-500">Here's how you performed across all subjects.</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Mock Test Complete</h1>
+            <p className="text-muted-foreground">Here's how you performed across all subjects.</p>
           </div>
 
           {triggered && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-800">
+            <div className="bg-primary-light border border-primary rounded-xl p-4 mb-6 text-sm text-primary">
               <strong>Your study plan has been updated</strong> based on your mock test performance. Log in next time to see your revised schedule.
             </div>
           )}
@@ -126,12 +126,12 @@ function MockSessionContent() {
               const gedScore = Math.round(100 + r.score);
               const isPassing = gedScore >= 145;
               return (
-                <div key={r.subjectCode} className="bg-white border border-gray-200 rounded-xl p-5">
+                <div key={r.subjectCode} className="bg-card border border-border rounded-xl p-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <SubjectBadge code={r.subjectCode} className="mb-2" />
-                      <p className="font-semibold text-gray-800">{r.subjectName}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-semibold text-foreground">{r.subjectName}</p>
+                      <p className="text-sm text-muted-foreground">
                         {r.rawScore}/{r.maxScore} correct · Est. GED: {gedScore}/200
                       </p>
                     </div>
@@ -223,40 +223,40 @@ function MockSessionContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
+      <header className="bg-card border-b border-border px-6 py-4 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/mock-test" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors">
+          <Link href="/mock-test" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" /> Exit Test
           </Link>
           <div className="flex items-center gap-3">
             <SubjectBadge code={assessment.subject.code} name={assessment.subject.name} />
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-muted-foreground">
               Q{currentQuestionIndex + 1}/{assessment.questions.length}
             </span>
           </div>
         </div>
         {/* Global progress bar */}
         <div className="max-w-2xl mx-auto mt-3">
-          <div className="h-1.5 bg-gray-100 rounded-full">
+          <div className="h-1.5 bg-muted rounded-full">
             <div
-              className="h-1.5 bg-blue-500 rounded-full transition-all duration-300"
+              className="h-1.5 bg-primary rounded-full transition-all duration-300"
               style={{ width: `${globalProgress}%` }}
             />
           </div>
-          <p className="text-xs text-gray-400 mt-1 text-right">{globalProgress}% complete</p>
+          <p className="text-xs text-muted-foreground mt-1 text-right">{globalProgress}% complete</p>
         </div>
       </header>
 
       {/* Content */}
       <main className="flex-1 flex flex-col items-center px-6 py-10">
         <div className="w-full max-w-2xl">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 mb-6">
-            <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-3">
+          <div className="bg-card rounded-xl border border-border shadow-sm p-8 mb-6">
+            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3">
               {assessment.title}
             </p>
-            <h2 className="text-lg font-semibold text-gray-900 leading-relaxed">{question.text}</h2>
+            <h2 className="text-lg font-semibold text-foreground leading-relaxed">{question.text}</h2>
           </div>
 
           <div
@@ -284,13 +284,13 @@ function MockSessionContent() {
                 }}
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all font-medium text-sm ${
                   selected === option.id
-                    ? "border-blue-500 bg-blue-50 text-blue-900"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-blue-200"
+                    ? "border-primary bg-primary-light text-primary"
+                    : "border-border bg-card text-foreground hover:border-primary"
                 }`}
               >
                 <span className="inline-flex items-center gap-3">
                   <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 ${
-                    selected === option.id ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300 text-gray-500"
+                    selected === option.id ? "border-primary bg-primary text-white" : "border-border text-muted-foreground"
                   }`}>
                     {option.id}
                   </span>
