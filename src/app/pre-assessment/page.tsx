@@ -17,8 +17,8 @@ interface Assessment {
 
 const SUBJECT_COLORS: Record<string, string> = {
   MATH: "bg-primary-light text-primary",
-  RLA: "bg-green-100 text-green-700",
-  SS: "bg-orange-100 text-orange-700",
+  RLA: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",
+  SS: "bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400",
   SCI: "bg-primary-light text-accent",
 };
 
@@ -119,7 +119,7 @@ export default function PreAssessmentPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <p className="text-red-600 font-medium mb-4">{error}</p>
+          <p className="text-red-600 dark:text-red-400 font-medium mb-4">{error}</p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
@@ -289,7 +289,7 @@ export default function PreAssessmentPage() {
                   ? (SUBJECT_COLORS[a.subjectCode] ??
                       "bg-primary-light text-primary")
                   : i < currentAssessmentIdx
-                    ? "bg-green-100 text-green-700"
+                    ? "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400"
                     : "bg-muted text-muted-foreground",
               )}
             >

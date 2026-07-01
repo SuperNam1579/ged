@@ -132,7 +132,7 @@ function VerifyingState() {
 function SuccessState({ countdown }: { countdown: number }) {
   return (
     <div className="py-4">
-      <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <CheckCircle className="w-8 h-8 text-green-500" />
       </div>
       <h1 className="text-2xl font-bold text-foreground mb-2">Email verified!</h1>
@@ -193,7 +193,7 @@ function ExpiredOrInvalidState({
 }: ExpiredOrInvalidProps) {
   return (
     <div className="py-4">
-      <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         {isExpired ? (
           <Clock className="w-8 h-8 text-red-400" />
         ) : (
@@ -211,7 +211,7 @@ function ExpiredOrInvalidState({
       </p>
 
       {resendStatus === "sent" ? (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700 text-left">
+        <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400 text-left">
           Verification email sent! Check your inbox.
         </div>
       ) : (
@@ -221,13 +221,13 @@ function ExpiredOrInvalidState({
           </p>
 
           {resendStatus === "rate-limited" && (
-            <div className="px-3 py-2 rounded-lg bg-yellow-50 border border-yellow-100 text-xs text-yellow-700">
+            <div className="px-3 py-2 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-100 dark:border-yellow-500/25 text-xs text-yellow-700 dark:text-yellow-400">
               Please wait a moment before requesting another email.
             </div>
           )}
 
           {resendStatus === "error" && (
-            <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-xs text-red-700">
+            <div className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-xs text-red-700 dark:text-red-400">
               Something went wrong. Please try again.
             </div>
           )}

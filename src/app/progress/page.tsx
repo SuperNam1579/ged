@@ -160,7 +160,7 @@ export default function ProgressPage() {
                       <span className="font-semibold text-foreground text-sm">{subject.name}</span>
                     </div>
                     {hasAttempts ? (
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isPassing ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isPassing ? "bg-green-100 dark:bg-green-500/15 text-green-700" : "bg-red-100 dark:bg-red-500/15 text-red-700"}`}>
                         GED est. {gedScore}/200
                       </span>
                     ) : (
@@ -174,7 +174,7 @@ export default function ProgressPage() {
                       <span className="text-xs font-medium text-muted-foreground">Score on attempted</span>
                       <span className={`text-xs font-bold ${
                         !hasAttempts ? "text-muted-foreground" :
-                        subject.proficiencyScore >= 70 ? "text-green-600" :
+                        subject.proficiencyScore >= 70 ? "text-green-600 dark:text-green-400" :
                         subject.proficiencyScore >= 50 ? "text-orange-500" : "text-red-500"
                       }`}>
                         {hasAttempts ? `${subject.proficiencyScore}%` : "—"}
@@ -243,7 +243,7 @@ export default function ProgressPage() {
                               style={{ width: `${st.score}%` }}
                             />
                           </div>
-                          <span className="text-xs text-red-600 font-medium shrink-0">{Math.round(st.score)}%</span>
+                          <span className="text-xs text-red-600 dark:text-red-400 font-medium shrink-0">{Math.round(st.score)}%</span>
                         </div>
                       </div>
                       <Link href={`/quiz/${st.subtopicId}`}>
@@ -280,7 +280,7 @@ export default function ProgressPage() {
                           {a.completedAt ? format(new Date(a.completedAt), "MMM d, yyyy") : ""}
                         </p>
                       </div>
-                      <span className={`text-base font-bold ${a.score >= 70 ? "text-green-600" : a.score >= 50 ? "text-orange-500" : "text-red-500"}`}>
+                      <span className={`text-base font-bold ${a.score >= 70 ? "text-green-600 dark:text-green-400" : a.score >= 50 ? "text-orange-500" : "text-red-500"}`}>
                         {Math.round(a.score)}%
                       </span>
                     </div>

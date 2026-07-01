@@ -74,19 +74,19 @@ function CheckEmailContent() {
         </div>
 
         {status === "sent" && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
+          <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400">
             New verification email sent. Please check your inbox.
           </div>
         )}
 
         {status === "rate-limited" && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-100 text-sm text-yellow-700">
+          <div className="mb-4 px-4 py-3 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-100 dark:border-yellow-500/25 text-sm text-yellow-700 dark:text-yellow-400">
             Please wait a moment before requesting another email.
           </div>
         )}
 
         {status === "error" && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
             Something went wrong. Please try again.
           </div>
         )}

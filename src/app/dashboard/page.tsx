@@ -15,8 +15,8 @@ import type { DashboardStats, StudySessionWithSubtopic } from "@/types";
 
 const SUBJECT_COLORS: Record<string, string> = {
   MATH: "bg-primary-light text-primary",
-  RLA: "bg-green-100 text-green-700",
-  SS: "bg-orange-100 text-orange-700",
+  RLA: "bg-green-100 dark:bg-green-500/15 text-green-700",
+  SS: "bg-orange-100 dark:bg-orange-500/15 text-orange-700",
   SCI: "bg-primary-light text-accent",
 };
 
@@ -192,14 +192,14 @@ export default function DashboardPage() {
             value={daysUntilExam}
             sub="keep up the pace!"
             icon={Calendar}
-            color="bg-orange-50 text-orange-600"
+            color="bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400"
           />
           <StatCard
             label="Today's Sessions"
             value={todaySessions.length}
             sub={todaySessions.length === 1 ? "session scheduled" : "sessions scheduled"}
             icon={BookOpen}
-            color="bg-green-50 text-green-600"
+            color="bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400"
           />
           <StatCard
             label="Plan Version"
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                         <span className={cn(
                           "text-xs font-semibold",
                           subject.attemptedCount === 0 ? "text-muted-foreground" :
-                          subject.proficiencyScore >= 70 ? "text-green-600" :
+                          subject.proficiencyScore >= 70 ? "text-green-600 dark:text-green-400" :
                           subject.proficiencyScore >= 50 ? "text-orange-500" : "text-red-500"
                         )}>
                           {subject.attemptedCount === 0 ? "—" : `${subject.proficiencyScore}%`}

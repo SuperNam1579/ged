@@ -20,7 +20,7 @@ const SUBJECTS = [
     description: "Reading informational & literary texts, writing argument essays, grammar and language usage.",
     Icon: BookOpen,
     iconBg: "bg-green-500",
-    cardSelected: "border-green-400 bg-green-50",
+    cardSelected: "border-green-400 bg-green-50 dark:bg-green-500/10",
     checkSelected: "bg-green-500 border-green-500",
   },
   {
@@ -47,7 +47,7 @@ const SUBJECTS = [
     description: "US civics & government, American history, economics, and world geography.",
     Icon: Globe,
     iconBg: "bg-amber-500",
-    cardSelected: "border-amber-400 bg-amber-50",
+    cardSelected: "border-amber-400 bg-amber-50 dark:bg-amber-500/10",
     checkSelected: "bg-amber-500 border-amber-500",
   },
 ];
@@ -385,7 +385,7 @@ export default function OnboardingPage() {
                               const selectCls = (invalid: boolean) => cn(
                                 "px-2.5 py-1.5 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 cursor-pointer",
                                 invalid
-                                  ? "border-red-400 focus:ring-red-300 text-red-600"
+                                  ? "border-red-400 focus:ring-red-300 text-red-600 dark:text-red-400"
                                   : "border-border focus:ring-ring"
                               );
                               return (
@@ -440,8 +440,8 @@ export default function OnboardingPage() {
                 </div>
 
                 {/* Weekly summary */}
-                <div className="mt-4 flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl px-4 py-3">
-                  <Clock className="w-5 h-5 text-green-600 shrink-0" />
+                <div className="mt-4 flex items-center gap-3 bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 rounded-xl px-4 py-3">
+                  <Clock className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-foreground">Your weekly study time</p>
                     <p className="text-sm text-muted-foreground">
@@ -461,7 +461,7 @@ export default function OnboardingPage() {
               <p className="text-muted-foreground mb-8">Here&apos;s a summary of your study plan. You can go back to make changes.</p>
 
               {error && (
-                <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+                <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700">
                   {error}
                 </div>
               )}
@@ -536,9 +536,9 @@ export default function OnboardingPage() {
                   </div>
 
                   {/* Estimate */}
-                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
-                    <p className="text-sm font-semibold text-amber-800 mb-1">Estimated Study Plan</p>
-                    <p className="text-sm text-amber-700">
+                  <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/25 rounded-xl p-5">
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">Estimated Study Plan</p>
+                    <p className="text-sm text-amber-700 dark:text-amber-400">
                       Based on your availability, we recommend a plan of about{" "}
                       <strong>{totalHours} hours per week</strong> for{" "}
                       <strong>{weeksUntilExam} weeks</strong>.
@@ -600,9 +600,9 @@ export default function OnboardingPage() {
               </div>
 
               {/* Tip */}
-              <div className="w-full max-w-md bg-amber-50 border border-amber-100 rounded-xl px-5 py-4 text-left mb-8">
-                <p className="text-sm font-semibold text-amber-800 mb-0.5">💡 Tip</p>
-                <p className="text-sm text-amber-700">
+              <div className="w-full max-w-md bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/25 rounded-xl px-5 py-4 text-left mb-8">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-0.5">💡 Tip</p>
+                <p className="text-sm text-amber-700 dark:text-amber-400">
                   Consistency is key! Stick to your schedule and you&apos;ll be ready to achieve your goal.
                 </p>
               </div>

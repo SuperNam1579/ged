@@ -49,10 +49,10 @@ function ScoreRing({ score, max }: { score: number; max: number }) {
 }
 
 function getLabel(pct: number): { label: string; color: string } {
-  if (pct >= 80) return { label: "Strong", color: "text-green-600" };
+  if (pct >= 80) return { label: "Strong", color: "text-green-600 dark:text-green-400" };
   if (pct >= 60) return { label: "Developing", color: "text-primary" };
-  if (pct >= 40) return { label: "Needs Work", color: "text-orange-600" };
-  return { label: "Weak", color: "text-red-600" };
+  if (pct >= 40) return { label: "Needs Work", color: "text-orange-600 dark:text-orange-400" };
+  return { label: "Weak", color: "text-red-600 dark:text-red-400" };
 }
 
 function QuizResultContent() {
@@ -76,7 +76,7 @@ function QuizResultContent() {
           <div
             className={cn(
               "px-8 pt-10 pb-6 text-center",
-              pct >= 80 ? "bg-green-50" : pct >= 60 ? "bg-primary-light" : "bg-orange-50"
+              pct >= 80 ? "bg-green-50 dark:bg-green-500/10" : pct >= 60 ? "bg-primary-light" : "bg-orange-50 dark:bg-orange-500/10"
             )}
           >
             <ScoreRing score={score} max={max} />
@@ -100,12 +100,12 @@ function QuizResultContent() {
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-foreground mb-3">Summary</h3>
               <div className="grid grid-cols-3 gap-3">
-                <div className="text-center bg-green-50 rounded-xl py-3">
+                <div className="text-center bg-green-50 dark:bg-green-500/10 rounded-xl py-3">
                   <p className="text-2xl font-bold text-green-700">{score}</p>
-                  <p className="text-xs text-green-600 font-medium mt-0.5">Correct</p>
+                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">Correct</p>
                 </div>
-                <div className="text-center bg-red-50 rounded-xl py-3">
-                  <p className="text-2xl font-bold text-red-600">{max - score}</p>
+                <div className="text-center bg-red-50 dark:bg-red-500/10 rounded-xl py-3">
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{max - score}</p>
                   <p className="text-xs text-red-500 font-medium mt-0.5">Incorrect</p>
                 </div>
                 <div className="text-center bg-background rounded-xl py-3">
@@ -127,8 +127,8 @@ function QuizResultContent() {
                       className={cn(
                         "flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold",
                         correct
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
+                          ? "bg-green-100 dark:bg-green-500/15 text-green-700"
+                          : "bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-400"
                       )}
                     >
                       {correct ? (

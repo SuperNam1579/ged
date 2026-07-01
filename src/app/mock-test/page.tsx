@@ -22,16 +22,16 @@ const SUBJECTS = [
     name: "Reasoning Through Language Arts",
     description: "Reading comprehension, writing, and language conventions",
     duration: 30,
-    color: "text-green-600",
-    bg: "bg-green-50 border-green-200",
+    color: "text-green-600 dark:text-green-400",
+    bg: "bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-500/30",
   },
   {
     code: "SS",
     name: "Social Studies",
     description: "Civics, US history, economics, and geography",
     duration: 30,
-    color: "text-orange-600",
-    bg: "bg-orange-50 border-orange-200",
+    color: "text-orange-600 dark:text-orange-400",
+    bg: "bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/30",
   },
   {
     code: "SCI",
@@ -140,9 +140,9 @@ export default function MockTestPage() {
 
         {/* Warning */}
         {selectedSubjects.length === 0 && (
-          <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg mb-6">
+          <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg mb-6">
             <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-            <p className="text-sm text-amber-700">Select at least one subject to continue.</p>
+            <p className="text-sm text-amber-700 dark:text-amber-400">Select at least one subject to continue.</p>
           </div>
         )}
 

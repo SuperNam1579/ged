@@ -40,8 +40,8 @@ type Schedule = Record<number, DaySchedule>;
 
 const SUBJECT_COLOR: Record<string, { badge: string; dot: string }> = {
   MATH: { badge: "bg-primary-light text-primary",    dot: "bg-primary" },
-  RLA:  { badge: "bg-green-100 text-green-700",   dot: "bg-green-500" },
-  SS:   { badge: "bg-amber-100 text-amber-700",   dot: "bg-amber-500" },
+  RLA:  { badge: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",   dot: "bg-green-500" },
+  SS:   { badge: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400",   dot: "bg-amber-500" },
   SCI:  { badge: "bg-primary-light text-accent", dot: "bg-accent" },
 };
 const SUBJECT_LABEL: Record<string, string> = {
@@ -244,7 +244,7 @@ function WeekScheduleSetup({
                           onChange={(e) => updateSlot(dow, slot.id, "end", e.target.value)}
                           className={cn(
                             "flex-1 text-sm border rounded-lg px-2 py-1.5 bg-card",
-                            invalid ? "border-red-300" : "border-border"
+                            invalid ? "border-red-300 dark:border-red-500/30" : "border-border"
                           )}
                         >
                           {TIME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -271,7 +271,7 @@ function WeekScheduleSetup({
           );
         })}
 
-        {error && <p className="text-red-600 text-sm px-1">{error}</p>}
+        {error && <p className="text-red-600 dark:text-red-400 text-sm px-1">{error}</p>}
         {infoMsg && (
           <div className="bg-primary-light border border-primary rounded-lg px-4 py-3 text-sm text-primary">
             {infoMsg} — Go to <strong>Settings → Regenerate My Study Plan</strong> to start a fresh plan.

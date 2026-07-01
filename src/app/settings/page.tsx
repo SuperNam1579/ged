@@ -156,12 +156,12 @@ export default function SettingsPage() {
               />
               <div className="flex items-center justify-between">
                 {saveSuccess && (
-                  <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                  <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 text-sm font-medium">
                     <Check className="w-4 h-4" />
                     Preferences saved!
                   </div>
                 )}
-                {saveError && <p className="text-red-600 text-sm">{saveError}</p>}
+                {saveError && <p className="text-red-600 dark:text-red-400 text-sm">{saveError}</p>}
                 <div className="ml-auto">
                   <Button onClick={handleSave} loading={saving}>
                     Save Preferences
@@ -173,8 +173,8 @@ export default function SettingsPage() {
         )}
 
         {/* Study Plan regeneration */}
-        <Card className="border-orange-200">
-          <CardHeader className="border-orange-100">
+        <Card className="border-orange-200 dark:border-orange-500/30">
+          <CardHeader className="border-orange-100 dark:border-orange-500/25">
             <div className="flex items-center gap-2">
               <RefreshCw className="w-4 h-4 text-orange-500" />
               <h2 className="font-semibold text-foreground">Study Plan</h2>
@@ -187,12 +187,12 @@ export default function SettingsPage() {
               scores and schedule.
             </p>
             {regenSuccess && (
-              <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium mb-4">
+              <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 text-sm font-medium mb-4">
                 <Check className="w-4 h-4" />
                 New study plan generated! Visit your schedule to see it.
               </div>
             )}
-            {regenError && <p className="text-red-600 text-sm mb-4">{regenError}</p>}
+            {regenError && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{regenError}</p>}
             <Button
               variant="secondary"
               onClick={handleRegenerate}

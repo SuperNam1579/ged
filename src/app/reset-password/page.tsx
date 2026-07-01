@@ -137,13 +137,13 @@ function ResetPasswordContent() {
       </p>
 
       {pageState === "error" && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
           Something went wrong. Please try again.
         </div>
       )}
 
       {fieldError && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
           {fieldError}
         </div>
       )}
@@ -194,7 +194,7 @@ function ResetPasswordContent() {
 function SuccessState() {
   return (
     <div className="text-center py-4">
-      <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <CheckCircle className="w-8 h-8 text-green-500" />
       </div>
       <h1 className="text-2xl font-bold text-foreground mb-2">Password updated!</h1>
@@ -211,7 +211,7 @@ function SuccessState() {
 function InvalidState() {
   return (
     <div className="text-center py-4">
-      <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <XCircle className="w-8 h-8 text-red-400" />
       </div>
       <h1 className="text-2xl font-bold text-foreground mb-2">Invalid link</h1>
@@ -234,7 +234,7 @@ function InvalidState() {
 function ExpiredState() {
   return (
     <div className="text-center py-4">
-      <div className="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <Clock className="w-8 h-8 text-orange-400" />
       </div>
       <h1 className="text-2xl font-bold text-foreground mb-2">Link expired</h1>
