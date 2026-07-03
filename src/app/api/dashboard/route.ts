@@ -11,69 +11,83 @@ export async function GET(req: NextRequest) {
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
+  const ninetyDaysAgo = new Date(today);
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-  // Load user + preferences
-  const user = await db.user.findUnique({
-    where: { id: authUser.id },
-    include: { preferences: true },
-  });
-
-  // Load active plan + today's sessions
-  const activePlan = await db.studyPlan.findFirst({
-    where: { userId: authUser.id, isActive: true },
-    orderBy: { version: "desc" },
-    include: {
-      sessions: {
-        where: { scheduledDate: { gte: today, lt: tomorrow } },
-        include: {
-          subtopic: {
-            include: {
-              topic: {
-                include: {
-                  category: {
-                    include: { subject: { select: { code: true, name: true } } },
+  // These queries are independent of each other, so fire them in a single
+  // parallel wave instead of awaiting one at a time — each await was a
+  // separate round-trip to the (remote) database, which is what made the
+  // dashboard slow to load after deploy.
+  const [user, activePlan, subjects, proficiencies, recentCompletions] = await Promise.all([
+    // User + preferences
+    db.user.findUnique({
+      where: { id: authUser.id },
+      include: { preferences: true },
+    }),
+    // Active plan + today's sessions
+    db.studyPlan.findFirst({
+      where: { userId: authUser.id, isActive: true },
+      orderBy: { version: "desc" },
+      include: {
+        sessions: {
+          where: { scheduledDate: { gte: today, lt: tomorrow } },
+          include: {
+            subtopic: {
+              include: {
+                topic: {
+                  include: {
+                    category: {
+                      include: { subject: { select: { code: true, name: true } } },
+                    },
                   },
                 },
               },
             },
           },
+          orderBy: { order: "asc" },
         },
-        orderBy: { order: "asc" },
       },
-    },
-  });
-
-  // Overall progress (% of sessions completed across active plan)
-  let overallProgress = 0;
-  if (activePlan) {
-    const totalSessions = await db.studySession.count({
-      where: { studyPlanId: activePlan.id },
-    });
-    const completedSessions = await db.studySession.count({
-      where: { studyPlanId: activePlan.id, status: "COMPLETED" },
-    });
-    overallProgress = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
-  }
-
-  // Subject summaries
-  const subjects = await db.subject.findMany({
-    include: {
-      categories: {
-        include: {
-          topics: {
-            include: {
-              subtopics: { select: { id: true } },
+    }),
+    // Subject tree for summaries
+    db.subject.findMany({
+      include: {
+        categories: {
+          include: {
+            topics: {
+              include: {
+                subtopics: { select: { id: true } },
+              },
             },
           },
         },
       },
-    },
-  });
+    }),
+    // Proficiency scores
+    db.userSubtopicProficiency.findMany({
+      where: { userId: authUser.id },
+      select: { subtopicId: true, score: true },
+    }),
+    // Recent completions (for streak calc)
+    db.studySession.findMany({
+      where: {
+        studyPlan: { userId: authUser.id },
+        status: "COMPLETED",
+        completedAt: { not: null, gte: ninetyDaysAgo },
+      },
+      select: { completedAt: true },
+      orderBy: { completedAt: "desc" },
+    }),
+  ]);
 
-  const proficiencies = await db.userSubtopicProficiency.findMany({
-    where: { userId: authUser.id },
-    select: { subtopicId: true, score: true },
-  });
+  // Overall progress (% of sessions completed across active plan)
+  let overallProgress = 0;
+  if (activePlan) {
+    const [totalSessions, completedSessions] = await Promise.all([
+      db.studySession.count({ where: { studyPlanId: activePlan.id } }),
+      db.studySession.count({ where: { studyPlanId: activePlan.id, status: "COMPLETED" } }),
+    ]);
+    overallProgress = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+  }
   const profMap = new Map(proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score]));
 
   const subjectSummaries = subjects.map((subject) => {
@@ -126,19 +140,6 @@ export async function GET(req: NextRequest) {
   const daysUntilExam = user?.preferences
     ? Math.max(0, differenceInDays(user.preferences.targetExamDate, today))
     : 0;
-
-  const ninetyDaysAgo = new Date(today);
-  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-
-  const recentCompletions = await db.studySession.findMany({
-    where: {
-      studyPlan: { userId: authUser.id },
-      status: "COMPLETED",
-      completedAt: { not: null, gte: ninetyDaysAgo },
-    },
-    select: { completedAt: true },
-    orderBy: { completedAt: "desc" },
-  });
 
   const completionDateSet = new Set(
     recentCompletions.map((c) => c.completedAt!.toISOString().split("T")[0])

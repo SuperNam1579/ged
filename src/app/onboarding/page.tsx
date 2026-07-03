@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   BookOpen, Calculator, Globe, Atom,
   Clock, Calendar, X, Plus, Check, CheckCircle,
@@ -11,6 +12,8 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
 
 // ─── Subject definitions ────────────────────────────────────────────────────
+// Colors & topic counts mirror the landing page's Subjects section so the
+// two experiences read as one system.
 
 // Order follows standard GED test sequence: RLA → Math → Science → Social Studies
 const SUBJECTS = [
@@ -18,37 +21,45 @@ const SUBJECTS = [
     code: "RLA",
     name: "Reasoning Through Language Arts",
     description: "Reading informational & literary texts, writing argument essays, grammar and language usage.",
+    topics: "18 topics",
     Icon: BookOpen,
     iconBg: "bg-green-500",
     cardSelected: "border-green-400 bg-green-50 dark:bg-green-500/10",
     checkSelected: "bg-green-500 border-green-500",
+    badgeCls: "bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-500/25 text-green-700 dark:text-green-400",
   },
   {
     code: "MATH",
     name: "Mathematical Reasoning",
     description: "Number sense, algebraic reasoning, geometry, data analysis, and graphing functions.",
+    topics: "14 topics",
     Icon: Calculator,
     iconBg: "bg-primary",
     cardSelected: "border-primary bg-primary-light",
     checkSelected: "bg-primary border-primary",
+    badgeCls: "bg-primary-light border-primary/30 text-primary",
   },
   {
     code: "SCI",
     name: "Science",
     description: "Life science (biology, genetics, ecology), physical science (chemistry, physics), and earth & space science.",
+    topics: "15 topics",
     Icon: Atom,
-    iconBg: "bg-accent",
-    cardSelected: "border-accent bg-primary-light",
-    checkSelected: "bg-accent border-accent",
+    iconBg: "bg-purple-500",
+    cardSelected: "border-purple-400 bg-purple-50 dark:bg-purple-500/10",
+    checkSelected: "bg-purple-500 border-purple-500",
+    badgeCls: "bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/25 text-purple-700 dark:text-purple-400",
   },
   {
     code: "SS",
     name: "Social Studies",
     description: "US civics & government, American history, economics, and world geography.",
+    topics: "10 topics",
     Icon: Globe,
     iconBg: "bg-amber-500",
     cardSelected: "border-amber-400 bg-amber-50 dark:bg-amber-500/10",
     checkSelected: "bg-amber-500 border-amber-500",
+    badgeCls: "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/25 text-amber-700 dark:text-amber-400",
   },
 ];
 
@@ -121,6 +132,112 @@ function thisMonday(): string {
   return `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, "0")}-${String(mon.getDate()).padStart(2, "0")}`;
 }
 
+// ─── Exam date picker (Month / Day / Year dropdowns) ───────────────────────
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+const DATE_SELECT_CLS =
+  "w-full px-3 py-2.5 rounded-xl border border-input bg-card text-sm text-foreground " +
+  "hover:border-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring " +
+  "focus:border-transparent transition-colors appearance-none";
+
+function DateSelectChevron() {
+  return (
+    <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </div>
+  );
+}
+
+function ExamDatePicker({
+  value,
+  onChange,
+  minDate,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  minDate: string;
+}) {
+  const parts = value ? value.split("-") : ["", "", ""];
+  const [year, setYear] = useState(parts[0]);
+  const [month, setMonth] = useState(parts[1] ? String(parseInt(parts[1])) : "");
+  const [day, setDay] = useState(parts[2] ? String(parseInt(parts[2])) : "");
+
+  const minYear = parseInt(minDate.split("-")[0]);
+  const years = useMemo(() => Array.from({ length: 5 }, (_, i) => minYear + i), [minYear]);
+
+  const daysInMonth = useMemo(() => {
+    if (!month || !year) return 31;
+    return new Date(parseInt(year), parseInt(month), 0).getDate();
+  }, [month, year]);
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const emit = (y: string, m: string, d: string) => {
+    if (y && m && d) {
+      const mm = m.padStart(2, "0");
+      const dd = d.padStart(2, "0");
+      onChange(`${y}-${mm}-${dd}`);
+    } else {
+      onChange("");
+    }
+  };
+
+  const handleYear = (v: string) => { setYear(v); emit(v, month, day); };
+  const handleMonth = (v: string) => {
+    setMonth(v);
+    const maxDay = v && year ? new Date(parseInt(year), parseInt(v), 0).getDate() : 31;
+    const clampedDay = day && parseInt(day) > maxDay ? "" : day;
+    if (clampedDay !== day) setDay(clampedDay);
+    emit(year, v, clampedDay);
+  };
+  const handleDay = (v: string) => { setDay(v); emit(year, month, v); };
+
+  const selectStyle = { WebkitAppearance: "none" as const };
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {/* Month */}
+      <div className="relative">
+        <select aria-label="Month" value={month} onChange={(e) => handleMonth(e.target.value)} className={DATE_SELECT_CLS} style={selectStyle}>
+          <option value="">Month</option>
+          {MONTHS.map((m, i) => (
+            <option key={m} value={String(i + 1)}>{m}</option>
+          ))}
+        </select>
+        <DateSelectChevron />
+      </div>
+
+      {/* Day */}
+      <div className="relative">
+        <select aria-label="Day" value={day} onChange={(e) => handleDay(e.target.value)} className={DATE_SELECT_CLS} style={selectStyle}>
+          <option value="">Day</option>
+          {days.map((d) => (
+            <option key={d} value={String(d)}>{d}</option>
+          ))}
+        </select>
+        <DateSelectChevron />
+      </div>
+
+      {/* Year */}
+      <div className="relative">
+        <select aria-label="Year" value={year} onChange={(e) => handleYear(e.target.value)} className={DATE_SELECT_CLS} style={selectStyle}>
+          <option value="">Year</option>
+          {years.map((y) => (
+            <option key={y} value={String(y)}>{y}</option>
+          ))}
+        </select>
+        <DateSelectChevron />
+      </div>
+    </div>
+  );
+}
+
 // ─── Main component ─────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
@@ -188,7 +305,7 @@ export default function OnboardingPage() {
   const canProceed = () => {
     if (step === 1) return selectedSubjects.length > 0;
     if (step === 2) {
-      if (!examDate) return false;
+      if (!examDate || examDate < minDate) return false;
       return Object.values(schedule).some((d) => d.enabled && d.slots.length > 0);
     }
     return true;
@@ -245,11 +362,16 @@ export default function OnboardingPage() {
       {/* Header */}
       <header className="bg-card border-b border-border px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-              <BookOpen className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-[9px]">
+            <div
+              className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0"
+              style={{ boxShadow: "0 3px 0 var(--primary-dark)" }}
+            >
+              <BookOpen className="w-4 h-4 text-white" strokeWidth={2.5} />
             </div>
-            <span className="text-lg font-bold text-foreground">GED Prep</span>
+            <span className="text-lg font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>
+              GED Prep
+            </span>
           </div>
           {step < 4 && (
             <span className="text-sm text-muted-foreground">
@@ -277,12 +399,14 @@ export default function OnboardingPage() {
           {/* ── Step 1: Subjects ───────────────────────────────────────── */}
           {step === 1 && (
             <div>
-              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">Step 1</p>
-              <h1 className="text-3xl font-extrabold text-foreground mb-1">Which subjects do you want to study?</h1>
+              <p className="text-[11px] font-bold text-primary uppercase tracking-[0.12em] mb-1.5">Step 1</p>
+              <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-feather)" }}>
+                Which subjects do you want to study?
+              </h1>
               <p className="text-muted-foreground mb-8">Select one or more subjects. We&apos;ll personalize your study plan.</p>
 
               <div className="space-y-3">
-                {SUBJECTS.map(({ code, name, description, Icon, iconBg, cardSelected, checkSelected }) => {
+                {SUBJECTS.map(({ code, name, description, topics, Icon, iconBg, cardSelected, checkSelected, badgeCls }) => {
                   const selected = selectedSubjects.includes(code);
                   return (
                     <button
@@ -293,7 +417,7 @@ export default function OnboardingPage() {
                         )
                       }
                       className={cn(
-                        "w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all",
+                        "w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all",
                         selected ? cardSelected : "border-border bg-card hover:border-border"
                       )}
                     >
@@ -317,6 +441,11 @@ export default function OnboardingPage() {
                         <p className="text-base font-semibold text-foreground">{name}</p>
                         <p className="text-sm text-muted-foreground">{description}</p>
                       </div>
+
+                      {/* Topic count badge */}
+                      <span className={cn("shrink-0 self-start text-[11px] font-bold px-2.5 py-1 rounded-full border", badgeCls)}>
+                        {topics}
+                      </span>
                     </button>
                   );
                 })}
@@ -327,8 +456,10 @@ export default function OnboardingPage() {
           {/* ── Step 2: Exam date + Schedule ───────────────────────────── */}
           {step === 2 && (
             <div>
-              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">Step 2</p>
-              <h1 className="text-3xl font-extrabold text-foreground mb-1">When is your exam?</h1>
+              <p className="text-[11px] font-bold text-primary uppercase tracking-[0.12em] mb-1.5">Step 2</p>
+              <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-feather)" }}>
+                When is your exam?
+              </h1>
               <p className="text-muted-foreground mb-8">We&apos;ll use this to create a realistic study schedule that fits your timeline.</p>
 
               {/* Exam date */}
@@ -336,13 +467,10 @@ export default function OnboardingPage() {
                 <label className="block text-sm font-medium text-foreground mb-1.5">
                   Target exam date
                 </label>
-                <input
-                  type="date"
-                  value={examDate}
-                  min={minDate}
-                  onChange={(e) => setExamDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                />
+                <ExamDatePicker value={examDate} onChange={setExamDate} minDate={minDate} />
+                {examDate && examDate < minDate && (
+                  <p className="mt-1.5 text-xs text-danger">Please choose a date at least 7 days from today.</p>
+                )}
               </div>
 
               {/* Schedule builder */}
@@ -456,8 +584,10 @@ export default function OnboardingPage() {
           {/* ── Step 3: Review ─────────────────────────────────────────── */}
           {step === 3 && (
             <div>
-              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">Step 3</p>
-              <h1 className="text-3xl font-extrabold text-foreground mb-1">Review your plan.</h1>
+              <p className="text-[11px] font-bold text-primary uppercase tracking-[0.12em] mb-1.5">Step 3</p>
+              <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-feather)" }}>
+                Review your plan.
+              </h1>
               <p className="text-muted-foreground mb-8">Here&apos;s a summary of your study plan. You can go back to make changes.</p>
 
               {error && (
@@ -552,30 +682,31 @@ export default function OnboardingPage() {
           {/* ── Step 4: Complete ───────────────────────────────────────── */}
           {step === 4 && (
             <div className="flex flex-col items-center text-center py-8">
-              {/* Confetti-style decoration */}
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  {[
-                    { color: "bg-yellow-400", x: "-left-8", y: "-top-4", size: "w-3 h-3" },
-                    { color: "bg-primary",   x: "left-0",  y: "-top-8", size: "w-2 h-2" },
-                    { color: "bg-green-400",  x: "left-8",  y: "-top-2", size: "w-2.5 h-2.5" },
-                    { color: "bg-accent", x: "-left-2", y: "top-8",  size: "w-2 h-2" },
-                    { color: "bg-pink-400",   x: "right-0", y: "-top-6", size: "w-2 h-2" },
-                    { color: "bg-teal-400",   x: "right-6", y: "top-4",  size: "w-3 h-3" },
-                    { color: "bg-orange-400", x: "-right-2",y: "-top-2", size: "w-2 h-2" },
-                  ].map((dot, i) => (
-                    <div
-                      key={i}
-                      className={cn("absolute rounded-full", dot.color, dot.size, dot.x, dot.y)}
-                    />
-                  ))}
-                </div>
-                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center relative z-10">
-                  <CheckCircle className="w-10 h-10 text-white" />
+              {/* Mascot celebration */}
+              <div className="relative mb-4">
+                <div
+                  className="absolute inset-0 -z-10"
+                  style={{
+                    background: "radial-gradient(circle,rgba(37,99,235,.16) 0%,transparent 70%)",
+                    filter: "blur(6px)",
+                  }}
+                />
+                <Image
+                  src="/mascots/duo-hero.png"
+                  alt="Nam and Nick celebrating with you"
+                  width={220}
+                  height={180}
+                  style={{ width: 220, height: "auto", filter: "drop-shadow(0 10px 20px rgba(37,99,235,.2))" }}
+                  className="relative"
+                />
+                <div className="absolute -top-1 -right-2 w-9 h-9 bg-green-500 rounded-full flex items-center justify-center shadow-[0_3px_0_rgba(0,0,0,0.15)]">
+                  <CheckCircle className="w-5 h-5 text-white" />
                 </div>
               </div>
 
-              <h1 className="text-3xl font-extrabold text-foreground mb-2">You&apos;re all set!</h1>
+              <h1 className="text-3xl font-bold text-foreground mb-2" style={{ fontFamily: "var(--font-feather)" }}>
+                You&apos;re all set!
+              </h1>
               <p className="text-muted-foreground mb-10">Your personalized study plan is ready.</p>
 
               {/* Summary card */}

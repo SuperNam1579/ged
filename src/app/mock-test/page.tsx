@@ -38,8 +38,8 @@ const SUBJECTS = [
     name: "Science",
     description: "Life science, physical science, and earth & space science",
     duration: 30,
-    color: "text-accent",
-    bg: "bg-primary-light border-accent",
+    color: "text-purple-600 dark:text-purple-400",
+    bg: "bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/30",
   },
 ];
 

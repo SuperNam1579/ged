@@ -8,9 +8,9 @@ interface SubjectBadgeProps {
 
 const subjectStyles: Record<string, string> = {
   MATH: "bg-primary/15 text-primary",
-  RLA: "bg-success/15 text-success",
-  SS: "bg-warning/15 text-warning",
-  SCI: "bg-accent/15 text-accent",
+  RLA:  "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",
+  SS:   "bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400",
+  SCI:  "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400",
 };
 
 const subjectNames: Record<string, string> = {

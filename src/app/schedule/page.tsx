@@ -42,7 +42,7 @@ const SUBJECT_COLOR: Record<string, { badge: string; dot: string }> = {
   MATH: { badge: "bg-primary-light text-primary",    dot: "bg-primary" },
   RLA:  { badge: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",   dot: "bg-green-500" },
   SS:   { badge: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400",   dot: "bg-amber-500" },
-  SCI:  { badge: "bg-primary-light text-accent", dot: "bg-accent" },
+  SCI:  { badge: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400", dot: "bg-purple-500" },
 };
 const SUBJECT_LABEL: Record<string, string> = {
   MATH: "Math", RLA: "Language Arts", SS: "Social Studies", SCI: "Science",

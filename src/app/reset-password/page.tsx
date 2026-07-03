@@ -131,7 +131,7 @@ function ResetPasswordContent() {
 
   return (
     <PageShell>
-      <h1 className="text-2xl font-bold text-foreground mb-1">Set a new password</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-feather)" }}>Set a new password</h1>
       <p className="text-sm text-muted-foreground mb-6">
         Choose a strong password of at least 8 characters.
       </p>
@@ -197,7 +197,7 @@ function SuccessState() {
       <div className="w-14 h-14 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <CheckCircle className="w-8 h-8 text-green-500" />
       </div>
-      <h1 className="text-2xl font-bold text-foreground mb-2">Password updated!</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: "var(--font-feather)" }}>Password updated!</h1>
       <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
         Your password has been reset. You&apos;ll be redirected to sign in shortly.
       </p>
@@ -214,7 +214,7 @@ function InvalidState() {
       <div className="w-14 h-14 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <XCircle className="w-8 h-8 text-red-400" />
       </div>
-      <h1 className="text-2xl font-bold text-foreground mb-2">Invalid link</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: "var(--font-feather)" }}>Invalid link</h1>
       <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
         This reset link is invalid or has already been used.
         Reset links can only be used once. Please request a new one.
@@ -237,7 +237,7 @@ function ExpiredState() {
       <div className="w-14 h-14 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <Clock className="w-8 h-8 text-orange-400" />
       </div>
-      <h1 className="text-2xl font-bold text-foreground mb-2">Link expired</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: "var(--font-feather)" }}>Link expired</h1>
       <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
         This reset link has expired. Links are valid for{" "}
         <strong className="text-foreground">1 hour</strong>.
@@ -272,7 +272,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
         <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <span className="text-xl font-bold text-foreground">GED Prep</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>GED Prep</span>
       </div>
       <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8">
         {children}

@@ -10,9 +10,10 @@ interface MainLayoutProps {
   children: React.ReactNode;
   userName?: string;
   daysUntilExam?: number;
+  overallProgress?: number;
 }
 
-export default function MainLayout({ children, userName, daysUntilExam }: MainLayoutProps) {
+export default function MainLayout({ children, userName, daysUntilExam, overallProgress }: MainLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -55,6 +56,7 @@ export default function MainLayout({ children, userName, daysUntilExam }: MainLa
           onToggleCollapse={() => setCollapsed((c) => !c)}
           userName={userName}
           daysUntilExam={daysUntilExam}
+          overallProgress={overallProgress}
           onClose={() => setMobileOpen(false)}
         />
       </div>

@@ -5,21 +5,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import {
-  LayoutDashboard,
-  TrendingUp,
-  Calendar,
-  ClipboardList,
-  Settings,
-  BookOpen,
-  LogOut,
-  X,
-  ChevronLeft,
-  ChevronRight,
+  LayoutDashboard, TrendingUp, Calendar, ClipboardList, Settings,
+  BookOpen, LogOut, X, ChevronLeft, ChevronRight,
 } from "lucide-react";
 
-// ─── nav config ──────────────────────────────────────────────────────────────
-
-const navItems = [
+const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/progress",  label: "Progress",  icon: TrendingUp      },
   { href: "/schedule",  label: "Schedule",  icon: Calendar         },
@@ -27,13 +17,23 @@ const navItems = [
   { href: "/settings",  label: "Settings",  icon: Settings         },
 ];
 
-// ─── module-level helpers ────────────────────────────────────────────────────
+function MiniKaiFace() {
+  return (
+    <svg viewBox="16 44 108 100" width="36" height="36" fill="none">
+      <ellipse cx="70" cy="56" rx="64" ry="50" fill="#2C1A0E" />
+      <ellipse cx="70" cy="78" rx="52" ry="50" fill="#FDDCB5" />
+      <ellipse cx="52" cy="84" rx="14" ry="15" fill="white" />
+      <ellipse cx="88" cy="84" rx="14" ry="15" fill="white" />
+      <rect x="36" y="72" width="32" height="24" rx="8" fill="none" stroke="#3D2614" strokeWidth="2.5" />
+      <rect x="72" y="72" width="32" height="24" rx="8" fill="none" stroke="#3D2614" strokeWidth="2.5" />
+      <circle cx="52" cy="85" r="8" fill="#1A0E05" />
+      <circle cx="88" cy="85" r="8" fill="#1A0E05" />
+      <circle cx="56" cy="81" r="3.5" fill="white" />
+      <circle cx="92" cy="81" r="3.5" fill="white" />
+    </svg>
+  );
+}
 
-/**
- * Slides a label in/out via max-width + opacity.
- * `shrink-0` prevents the flex parent from squishing the span before
- * the max-width transition can animate it to 0.
- */
 function FadeLabel({
   children,
   collapsed,
@@ -57,17 +57,7 @@ function FadeLabel({
   );
 }
 
-/**
- * Tooltip that appears to the right of the sidebar in collapsed mode.
- * The inner box is `relative` so the CSS-triangle arrow anchors to it.
- */
-function SidebarTooltip({
-  label,
-  collapsed,
-}: {
-  label: string;
-  collapsed: boolean;
-}) {
+function SidebarTooltip({ label, collapsed }: { label: string; collapsed: boolean }) {
   if (!collapsed) return null;
   return (
     <span
@@ -87,26 +77,25 @@ function SidebarTooltip({
   );
 }
 
-// ─── types ───────────────────────────────────────────────────────────────────
-
 interface SidebarProps {
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   userName?: string;
   daysUntilExam?: number;
+  overallProgress?: number;
   onClose?: () => void;
 }
-
-// ─── component ───────────────────────────────────────────────────────────────
 
 export default function Sidebar({
   collapsed = false,
   onToggleCollapse,
   userName,
   daysUntilExam,
+  overallProgress = 0,
   onClose,
 }: SidebarProps) {
   const pathname = usePathname();
+  const pct = Math.round(overallProgress);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -114,77 +103,47 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="w-full h-full bg-card border-r border-border flex flex-col">
+    <aside className="w-full h-full flex flex-col" style={{ background: "#060D1C" }}>
 
-      {/* ══ Header ═══════════════════════════════════════════════════════════ */}
-      {collapsed ? (
-        <div className="flex flex-col items-center py-3 border-b border-border shrink-0 gap-1.5">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <BookOpen className="w-4 h-4 text-primary-foreground" />
-          </div>
-          {onToggleCollapse && (
-            <button
-              onClick={onToggleCollapse}
-              className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150"
-              aria-label="Expand sidebar"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="flex items-center px-4 py-4 border-b border-border shrink-0">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-              <BookOpen className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="text-base font-bold text-foreground">GED Prep</span>
-          </div>
-          {onToggleCollapse && (
-            <button
-              onClick={onToggleCollapse}
-              className="hidden md:flex items-center justify-center p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150 shrink-0"
-              aria-label="Collapse sidebar"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          )}
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="md:hidden p-1.5 rounded-lg hover:bg-muted transition-colors shrink-0"
-              aria-label="Close navigation"
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ══ User info ════════════════════════════════════════════════════════ */}
-      {userName && !collapsed && (
-        <div className="border-b border-border shrink-0 py-3 px-4">
-          <p className="text-xs text-muted-foreground mb-0.5 tracking-normal">Studying as</p>
-          <p className="text-sm font-semibold text-foreground truncate tracking-normal">{userName}</p>
-          {daysUntilExam !== undefined && (
-            <div className="mt-2 inline-flex items-center gap-1.5 bg-primary-light text-primary rounded-md px-2.5 py-1 text-xs font-medium tracking-normal whitespace-nowrap">
-              <span className="font-bold text-primary">{daysUntilExam}</span>
-              <span>days until exam</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ══ Navigation ═══════════════════════════════════════════════════════ */}
-      <nav
-        aria-label="Main navigation"
-        className="flex-1 py-3 space-y-0.5 px-2"
+      {/* ── Header ── */}
+      <div
+        className="shrink-0 flex items-center px-4 py-[18px]"
+        style={{ gap: 9, borderBottom: "1px solid rgba(255,255,255,.07)" }}
       >
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+        <div
+          className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0"
+          style={{ boxShadow: "0 3px 0 rgba(0,0,0,.35)" }}
+        >
+          <BookOpen className="w-4 h-4 text-white" />
+        </div>
+        <FadeLabel collapsed={collapsed} className="text-base font-bold text-white">
+          GED Prep
+        </FadeLabel>
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg text-white/30 hover:text-white/60 transition-colors ml-auto"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
+        )}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="md:hidden p-1.5 rounded-lg text-white/30 hover:text-white/60 transition-colors ml-auto"
+            aria-label="Close navigation"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
 
+      {/* ── Nav ── */}
+      <nav aria-label="Main navigation" className="flex-1 py-2.5 space-y-0.5 px-2">
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <div key={item.href} className="relative group/item">
               <Link
@@ -192,75 +151,112 @@ export default function Sidebar({
                 onClick={onClose}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center w-full rounded-xl py-2.5",
-                  "transition-colors duration-200",
-                  isActive
-                    ? "bg-primary-light"
-                    : "hover:bg-muted",
+                  "flex items-center w-full rounded-[10px] py-2.5 transition-colors duration-200",
+                  isActive ? "bg-blue-600/25" : "hover:bg-white/5",
                 )}
               >
                 <span className="w-11 flex items-center justify-center shrink-0">
                   <Icon
                     aria-hidden="true"
-                    className={cn(
-                      "w-5 h-5",
-                      isActive ? "text-primary" : "text-muted-foreground",
-                    )}
+                    className={cn("w-4 h-4", isActive ? "text-blue-400" : "text-white/30")}
                   />
                 </span>
                 <FadeLabel
                   collapsed={collapsed}
                   className={cn(
-                    "text-sm font-medium",
-                    isActive ? "text-primary" : "text-foreground",
+                    "text-[13px] font-medium",
+                    isActive ? "text-blue-400" : "text-white/40",
                   )}
                 >
                   {item.label}
                 </FadeLabel>
               </Link>
-
               <SidebarTooltip label={item.label} collapsed={collapsed} />
             </div>
           );
         })}
       </nav>
 
-      {/* ══ Theme toggle ═════════════════════════════════════════════════════ */}
-      <div className="border-t border-border shrink-0 px-2 py-3">
-        <div className={cn("flex", collapsed ? "justify-center" : "px-1")}>
-          <ThemeToggle showLabel={!collapsed} className={collapsed ? "border-0 bg-transparent px-2 hover:bg-muted" : "w-full justify-start"} />
-        </div>
-      </div>
+      {/* ── Bottom: user + ring + theme + logout ── */}
+      <div className="shrink-0 px-4 pt-4 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,.07)" }}>
 
-      {/* ══ Logout ═══════════════════════════════════════════════════════════ */}
-      <div className="border-t border-border shrink-0 px-2 py-3">
+        {/* User row */}
+        {!collapsed && (
+          <div className="flex items-center gap-2.5 mb-3">
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%", overflow: "hidden",
+              flexShrink: 0, border: "2px solid rgba(37,99,235,.6)", background: "#FDDCB5",
+            }}>
+              <MiniKaiFace />
+            </div>
+            <div>
+              <div className="text-[13px] font-semibold text-white leading-tight">
+                {userName ?? "Student"}
+              </div>
+              {daysUntilExam !== undefined && (
+                <div className="text-[11px] leading-tight text-white/35">
+                  {daysUntilExam} days to exam
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Readiness ring */}
+        {!collapsed && (
+          <div
+            className="flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 mb-2"
+            style={{ background: "rgba(255,255,255,.05)" }}
+          >
+            <div style={{ position: "relative", width: 38, height: 38, flexShrink: 0 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: "50%",
+                background: `conic-gradient(#3B82F6 ${pct}%, rgba(255,255,255,.1) 0)`,
+                WebkitMask: "radial-gradient(farthest-side,transparent 54%,black 0)",
+                mask: "radial-gradient(farthest-side,transparent 54%,black 0)",
+              }} />
+              <div style={{
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 9, fontWeight: 700, color: "white",
+              }}>
+                {pct}%
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold text-white/70">GED Readiness</div>
+              <div className="text-[10px] text-white/30">AI-optimized plan</div>
+            </div>
+          </div>
+        )}
+
+        {/* ThemeToggle */}
+        <div className={cn("mb-1", collapsed ? "flex justify-center" : "")}>
+          <ThemeToggle
+            showLabel={!collapsed}
+            className={cn(
+              "border-white/10 bg-transparent hover:bg-white/5",
+              collapsed ? "px-2" : "w-full justify-start",
+            )}
+          />
+        </div>
+
+        {/* Logout */}
         <div className="relative group/item">
           <button
             onClick={handleLogout}
-            className={cn(
-              "flex items-center w-full rounded-xl py-2.5",
-              "transition-colors duration-200",
-              "hover:bg-danger/10",
-            )}
+            className="flex items-center w-full rounded-xl py-2 hover:bg-white/5 transition-colors duration-200"
           >
             <span className="w-11 flex items-center justify-center shrink-0">
-              <LogOut
-                aria-hidden="true"
-                className="w-5 h-5 text-muted-foreground transition-colors duration-150 group-hover/item:text-danger"
-              />
+              <LogOut aria-hidden="true" className="w-4 h-4 text-white/25" />
             </span>
-            <FadeLabel
-              collapsed={collapsed}
-              className="text-sm font-medium text-muted-foreground group-hover/item:text-danger"
-            >
+            <FadeLabel collapsed={collapsed} className="text-[12px] font-medium text-white/25">
               Log out
             </FadeLabel>
           </button>
-
           <SidebarTooltip label="Log out" collapsed={collapsed} />
         </div>
       </div>
-
     </aside>
   );
 }

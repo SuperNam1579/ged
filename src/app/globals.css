@@ -121,11 +121,23 @@ body {
   color: var(--foreground);
   font-family: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  letter-spacing: 0.053em;
 }
 
 * {
   box-sizing: border-box;
+}
+
+@keyframes floatA {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes floatB {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes floatC {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
 }
 
 /* Duolingo-style 3D button press effect (now blue) */

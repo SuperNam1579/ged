@@ -1,91 +1,141 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ClipboardList, Calendar, TrendingUp, Play, AlertCircle, BookOpen, Info } from "lucide-react";
+import {
+  ClipboardList, Calendar, TrendingUp, Play,
+  AlertCircle, BookOpen, Info,
+} from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/ui/Button";
-import ProgressBar from "@/components/ui/ProgressBar";
-import Badge from "@/components/ui/Badge";
-import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils/cn";
-import type { DashboardStats, StudySessionWithSubtopic } from "@/types";
+import type { DashboardStats, StudySessionWithSubtopic, SubjectSummary } from "@/types";
 
-const SUBJECT_COLORS: Record<string, string> = {
+// ─── Subject colors ──────────────────────────────────────────────────────────
+
+const SUBJECT_TAG_CLS: Record<string, string> = {
   MATH: "bg-primary-light text-primary",
-  RLA: "bg-green-100 dark:bg-green-500/15 text-green-700",
-  SS: "bg-orange-100 dark:bg-orange-500/15 text-orange-700",
-  SCI: "bg-primary-light text-accent",
+  RLA:  "bg-green-100 text-green-700",
+  SS:   "bg-orange-100 text-orange-700",
+  SCI:  "bg-purple-100 text-purple-700",
 };
 
-const SUBJECT_BADGE_VARIANT: Record<string, "info" | "success" | "warning" | "danger" | "default"> = {
-  MATH: "info",
-  RLA: "success",
-  SS: "warning",
-  SCI: "default",
+// Bar-fill colors keyed by subject — keeps every progress bar in the subject's
+// own brand color instead of a generic accent, matching the reference design.
+const SUBJECT_BAR_COLOR: Record<string, string> = {
+  MATH: "var(--primary)",
+  RLA:  "#16A34A",
+  SCI:  "#7C3AED",
+  SS:   "#D97706",
 };
 
-function DifficultyDots({ level }: { level: number }) {
+// ─── Week helpers ────────────────────────────────────────────────────────────
+
+const MON_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
+
+function buildWeekDays(streakDays: number) {
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const dow = todayStart.getDay(); // 0=Sun
+  const diff = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(todayStart.getFullYear(), todayStart.getMonth(), todayStart.getDate() + diff);
+
+  return MON_LETTERS.map((letter, i) => {
+    const dayDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+    const daysAgo = Math.round((todayStart.getTime() - dayDate.getTime()) / 86_400_000);
+    const isToday = daysAgo === 0;
+    const isFuture = daysAgo < 0;
+    const studied = !isFuture && daysAgo < streakDays;
+    return { letter, isToday, isFuture, studied };
+  });
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function StatCell({
+  label, value, color, border,
+}: { label: string; value: string | number; color: string; border?: boolean }) {
   return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((d) => (
-        <div
-          key={d}
-          className={cn(
-            "w-1.5 h-1.5 rounded-full",
-            d <= level ? "bg-primary" : "bg-muted"
-          )}
-        />
-      ))}
+    <div
+      className="px-5 py-5 lg:px-6"
+      style={{ borderRight: border ? "1px solid var(--border)" : undefined }}
+    >
+      <div className="text-[10px] uppercase tracking-[.08em] text-muted-foreground font-semibold mb-1">
+        {label}
+      </div>
+      <div
+        className="text-[28px] lg:text-[32px] font-bold leading-none"
+        style={{ fontFamily: "var(--font-feather)", color }}
+      >
+        {value}
+      </div>
     </div>
   );
 }
 
-function SessionCard({ session }: { session: StudySessionWithSubtopic }) {
+function SessionRow({ session, last }: { session: StudySessionWithSubtopic; last: boolean }) {
   return (
-    <div className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border hover:border-primary hover:shadow-sm transition-all">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <Badge variant={SUBJECT_BADGE_VARIANT[session.subjectCode] ?? "default"}>
+    <div
+      className="flex items-center gap-3.5 py-3 relative"
+      style={{ borderBottom: last ? "none" : "1px solid var(--border)" }}
+    >
+      <div style={{
+        width: 12, height: 12, borderRadius: "50%",
+        background: "var(--primary)", border: "3px solid var(--card)",
+        flexShrink: 0, position: "relative", zIndex: 1,
+      }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className={cn("px-2 py-0.5 text-xs font-semibold rounded", SUBJECT_TAG_CLS[session.subjectCode] ?? "bg-muted text-foreground")}>
             {session.subjectCode}
-          </Badge>
-          <DifficultyDots level={session.difficultyLevel} />
+          </span>
+          <span className="text-xs text-muted-foreground">Lv {session.difficultyLevel}</span>
+          <span className="text-xs text-muted-foreground">· {session.durationMins} min</span>
         </div>
-        <p className="text-sm font-semibold text-foreground truncate">{session.subtopicName}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{session.topicName} · {session.durationMins} min</p>
+        <div className="text-sm font-semibold text-foreground truncate">{session.subtopicName}</div>
       </div>
-      <Link href={`/study/${session.id}`}>
-        <Button size="sm" variant="primary" className="flex items-center gap-1.5 shrink-0">
-          <Play className="w-3.5 h-3.5" />
-          Start
-        </Button>
+      <Link href={`/study/${session.id}`} style={{ flexShrink: 0 }}>
+        <button style={{
+          padding: "8px 16px", background: "var(--primary)", color: "white",
+          border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700,
+          cursor: "pointer", boxShadow: "0 2px 0 var(--primary-dark)",
+        }}>
+          Start →
+        </button>
       </Link>
     </div>
   );
 }
 
-function StatCard({ label, value, sub, icon: Icon, color }: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  icon: React.ElementType;
-  color: string;
-}) {
+function SubjectBar({ s, last }: { s: SubjectSummary; last: boolean }) {
+  const scoreColor = SUBJECT_BAR_COLOR[s.code] ?? "var(--primary)";
   return (
-    <div className="bg-card rounded-xl border border-border p-5">
-      <div className="flex items-center gap-3 mb-3">
-        <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center", color)}>
-          <Icon className="w-5 h-5" />
-        </div>
-        <p className="text-sm text-muted-foreground">{label}</p>
+    <div style={{ borderBottom: last ? "none" : "1px solid var(--border)", paddingBottom: last ? 0 : 18, marginBottom: last ? 0 : 18 }}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className={cn("px-2 py-0.5 text-xs font-semibold rounded", SUBJECT_TAG_CLS[s.code] ?? "bg-muted text-foreground")}>
+          {s.code}
+        </span>
+        <span className="text-xs font-bold text-foreground">
+          {s.attemptedCount === 0 ? "—" : `${s.proficiencyScore}%`}
+        </span>
       </div>
-      <p className="text-2xl font-bold text-foreground">{value}</p>
-      {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+      <div className="h-1.5 rounded-full overflow-hidden mb-1" style={{ background: "var(--border)" }}>
+        <div style={{ width: `${s.proficiencyScore}%`, height: "100%", background: scoreColor, borderRadius: "inherit" }} />
+      </div>
+      <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+        <span>Coverage</span>
+        <span>{Math.round(s.coveragePercent)}%</span>
+      </div>
+      <div className="h-[3px] rounded-full overflow-hidden mt-1" style={{ background: "var(--border)" }}>
+        <div style={{ width: `${s.coveragePercent}%`, height: "100%", background: "var(--primary)", borderRadius: "inherit" }} />
+      </div>
     </div>
   );
 }
+
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -94,36 +144,81 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Gate the dashboard fetch behind a preferences check so a brand-new
+  // account (e.g. fresh Google sign-up, which never set up a study plan)
+  // never renders a flash of empty/zeroed dashboard before bouncing to
+  // onboarding — it goes straight there instead.
   useEffect(() => {
     if (authLoading) return;
+    let cancelled = false;
+
     fetch("/api/user/preferences")
       .then((r) => r.json())
-      .then((data) => { if (!data.preferences) router.replace("/onboarding"); })
-      .catch(() => {});
-  }, [authLoading, router]);
-
-  useEffect(() => {
-    if (authLoading) return;
-    fetch("/api/dashboard")
-      .then((r) => r.json())
       .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setStats(data);
+        if (cancelled) return;
+        if (!data.preferences) {
+          router.replace("/onboarding");
+          return;
         }
-        setLoading(false);
+        return fetch("/api/dashboard")
+          .then((r) => r.json())
+          .then((statsData) => {
+            if (cancelled) return;
+            if (statsData.error) setError(statsData.error);
+            else setStats(statsData);
+            setLoading(false);
+          });
       })
       .catch(() => {
+        if (cancelled) return;
         setError("Failed to load dashboard. Please refresh.");
         setLoading(false);
       });
-  }, [authLoading]);
+
+    return () => { cancelled = true; };
+  }, [authLoading, router]);
+
+  // ── Derived values ──────────────────────────────────────────────────────────
+
+  const overallProgress  = stats?.overallProgress  ?? 0;
+  const daysUntilExam    = stats?.daysUntilExam    ?? 0;
+  const todaySessions    = stats?.todaySessions    ?? [];
+  const subjectSummaries = stats?.subjectSummaries ?? [];
+  const streakDays       = stats?.streakDays       ?? 0;
+  const lastUpdate       = stats?.lastPlanUpdate;
+
+  const predictedScore = useMemo(
+    () => overallProgress > 0 ? Math.round(145 + (overallProgress / 100) * 20) : null,
+    [overallProgress],
+  );
+
+  const continueSession = useMemo(
+    () => todaySessions.find((s) => s.status === "IN_PROGRESS") ?? todaySessions.find((s) => s.status === "PENDING"),
+    [todaySessions],
+  );
+
+  const focusAreas = useMemo(
+    () => [...subjectSummaries]
+      .filter((s) => s.attemptedCount > 0)
+      .sort((a, b) => a.proficiencyScore - b.proficiencyScore)
+      .slice(0, 3),
+    [subjectSummaries],
+  );
+
+  const weekDays = useMemo(() => buildWeekDays(streakDays), [streakDays]);
+
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const firstName = user?.name?.split(" ")[0] ?? "there";
+
+  // ── Loading / error states ──────────────────────────────────────────────────
 
   if (authLoading || loading) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center h-[calc(100vh-56px)]">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       </MainLayout>
@@ -133,7 +228,7 @@ export default function DashboardPage() {
   if (error) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center min-h-screen px-6">
+        <div className="flex items-center justify-center h-[calc(100vh-56px)] px-6">
           <div className="text-center max-w-sm">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
             <p className="text-foreground font-medium mb-4">{error}</p>
@@ -144,205 +239,353 @@ export default function DashboardPage() {
     );
   }
 
-  const todaySessions = stats?.todaySessions ?? [];
-  const subjectSummaries = stats?.subjectSummaries ?? [];
-
-  const daysUntilExam = stats?.daysUntilExam ?? 0;
-  const lastUpdate = stats?.lastPlanUpdate;
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <MainLayout userName={user?.name} daysUntilExam={daysUntilExam}>
-      <div className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8 max-w-5xl mx-auto w-full">
-        {/* Page header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">
-            {user?.name ? `Good day, ${user.name.split(" ")[0]}!` : "Dashboard"}
+    <MainLayout
+      userName={user?.name}
+      daysUntilExam={daysUntilExam}
+      overallProgress={overallProgress}
+    >
+      {/* ── Stats band ─────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+        <StatCell label="Overall Progress" value={`${Math.round(overallProgress)}%`} color="var(--primary)" border />
+        <StatCell label="Days to Exam"     value={daysUntilExam}                     color="#F97316"        border />
+        <StatCell label="Today's Sessions" value={todaySessions.length}              color="#22C55E"        border />
+        <StatCell label="Predicted Score"  value={predictedScore ?? "—"}             color="#7C3AED" />
+      </div>
+
+      {/* ── Main content ───────────────────────────────────────────────────── */}
+      <div className="px-4 py-5 lg:px-9 lg:py-8">
+
+        {/* Greeting */}
+        <div className="mb-6">
+          <h1
+            className="font-bold text-foreground mb-1"
+            style={{ fontFamily: "var(--font-feather)", fontSize: 28 }}
+          >
+            {greeting}, {firstName}! 👋
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Here's what's on your study plan today.</p>
+          <p className="text-sm text-muted-foreground">
+            {dateStr} · Here&apos;s your study plan for today.
+          </p>
         </div>
 
-        {/* Plan update banner */}
+        {/* Plan update notice */}
         {lastUpdate && lastUpdate.reason !== "INITIAL" && (
-          <div className="mb-6 flex items-start gap-3 bg-primary-light border border-primary rounded-xl px-5 py-4">
+          <div className="mb-5 flex items-start gap-3 rounded-xl px-5 py-4" style={{ background: "var(--primary-light)", border: "1px solid var(--primary)" }}>
             <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-primary">Your study plan was updated</p>
               <p className="text-xs text-primary mt-0.5">
                 Reason: {lastUpdate.reason.replace(/_/g, " ")} ·{" "}
-                {new Date(lastUpdate.generatedAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
+                {new Date(lastUpdate.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </p>
             </div>
           </div>
         )}
 
-        {/* Stats row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            label="Overall Progress"
-            value={`${Math.round(stats?.overallProgress ?? 0)}%`}
-            sub="across all subjects"
-            icon={TrendingUp}
-            color="bg-primary-light text-primary"
-          />
-          <StatCard
-            label="Days Until Exam"
-            value={daysUntilExam}
-            sub="keep up the pace!"
-            icon={Calendar}
-            color="bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400"
-          />
-          <StatCard
-            label="Today's Sessions"
-            value={todaySessions.length}
-            sub={todaySessions.length === 1 ? "session scheduled" : "sessions scheduled"}
-            icon={BookOpen}
-            color="bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400"
-          />
-          <StatCard
-            label="Plan Version"
-            value={`v${stats?.currentPlanVersion ?? 1}`}
-            sub="AI-optimized"
-            icon={ClipboardList}
-            color="bg-primary-light text-accent"
-          />
+        {/* ── Continue where you left off ──────────────────────────────────── */}
+        {continueSession && (
+          <div
+            className="mb-6 relative overflow-hidden flex items-center"
+            style={{
+              background: "linear-gradient(120deg,#030C1A,#1e90e8 55%,#38BDF8)",
+              borderRadius: 18, padding: "22px 26px", gap: 20,
+            }}
+          >
+            <div style={{
+              position: "absolute", right: -30, bottom: -40,
+              width: 180, height: 180, borderRadius: "50%",
+              background: "rgba(255,255,255,.06)", pointerEvents: "none",
+            }} />
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: "rgba(255,255,255,.16)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <Play className="w-6 h-6 text-white" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0, position: "relative", zIndex: 1 }}>
+              <div style={{
+                fontSize: 11, fontWeight: 700,
+                color: "rgba(255,255,255,.72)",
+                textTransform: "uppercase", letterSpacing: ".08em",
+                marginBottom: 5,
+              }}>
+                {continueSession.status === "IN_PROGRESS" ? "Continue where you left off" : "Next up"}
+              </div>
+              <div style={{
+                fontFamily: "var(--font-feather)", fontSize: 19,
+                fontWeight: 700, color: "white", marginBottom: 6,
+              }}>
+                {continueSession.subtopicName} · {continueSession.subjectName}
+              </div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,.7)", fontWeight: 600 }}>
+                {continueSession.durationMins} min session
+              </div>
+            </div>
+            <Link href={`/study/${continueSession.id}`} style={{ position: "relative", zIndex: 1, flexShrink: 0 }}>
+              <button style={{
+                padding: "12px 24px", background: "white", color: "var(--primary)",
+                border: "none", borderRadius: 12, fontSize: 14, fontWeight: 700,
+                cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,.14)",
+              }}>
+                {continueSession.status === "IN_PROGRESS" ? "Resume →" : "Start →"}
+              </button>
+            </Link>
+          </div>
+        )}
+
+        {/* ── Overall GED Readiness bar ─────────────────────────────────────── */}
+        <div
+          className="mb-6 rounded-2xl px-5 py-4"
+          style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+        >
+          <div className="flex justify-between mb-2">
+            <span className="text-sm font-bold text-foreground">Overall GED Readiness</span>
+            <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>
+              {Math.round(overallProgress)}%
+            </span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${overallProgress}%`,
+                background: "linear-gradient(90deg,var(--primary),#38BDF8)",
+              }}
+            />
+          </div>
         </div>
 
-        {/* Overall progress bar */}
-        <div className="mb-8 bg-card rounded-xl border border-border p-5">
-          <p className="text-sm font-semibold text-foreground mb-3">Overall GED Readiness</p>
-          <ProgressBar value={stats?.overallProgress ?? 0} variant="blue" size="lg" />
-        </div>
+        {/* ── Sessions + Subject Progress ───────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 mb-6">
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Today's Sessions */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-foreground">Today's Study Sessions</h2>
-                  <Badge variant="info">{todaySessions.length} sessions</Badge>
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden" }}>
+            <div
+              className="flex items-center justify-between px-5 py-4"
+              style={{ borderBottom: "1px solid var(--border)" }}
+            >
+              <h2 className="text-[15px] font-bold text-foreground">Today&apos;s Study Sessions</h2>
+              <span
+                className="text-[11px] font-bold px-[9px] py-1 rounded-full"
+                style={{ background: "var(--primary-light)", color: "var(--primary)" }}
+              >
+                {todaySessions.length} sessions
+              </span>
+            </div>
+            <div className="px-5 py-4 relative">
+              {todaySessions.length > 0 && (
+                <div style={{
+                  position: "absolute", left: 28, top: 16, bottom: 16,
+                  width: 2, background: "var(--border)",
+                }} />
+              )}
+              {todaySessions.length === 0 ? (
+                <div className="text-center py-8">
+                  <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No sessions for today</p>
+                  <Link href="/schedule">
+                    <Button variant="secondary" size="sm" className="mt-3">View Schedule</Button>
+                  </Link>
                 </div>
-              </CardHeader>
-              <CardBody className="space-y-3">
-                {todaySessions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-sm font-medium text-muted-foreground">No sessions for today</p>
-                    <p className="text-xs text-muted-foreground mt-1">Check your schedule for upcoming sessions</p>
-                    <Link href="/schedule">
-                      <Button variant="secondary" size="sm" className="mt-4">
-                        View Schedule
-                      </Button>
+              ) : (
+                todaySessions.map((s, i) => (
+                  <SessionRow key={s.id} session={s} last={i === todaySessions.length - 1} />
+                ))
+              )}
+            </div>
+          </div>
+
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden" }}>
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+              <h2 className="text-[15px] font-bold text-foreground">Subject Progress</h2>
+            </div>
+            <div className="px-5 py-4">
+              {subjectSummaries.map((s, i) => (
+                <SubjectBar key={s.code} s={s} last={i === subjectSummaries.length - 1} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── This Week + Focus Areas ───────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-5 mb-7">
+
+          <div
+            className="rounded-[18px] px-5 py-5"
+            style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+          >
+            <div className="flex items-center justify-between mb-[18px]">
+              <h2 className="text-[15px] font-bold text-foreground">This Week</h2>
+              {streakDays > 0 && (
+                <span
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
+                  style={{ background: "rgba(249,115,22,.12)", color: "#F97316" }}
+                >
+                  🔥 {streakDays}-day streak
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-between gap-1">
+              {weekDays.map((d, i) => (
+                <div key={i} className="flex flex-col items-center gap-1.5">
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: d.isToday
+                      ? "var(--card)"
+                      : d.studied
+                        ? "var(--primary)"
+                        : "var(--border)",
+                    border: d.isToday ? "2px solid var(--primary)" : "none",
+                    opacity: d.isFuture ? 0.35 : 1,
+                  }}>
+                    <span style={{
+                      fontSize: 12, fontWeight: 600,
+                      color: d.isToday ? "var(--primary)" : d.studied ? "white" : "var(--muted-foreground)",
+                    }}>
+                      {d.letter}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
+              {streakDays > 0 ? (
+                <>You&apos;ve studied <strong className="text-foreground">{Math.min(streakDays, 7)} day{Math.min(streakDays, 7) !== 1 ? "s" : ""}</strong> in a row this week. Keep going!</>
+              ) : (
+                "Start studying today to build your streak!"
+              )}
+            </p>
+          </div>
+
+          <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden" }}>
+            <div
+              className="flex items-center justify-between px-5 py-4"
+              style={{ borderBottom: "1px solid var(--border)" }}
+            >
+              <h2 className="text-[15px] font-bold text-foreground">Focus Areas</h2>
+              <span
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
+                style={{ background: "var(--primary-light)", color: "var(--primary)" }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+                AI picks
+              </span>
+            </div>
+            <div className="px-5 py-2">
+              {focusAreas.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-5">
+                  Complete some sessions to get personalized AI focus areas.
+                </p>
+              ) : (
+                focusAreas.map((f, i) => (
+                  <div
+                    key={f.code}
+                    className="flex items-center gap-3.5 py-3"
+                    style={{ borderBottom: i < focusAreas.length - 1 ? "1px solid var(--border)" : "none" }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className={cn("px-2 py-0.5 text-xs font-semibold rounded", SUBJECT_TAG_CLS[f.code] ?? "bg-muted text-foreground")}>
+                          {f.code}
+                        </span>
+                        <span className="text-[13px] font-semibold text-foreground truncate">{f.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-[5px] rounded-full overflow-hidden" style={{ flex: 1, maxWidth: 160, background: "var(--border)" }}>
+                          <div style={{ width: `${f.proficiencyScore}%`, height: "100%", background: SUBJECT_BAR_COLOR[f.code] ?? "var(--primary)", borderRadius: "inherit" }} />
+                        </div>
+                        <span className="text-[11px] text-muted-foreground font-semibold whitespace-nowrap">
+                          {f.proficiencyScore}% mastery
+                        </span>
+                      </div>
+                    </div>
+                    <Link href="/progress" style={{ flexShrink: 0 }}>
+                      <button style={{
+                        padding: "7px 14px",
+                        background: "var(--primary-light)",
+                        color: "var(--primary)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                      }}>
+                        Practice
+                      </button>
                     </Link>
                   </div>
-                ) : (
-                  todaySessions.map((session) => (
-                    <SessionCard key={session.id} session={session} />
-                  ))
-                )}
-              </CardBody>
-            </Card>
-          </div>
-
-          {/* Subject Progress */}
-          <div>
-            <Card>
-              <CardHeader>
-                <h2 className="text-base font-semibold text-foreground">Subject Progress</h2>
-              </CardHeader>
-              <CardBody className="space-y-5">
-                {subjectSummaries.map((subject) => (
-                  <div key={subject.code}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className={cn("px-2 py-0.5 rounded text-xs font-semibold", SUBJECT_COLORS[subject.code] ?? "bg-muted text-foreground")}>
-                          {subject.code}
-                        </span>
-                        {subject.attemptedCount > 0 && subject.proficiencyScore < 60 && (
-                          <span className="text-xs text-orange-500 font-medium">Needs work</span>
-                        )}
-                      </div>
-                      {subject.attemptedCount === 0 && (
-                        <span className="text-xs text-muted-foreground italic">Not started</span>
-                      )}
-                    </div>
-
-                    {/* Score bar */}
-                    <div className="mb-1.5">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs text-muted-foreground">Score</span>
-                        <span className={cn(
-                          "text-xs font-semibold",
-                          subject.attemptedCount === 0 ? "text-muted-foreground" :
-                          subject.proficiencyScore >= 70 ? "text-green-600 dark:text-green-400" :
-                          subject.proficiencyScore >= 50 ? "text-orange-500" : "text-red-500"
-                        )}>
-                          {subject.attemptedCount === 0 ? "—" : `${subject.proficiencyScore}%`}
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={cn("h-full rounded-full transition-all",
-                            subject.proficiencyScore >= 70 ? "bg-green-500" :
-                            subject.proficiencyScore >= 50 ? "bg-orange-400" : "bg-red-400"
-                          )}
-                          style={{ width: `${subject.proficiencyScore}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Coverage bar */}
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs text-muted-foreground">Coverage</span>
-                        <span className="text-xs text-muted-foreground">
-                          {subject.attemptedCount}/{subject.totalCount}
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full transition-all"
-                          style={{ width: `${subject.coveragePercent}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardBody>
-            </Card>
+                ))
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div>
-          <h2 className="text-base font-semibold text-foreground mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Link href="/mock-test">
-              <div className="bg-card rounded-xl border border-border p-5 hover:border-primary hover:shadow-sm transition-all cursor-pointer group">
-                <ClipboardList className="w-6 h-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                <p className="text-sm font-semibold text-foreground">Take Mock Test</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Simulate GED exam conditions</p>
+        {/* ── Quick Actions ──────────────────────────────────────────────────── */}
+        <h2
+          className="font-bold text-muted-foreground uppercase mb-3"
+          style={{ fontSize: 13, letterSpacing: ".08em" }}
+        >
+          Quick Actions
+        </h2>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link href="/mock-test" className="flex-1">
+            <div
+              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-sm transition-all"
+              style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+            >
+              <div style={{
+                width: 34, height: 34, borderRadius: 9,
+                background: "var(--primary-light)",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <ClipboardList className="w-4 h-4 text-primary" />
               </div>
-            </Link>
-            <Link href="/schedule">
-              <div className="bg-card rounded-xl border border-border p-5 hover:border-primary hover:shadow-sm transition-all cursor-pointer group">
-                <Calendar className="w-6 h-6 text-orange-500 mb-3 group-hover:scale-110 transition-transform" />
-                <p className="text-sm font-semibold text-foreground">View Full Schedule</p>
-                <p className="text-xs text-muted-foreground mt-0.5">See your upcoming study plan</p>
+              <div>
+                <div className="text-[13px] font-bold text-foreground">Mock Test</div>
+                <div className="text-[11px] text-muted-foreground">Simulate GED exam</div>
               </div>
-            </Link>
-            <Link href="/progress">
-              <div className="bg-card rounded-xl border border-border p-5 hover:border-primary hover:shadow-sm transition-all cursor-pointer group">
-                <TrendingUp className="w-6 h-6 text-green-500 mb-3 group-hover:scale-110 transition-transform" />
-                <p className="text-sm font-semibold text-foreground">View My Progress</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Track scores & weak areas</p>
+            </div>
+          </Link>
+          <Link href="/schedule" className="flex-1">
+            <div
+              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-sm transition-all"
+              style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+            >
+              <div style={{
+                width: 34, height: 34, borderRadius: 9, background: "#FFF7ED",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <Calendar className="w-4 h-4" style={{ color: "#F97316" }} />
               </div>
-            </Link>
-          </div>
+              <div>
+                <div className="text-[13px] font-bold text-foreground">Schedule</div>
+                <div className="text-[11px] text-muted-foreground">Full study plan</div>
+              </div>
+            </div>
+          </Link>
+          <Link href="/progress" className="flex-1">
+            <div
+              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-sm transition-all"
+              style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+            >
+              <div style={{
+                width: 34, height: 34, borderRadius: 9, background: "#F0FDF4",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}>
+                <TrendingUp className="w-4 h-4" style={{ color: "#22C55E" }} />
+              </div>
+              <div>
+                <div className="text-[13px] font-bold text-foreground">My Progress</div>
+                <div className="text-[11px] text-muted-foreground">Scores &amp; weak areas</div>
+              </div>
+            </div>
+          </Link>
         </div>
+
       </div>
     </MainLayout>
   );

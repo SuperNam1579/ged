@@ -38,9 +38,9 @@ const variants = {
 };
 
 const sizes = {
-  sm: "px-4 py-2 text-[13px] rounded-xl",
-  md: "px-6 py-3 text-[15px] rounded-xl",
-  lg: "px-8 py-4 text-[17px] rounded-xl",
+  sm: "px-4 py-2 text-[13px] rounded-full",
+  md: "px-6 py-3 text-[15px] rounded-full",
+  lg: "px-8 py-4 text-[17px] rounded-full",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -54,7 +54,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         className={cn(
           "inline-flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60 disabled:cursor-not-allowed",
-          "tracking-[0.053em]",
           variants[variant],
           sizes[size],
           className

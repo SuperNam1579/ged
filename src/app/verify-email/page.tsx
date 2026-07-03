@@ -98,7 +98,7 @@ function VerifyEmailContent() {
         <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <span className="text-xl font-bold text-foreground">GED Prep</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>GED Prep</span>
       </div>
 
       <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
@@ -123,7 +123,7 @@ function VerifyingState() {
   return (
     <div className="py-4">
       <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
-      <h1 className="text-xl font-bold text-foreground">Verifying your email…</h1>
+      <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>Verifying your email…</h1>
       <p className="text-sm text-muted-foreground mt-2">Please wait a moment.</p>
     </div>
   );
@@ -135,7 +135,7 @@ function SuccessState({ countdown }: { countdown: number }) {
       <div className="w-14 h-14 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <CheckCircle className="w-8 h-8 text-green-500" />
       </div>
-      <h1 className="text-2xl font-bold text-foreground mb-2">Email verified!</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: "var(--font-feather)" }}>Email verified!</h1>
       <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
         Your account is now active. Redirecting you to sign in…
       </p>
@@ -155,7 +155,7 @@ function AlreadyVerifiedState() {
       <div className="w-14 h-14 bg-primary-light rounded-full flex items-center justify-center mx-auto mb-5">
         <CheckCircle className="w-8 h-8 text-primary" />
       </div>
-      <h1 className="text-2xl font-bold text-foreground mb-2">Already verified</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: "var(--font-feather)" }}>Already verified</h1>
       <p className="text-sm text-muted-foreground mb-8">
         This email address has already been verified. You can sign in normally.
       </p>
@@ -201,7 +201,7 @@ function ExpiredOrInvalidState({
         )}
       </div>
 
-      <h1 className="text-2xl font-bold text-foreground mb-2">
+      <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: "var(--font-feather)" }}>
         {isExpired ? "Link expired" : "Invalid link"}
       </h1>
       <p className="text-sm text-muted-foreground mb-6 leading-relaxed">

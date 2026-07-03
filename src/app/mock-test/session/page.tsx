@@ -117,7 +117,7 @@ function MockSessionContent() {
 
           {triggered && (
             <div className="bg-primary-light border border-primary rounded-xl p-4 mb-6 text-sm text-primary">
-              <strong>Your study plan has been updated</strong> based on your mock test performance. Log in next time to see your revised schedule.
+              <strong>Your study plan has been updated</strong> based on your mock test performance. Sign in next time to see your revised schedule.
             </div>
           )}
 

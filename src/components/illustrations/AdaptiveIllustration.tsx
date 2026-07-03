@@ -35,8 +35,8 @@ export default function AdaptiveIllustration() {
 
       {/* Level badge */}
       <circle cx="68" cy="270" r="26" fill="#ffc700" stroke="white" strokeWidth="3" />
-      <text x="68" y="278" textAnchor="middle" fill="#3c3c3c" fontSize="13" fontWeight="800" fontFamily="sans-serif">LVL</text>
-      <text x="68" y="292" textAnchor="middle" fill="#3c3c3c" fontSize="10" fontFamily="sans-serif">5</text>
+      <text x="68" y="278" textAnchor="middle" fill="#3c3c3c" fontSize="13" fontWeight="800" fontFamily="Fredoka, sans-serif">LVL</text>
+      <text x="68" y="292" textAnchor="middle" fill="#3c3c3c" fontSize="10" fontFamily="Fredoka, sans-serif">5</text>
     </svg>
   );
 }

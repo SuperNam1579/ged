@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
           <div className="w-14 h-14 bg-primary-light rounded-full flex items-center justify-center mx-auto mb-5">
             <Mail className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: "var(--font-feather)" }}>Check your email</h1>
           <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
             If an account exists for{" "}
             <strong className="text-foreground">{email}</strong>,
@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <PageShell>
-      <h1 className="text-2xl font-bold text-foreground mb-1">Forgot your password?</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-feather)" }}>Forgot your password?</h1>
       <p className="text-sm text-muted-foreground mb-6">
         Enter your email and we&apos;ll send a reset link if your account exists.
       </p>
@@ -138,7 +138,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
         <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <span className="text-xl font-bold text-foreground">GED Prep</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>GED Prep</span>
       </div>
       <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8">
         {children}

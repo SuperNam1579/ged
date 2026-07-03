@@ -19,7 +19,7 @@ const SUBJECT_COLORS: Record<string, string> = {
   MATH: "bg-primary-light text-primary",
   RLA: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",
   SS: "bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400",
-  SCI: "bg-primary-light text-accent",
+  SCI: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400",
 };
 
 const OPTION_LABELS = ["A", "B", "C", "D"];

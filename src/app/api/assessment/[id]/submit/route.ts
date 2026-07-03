@@ -139,30 +139,45 @@ export async function POST(
     });
   }
 
-  for (const [subtopicId, { correct, total }] of subtopicScores) {
-    const newScore = (correct / total) * 100;
-    const existing = await db.userSubtopicProficiency.findUnique({
-      where: { userId_subtopicId: { userId: authUser.id, subtopicId } },
+  // Batch-fetch every touched subtopic's existing proficiency in ONE query,
+  // then apply all upserts in a single transaction. This replaces the previous
+  // per-subtopic findUnique→upsert loop, which fired up to ~2×N sequential
+  // round-trips to the database — the cause of the long pause on the last
+  // question of each subject in the pre-assessment.
+  const subtopicIds = Array.from(subtopicScores.keys());
+  if (subtopicIds.length > 0) {
+    const existingProfs = await db.userSubtopicProficiency.findMany({
+      where: { userId: authUser.id, subtopicId: { in: subtopicIds } },
+      select: { subtopicId: true, score: true },
+    });
+    const existingScoreMap = new Map(existingProfs.map((p) => [p.subtopicId, p.score]));
+
+    const now = new Date();
+    const upserts = subtopicIds.map((subtopicId) => {
+      const { correct, total } = subtopicScores.get(subtopicId)!;
+      const newScore = (correct / total) * 100;
+      const existingScore = existingScoreMap.get(subtopicId);
+      const updatedScore = existingScore !== undefined
+        ? updateProficiency(existingScore, newScore)
+        : newScore;
+
+      return db.userSubtopicProficiency.upsert({
+        where: { userId_subtopicId: { userId: authUser.id, subtopicId } },
+        update: {
+          score: updatedScore,
+          attemptCount: { increment: 1 },
+          lastUpdated: now,
+        },
+        create: {
+          userId: authUser.id,
+          subtopicId,
+          score: updatedScore,
+          attemptCount: 1,
+        },
+      });
     });
 
-    const updatedScore = existing
-      ? updateProficiency(existing.score, newScore)
-      : newScore;
-
-    await db.userSubtopicProficiency.upsert({
-      where: { userId_subtopicId: { userId: authUser.id, subtopicId } },
-      update: {
-        score: updatedScore,
-        attemptCount: { increment: 1 },
-        lastUpdated: new Date(),
-      },
-      create: {
-        userId: authUser.id,
-        subtopicId,
-        score: updatedScore,
-        attemptCount: 1,
-      },
-    });
+    await db.$transaction(upserts);
   }
 
   // Check adaptive triggers for QUIZ and MOCK

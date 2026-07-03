@@ -70,7 +70,7 @@ const SUBJECT_COLORS: Record<string, string> = {
   MATH: "bg-primary",
   RLA: "bg-green-500",
   SS: "bg-orange-500",
-  SCI: "bg-accent",
+  SCI: "bg-purple-500",
 };
 
 export default function ProgressPage() {
