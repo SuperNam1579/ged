@@ -20,29 +20,29 @@ export default function ProgressIllustration() {
       {/* Star on trophy */}
       <path d="M200 158 L206 175 L224 175 L210 185 L215 202 L200 192 L185 202 L190 185 L176 175 L194 175 Z" fill="white" opacity="0.85" />
 
-      {/* Progress rings / circles */}
-      <circle cx="100" cy="120" r="42" stroke="#e5e5e5" strokeWidth="8" fill="none" />
-      <circle cx="100" cy="120" r="42" stroke="#58cc02" strokeWidth="8" fill="none"
+      {/* Progress rings */}
+      <circle cx="100" cy="120" r="42" stroke="#d8e6f7" strokeWidth="8" fill="none" />
+      <circle cx="100" cy="120" r="42" stroke="#1e90e8" strokeWidth="8" fill="none"
         strokeDasharray="176 264" strokeLinecap="round" transform="rotate(-90 100 120)" />
-      <text x="100" y="116" textAnchor="middle" fill="#3c3c3c" fontSize="16" fontWeight="800" fontFamily="sans-serif">85%</text>
-      <text x="100" y="132" textAnchor="middle" fill="#777" fontSize="9" fontFamily="sans-serif">Math</text>
+      <text x="100" y="116" textAnchor="middle" fill="#0f2748" fontSize="16" fontWeight="800" fontFamily="sans-serif">85%</text>
+      <text x="100" y="132" textAnchor="middle" fill="#5b769a" fontSize="9" fontFamily="sans-serif">Math</text>
 
-      <circle cx="300" cy="120" r="42" stroke="#e5e5e5" strokeWidth="8" fill="none" />
+      <circle cx="300" cy="120" r="42" stroke="#d8e6f7" strokeWidth="8" fill="none" />
       <circle cx="300" cy="120" r="42" stroke="#1cb0f6" strokeWidth="8" fill="none"
         strokeDasharray="213 264" strokeLinecap="round" transform="rotate(-90 300 120)" />
-      <text x="300" y="116" textAnchor="middle" fill="#3c3c3c" fontSize="16" fontWeight="800" fontFamily="sans-serif">72%</text>
-      <text x="300" y="132" textAnchor="middle" fill="#777" fontSize="9" fontFamily="sans-serif">Science</text>
+      <text x="300" y="116" textAnchor="middle" fill="#0f2748" fontSize="16" fontWeight="800" fontFamily="sans-serif">72%</text>
+      <text x="300" y="132" textAnchor="middle" fill="#5b769a" fontSize="9" fontFamily="sans-serif">Science</text>
 
-      {/* Small subject pills */}
-      <rect x="88" y="210" width="90" height="26" rx="13" fill="#d7ffb8" />
-      <text x="133" y="228" textAnchor="middle" fill="#3f8f01" fontSize="11" fontWeight="700" fontFamily="sans-serif">Social Studies</text>
+      {/* Subject pills */}
+      <rect x="88" y="210" width="90" height="26" rx="13" fill="#d8ecfd" />
+      <text x="133" y="228" textAnchor="middle" fill="#1670be" fontSize="11" fontWeight="700" fontFamily="sans-serif">Social Studies</text>
 
       <rect x="222" y="210" width="70" height="26" rx="13" fill="#ffc700" opacity="0.3" />
       <text x="257" y="228" textAnchor="middle" fill="#7a5a00" fontSize="11" fontWeight="700" fontFamily="sans-serif">Language</text>
 
       {/* Sparkles */}
-      <path d="M52 200 L56 190 L60 200 L70 204 L60 208 L56 218 L52 208 L42 204 Z" fill="#a570ff" />
-      <path d="M348 160 L351 153 L354 160 L361 163 L354 166 L351 173 L348 166 L341 163 Z" fill="#cc348d" />
+      <path d="M52 200 L56 190 L60 200 L70 204 L60 208 L56 218 L52 208 L42 204 Z" fill="#1e90e8" />
+      <path d="M348 160 L351 153 L354 160 L361 163 L354 166 L351 173 L348 166 L341 163 Z" fill="#1cb0f6" />
     </svg>
   );
 }
