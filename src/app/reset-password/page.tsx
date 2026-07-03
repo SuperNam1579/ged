@@ -131,19 +131,19 @@ function ResetPasswordContent() {
 
   return (
     <PageShell>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Set a new password</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <h1 className="text-2xl font-bold text-foreground mb-1">Set a new password</h1>
+      <p className="text-sm text-muted-foreground mb-6">
         Choose a strong password of at least 8 characters.
       </p>
 
       {pageState === "error" && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
           Something went wrong. Please try again.
         </div>
       )}
 
       {fieldError && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
           {fieldError}
         </div>
       )}
@@ -180,8 +180,8 @@ function ResetPasswordContent() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
-        <Link href="/login" className="text-blue-600 font-medium hover:underline">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        <Link href="/login" className="text-primary font-medium hover:underline">
           Back to Sign In
         </Link>
       </p>
@@ -194,11 +194,11 @@ function ResetPasswordContent() {
 function SuccessState() {
   return (
     <div className="text-center py-4">
-      <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <CheckCircle className="w-8 h-8 text-green-500" />
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Password updated!</h1>
-      <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+      <h1 className="text-2xl font-bold text-foreground mb-2">Password updated!</h1>
+      <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
         Your password has been reset. You&apos;ll be redirected to sign in shortly.
       </p>
       <Link href="/login">
@@ -211,19 +211,19 @@ function SuccessState() {
 function InvalidState() {
   return (
     <div className="text-center py-4">
-      <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <XCircle className="w-8 h-8 text-red-400" />
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Invalid link</h1>
-      <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+      <h1 className="text-2xl font-bold text-foreground mb-2">Invalid link</h1>
+      <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
         This reset link is invalid or has already been used.
         Reset links can only be used once. Please request a new one.
       </p>
       <Link href="/forgot-password">
         <Button size="lg" className="w-full">Request a New Link</Button>
       </Link>
-      <p className="mt-4 text-sm text-gray-500">
-        <Link href="/login" className="text-blue-600 font-medium hover:underline">
+      <p className="mt-4 text-sm text-muted-foreground">
+        <Link href="/login" className="text-primary font-medium hover:underline">
           Back to Sign In
         </Link>
       </p>
@@ -234,20 +234,20 @@ function InvalidState() {
 function ExpiredState() {
   return (
     <div className="text-center py-4">
-      <div className="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <Clock className="w-8 h-8 text-orange-400" />
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Link expired</h1>
-      <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+      <h1 className="text-2xl font-bold text-foreground mb-2">Link expired</h1>
+      <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
         This reset link has expired. Links are valid for{" "}
-        <strong className="text-gray-700">1 hour</strong>.
+        <strong className="text-foreground">1 hour</strong>.
         Please request a new one.
       </p>
       <Link href="/forgot-password">
         <Button size="lg" className="w-full">Request a New Link</Button>
       </Link>
-      <p className="mt-4 text-sm text-gray-500">
-        <Link href="/login" className="text-blue-600 font-medium hover:underline">
+      <p className="mt-4 text-sm text-muted-foreground">
+        <Link href="/login" className="text-primary font-medium hover:underline">
           Back to Sign In
         </Link>
       </p>
@@ -267,14 +267,14 @@ export default function ResetPasswordPage() {
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
       <div className="flex items-center gap-2.5 mb-8">
-        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <span className="text-xl font-bold text-gray-900">GED Prep</span>
+        <span className="text-xl font-bold text-foreground">GED Prep</span>
       </div>
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8">
         {children}
       </div>
     </div>

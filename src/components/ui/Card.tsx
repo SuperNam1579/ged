@@ -9,7 +9,7 @@ export function Card({ className, elevated, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "bg-white rounded-xl border border-gray-200",
+        "bg-card text-card-foreground rounded-xl border border-border",
         elevated ? "shadow-md" : "shadow-sm",
         className
       )}
@@ -22,7 +22,7 @@ export function Card({ className, elevated, children, ...props }: CardProps) {
 
 export function CardHeader({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("px-6 py-4 border-b border-gray-100", className)} {...props}>
+    <div className={cn("px-6 py-4 border-b border-border", className)} {...props}>
       {children}
     </div>
   );

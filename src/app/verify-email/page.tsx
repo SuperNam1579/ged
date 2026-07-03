@@ -92,16 +92,16 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
       {/* Logo */}
       <div className="flex items-center gap-2.5 mb-8">
-        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <span className="text-xl font-bold text-gray-900">GED Prep</span>
+        <span className="text-xl font-bold text-foreground">GED Prep</span>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8 text-center">
         {status === "verifying" && <VerifyingState />}
         {status === "success" && <SuccessState countdown={countdown} />}
         {status === "already-verified" && <AlreadyVerifiedState />}
@@ -122,9 +122,9 @@ function VerifyEmailContent() {
 function VerifyingState() {
   return (
     <div className="py-4">
-      <Loader2 className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
-      <h1 className="text-xl font-bold text-gray-900">Verifying your email…</h1>
-      <p className="text-sm text-gray-500 mt-2">Please wait a moment.</p>
+      <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+      <h1 className="text-xl font-bold text-foreground">Verifying your email…</h1>
+      <p className="text-sm text-muted-foreground mt-2">Please wait a moment.</p>
     </div>
   );
 }
@@ -132,14 +132,14 @@ function VerifyingState() {
 function SuccessState({ countdown }: { countdown: number }) {
   return (
     <div className="py-4">
-      <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         <CheckCircle className="w-8 h-8 text-green-500" />
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Email verified!</h1>
-      <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+      <h1 className="text-2xl font-bold text-foreground mb-2">Email verified!</h1>
+      <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
         Your account is now active. Redirecting you to sign in…
       </p>
-      <p className="text-4xl font-bold text-blue-600 mb-6">{countdown}</p>
+      <p className="text-4xl font-bold text-primary mb-6">{countdown}</p>
       <Link href="/login">
         <Button size="lg" className="w-full">
           Go to Sign In now
@@ -152,11 +152,11 @@ function SuccessState({ countdown }: { countdown: number }) {
 function AlreadyVerifiedState() {
   return (
     <div className="py-4">
-      <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
-        <CheckCircle className="w-8 h-8 text-blue-500" />
+      <div className="w-14 h-14 bg-primary-light rounded-full flex items-center justify-center mx-auto mb-5">
+        <CheckCircle className="w-8 h-8 text-primary" />
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Already verified</h1>
-      <p className="text-sm text-gray-500 mb-8">
+      <h1 className="text-2xl font-bold text-foreground mb-2">Already verified</h1>
+      <p className="text-sm text-muted-foreground mb-8">
         This email address has already been verified. You can sign in normally.
       </p>
       <Link href="/login">
@@ -193,7 +193,7 @@ function ExpiredOrInvalidState({
 }: ExpiredOrInvalidProps) {
   return (
     <div className="py-4">
-      <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <div className="w-14 h-14 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
         {isExpired ? (
           <Clock className="w-8 h-8 text-red-400" />
         ) : (
@@ -201,33 +201,33 @@ function ExpiredOrInvalidState({
         )}
       </div>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">
+      <h1 className="text-2xl font-bold text-foreground mb-2">
         {isExpired ? "Link expired" : "Invalid link"}
       </h1>
-      <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+      <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
         {isExpired
           ? "This verification link has expired. Verification links are valid for 24 hours."
           : "This verification link is invalid or has already been used. Try signing in, or request a new link below."}
       </p>
 
       {resendStatus === "sent" ? (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700 text-left">
+        <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400 text-left">
           Verification email sent! Check your inbox.
         </div>
       ) : (
         <form onSubmit={onResend} className="space-y-3 text-left">
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-foreground">
             Request a new verification link:
           </p>
 
           {resendStatus === "rate-limited" && (
-            <div className="px-3 py-2 rounded-lg bg-yellow-50 border border-yellow-100 text-xs text-yellow-700">
+            <div className="px-3 py-2 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-100 dark:border-yellow-500/25 text-xs text-yellow-700 dark:text-yellow-400">
               Please wait a moment before requesting another email.
             </div>
           )}
 
           {resendStatus === "error" && (
-            <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-xs text-red-700">
+            <div className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-xs text-red-700 dark:text-red-400">
               Something went wrong. Please try again.
             </div>
           )}
@@ -253,8 +253,8 @@ function ExpiredOrInvalidState({
         </form>
       )}
 
-      <p className="mt-5 text-sm text-gray-500">
-        <Link href="/login" className="text-blue-600 font-medium hover:underline">
+      <p className="mt-5 text-sm text-muted-foreground">
+        <Link href="/login" className="text-primary font-medium hover:underline">
           Back to sign in
         </Link>
       </p>

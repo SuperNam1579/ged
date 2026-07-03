@@ -49,19 +49,19 @@ export default function ForgotPasswordPage() {
     return (
       <PageShell>
         <div className="text-center">
-          <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
-            <Mail className="w-7 h-7 text-blue-600" />
+          <div className="w-14 h-14 bg-primary-light rounded-full flex items-center justify-center mx-auto mb-5">
+            <Mail className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h1>
-          <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
             If an account exists for{" "}
-            <strong className="text-gray-700">{email}</strong>,
+            <strong className="text-foreground">{email}</strong>,
             we&apos;ve sent a password reset link. The link expires in{" "}
-            <strong className="text-gray-700">1 hour</strong>.
+            <strong className="text-foreground">1 hour</strong>.
           </p>
 
-          <div className="text-left text-sm text-gray-500 bg-gray-50 rounded-xl p-4 mb-6 space-y-1">
-            <p className="font-medium text-gray-700">Didn&apos;t receive it?</p>
+          <div className="text-left text-sm text-muted-foreground bg-background rounded-xl p-4 mb-6 space-y-1">
+            <p className="font-medium text-foreground">Didn&apos;t receive it?</p>
             <ul className="list-disc list-inside space-y-1">
               <li>Check your spam or junk folder</li>
               <li>The link expires in 1 hour</li>
@@ -81,19 +81,19 @@ export default function ForgotPasswordPage() {
 
   return (
     <PageShell>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Forgot your password?</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <h1 className="text-2xl font-bold text-foreground mb-1">Forgot your password?</h1>
+      <p className="text-sm text-muted-foreground mb-6">
         Enter your email and we&apos;ll send a reset link if your account exists.
       </p>
 
       {status === "rate-limited" && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-100 text-sm text-yellow-700">
+        <div className="mb-4 px-4 py-3 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-100 dark:border-yellow-500/25 text-sm text-yellow-700 dark:text-yellow-400">
           Too many requests. Please wait a while before trying again.
         </div>
       )}
 
       {status === "error" && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
           Something went wrong. Please try again.
         </div>
       )}
@@ -119,9 +119,9 @@ export default function ForgotPasswordPage() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         Remember your password?{" "}
-        <Link href="/login" className="text-blue-600 font-medium hover:underline">
+        <Link href="/login" className="text-primary font-medium hover:underline">
           Back to Sign In
         </Link>
       </p>
@@ -133,14 +133,14 @@ export default function ForgotPasswordPage() {
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
       <div className="flex items-center gap-2.5 mb-8">
-        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <span className="text-xl font-bold text-gray-900">GED Prep</span>
+        <span className="text-xl font-bold text-foreground">GED Prep</span>
       </div>
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8">
         {children}
       </div>
     </div>

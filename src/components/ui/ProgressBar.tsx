@@ -12,10 +12,10 @@ interface ProgressBarProps {
 }
 
 const colors = {
-  blue: "bg-blue-600",
-  green: "bg-green-500",
-  orange: "bg-orange-500",
-  red: "bg-red-500",
+  blue: "bg-primary",
+  green: "bg-success",
+  orange: "bg-warning",
+  red: "bg-danger",
 };
 
 const heights = {
@@ -46,13 +46,13 @@ export default function ProgressBar({
     <div className={cn("w-full", className)}>
       {(label || showPercent) && (
         <div className="flex items-center justify-between mb-1.5">
-          {label && <span className="text-sm font-medium text-gray-700">{label}</span>}
+          {label && <span className="text-sm font-medium text-muted-foreground">{label}</span>}
           {showPercent && (
-            <span className="text-sm font-semibold text-gray-900">{Math.round(clamped)}%</span>
+            <span className="text-sm font-semibold text-foreground">{Math.round(clamped)}%</span>
           )}
         </div>
       )}
-      <div className={cn("w-full bg-gray-100 rounded-full overflow-hidden", heights[size])}>
+      <div className={cn("w-full bg-muted rounded-full overflow-hidden", heights[size])}>
         <div
           className={cn("rounded-full transition-all duration-500 ease-out", colors[color], heights[size])}
           style={{ width: `${clamped}%` }}

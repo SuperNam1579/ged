@@ -11,29 +11,29 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants = {
   primary: [
-    "bg-[#58cc02] text-white font-bold",
-    "shadow-[0_4px_0_#3f8f01]",
-    "hover:bg-[#4ab001] hover:shadow-[0_3px_0_#3f8f01]",
-    "active:translate-y-[2px] active:shadow-[0_2px_0_#3f8f01]",
-    "disabled:bg-[#afafaf] disabled:shadow-[0_4px_0_#888] disabled:cursor-not-allowed",
+    "bg-primary text-primary-foreground font-bold",
+    "shadow-[0_4px_0_var(--primary-dark)]",
+    "hover:brightness-105 hover:shadow-[0_3px_0_var(--primary-dark)]",
+    "active:translate-y-[2px] active:shadow-[0_2px_0_var(--primary-dark)]",
+    "disabled:bg-muted-foreground disabled:shadow-[0_4px_0_var(--border)] disabled:cursor-not-allowed",
   ].join(" "),
   secondary: [
-    "bg-white text-[#1cb0f6] font-bold border-2 border-[#e5e5e5]",
-    "shadow-[0_4px_0_#e5e5e5]",
-    "hover:border-[#1cb0f6] hover:shadow-[0_3px_0_#e5e5e5]",
-    "active:translate-y-[2px] active:shadow-[0_2px_0_#e5e5e5]",
+    "bg-card text-accent font-bold border-2 border-border",
+    "shadow-[0_4px_0_var(--border)]",
+    "hover:border-accent hover:shadow-[0_3px_0_var(--border)]",
+    "active:translate-y-[2px] active:shadow-[0_2px_0_var(--border)]",
   ].join(" "),
   outline: [
-    "bg-transparent text-[#1cb0f6] font-bold border-2 border-[#e5e5e5]",
-    "hover:border-[#1cb0f6]",
+    "bg-transparent text-accent font-bold border-2 border-border",
+    "hover:border-accent",
     "active:translate-y-[1px]",
   ].join(" "),
-  ghost: "text-[#777777] font-bold hover:bg-[#f7f7f7] active:translate-y-[1px]",
+  ghost: "text-muted-foreground font-bold hover:bg-muted active:translate-y-[1px]",
   danger: [
-    "bg-red-500 text-white font-bold",
-    "shadow-[0_4px_0_#b91c1c]",
-    "hover:bg-red-600 hover:shadow-[0_3px_0_#b91c1c]",
-    "active:translate-y-[2px] active:shadow-[0_2px_0_#b91c1c]",
+    "bg-danger text-white font-bold",
+    "shadow-[0_4px_0_color-mix(in_srgb,var(--danger)_70%,black)]",
+    "hover:brightness-105 hover:shadow-[0_3px_0_color-mix(in_srgb,var(--danger)_70%,black)]",
+    "active:translate-y-[2px] active:shadow-[0_2px_0_color-mix(in_srgb,var(--danger)_70%,black)]",
   ].join(" "),
 };
 
@@ -53,7 +53,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-duo-green focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed",
+          "inline-flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60 disabled:cursor-not-allowed",
           "tracking-[0.053em]",
           variants[variant],
           sizes[size],

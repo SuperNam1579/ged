@@ -74,23 +74,23 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
       {/* Logo */}
       <div className="flex items-center gap-2.5 mb-8">
-        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <span className="text-xl font-bold text-gray-900">GED Prep</span>
+        <span className="text-xl font-bold text-foreground">GED Prep</span>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Create your account</h1>
-        <p className="text-sm text-gray-500 mb-6">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8">
+        <h1 className="text-2xl font-bold text-foreground mb-1">Create your account</h1>
+        <p className="text-sm text-muted-foreground mb-6">
           Start your personalized GED study journey today.
         </p>
 
         {error && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
+          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
             {error}
           </div>
         )}
@@ -146,9 +146,9 @@ export default function RegisterPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 font-medium hover:underline">
+          <Link href="/login" className="text-primary font-medium hover:underline">
             Sign in
           </Link>
         </p>

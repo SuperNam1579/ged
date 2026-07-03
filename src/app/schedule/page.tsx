@@ -39,10 +39,10 @@ type Schedule = Record<number, DaySchedule>;
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const SUBJECT_COLOR: Record<string, { badge: string; dot: string }> = {
-  MATH: { badge: "bg-blue-100 text-blue-700",    dot: "bg-blue-500" },
-  RLA:  { badge: "bg-green-100 text-green-700",   dot: "bg-green-500" },
-  SS:   { badge: "bg-amber-100 text-amber-700",   dot: "bg-amber-500" },
-  SCI:  { badge: "bg-purple-100 text-purple-700", dot: "bg-purple-500" },
+  MATH: { badge: "bg-primary-light text-primary",    dot: "bg-primary" },
+  RLA:  { badge: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",   dot: "bg-green-500" },
+  SS:   { badge: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400",   dot: "bg-amber-500" },
+  SCI:  { badge: "bg-primary-light text-accent", dot: "bg-accent" },
 };
 const SUBJECT_LABEL: Record<string, string> = {
   MATH: "Math", RLA: "Language Arts", SS: "Social Studies", SCI: "Science",
@@ -166,13 +166,13 @@ function WeekScheduleSetup({
 
   if (!open) {
     return (
-      <div className="rounded-xl border-2 border-dashed border-gray-200 p-8 text-center">
-        <CalendarDays className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-sm font-medium text-gray-600 mb-1">No schedule set for this week</p>
-        <p className="text-xs text-gray-400 mb-4">Add your available study times to generate a plan</p>
+      <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
+        <CalendarDays className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+        <p className="text-sm font-medium text-muted-foreground mb-1">No schedule set for this week</p>
+        <p className="text-xs text-muted-foreground mb-4">Add your available study times to generate a plan</p>
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors"
         >
           <Plus className="w-4 h-4" />
           Set up schedule for {relativeWeekLabel(1)}
@@ -182,17 +182,17 @@ function WeekScheduleSetup({
   }
 
   return (
-    <div className="rounded-xl border border-blue-200 bg-blue-50/30">
+    <div className="rounded-xl border border-primary bg-primary-light/30">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-blue-100">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-primary">
         <div>
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-sm font-semibold text-foreground">
             Set up schedule · {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d")}
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">Choose the days and times you can study</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Choose the days and times you can study</p>
         </div>
-        <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-          <X className="w-4 h-4 text-gray-400" />
+        <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+          <X className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
 
@@ -201,32 +201,32 @@ function WeekScheduleSetup({
         {WEEK_DAYS.map(({ label, dow }) => {
           const day = schedule[dow];
           return (
-            <div key={dow} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div key={dow} className="bg-card rounded-lg border border-border overflow-hidden">
               {/* Day toggle */}
               <div className="flex items-center gap-3 px-4 py-2.5">
                 <button
                   onClick={() => toggleDay(dow)}
                   className={cn(
                     "w-10 h-5 rounded-full transition-colors relative shrink-0",
-                    day.enabled ? "bg-blue-600" : "bg-gray-200"
+                    day.enabled ? "bg-primary" : "bg-muted"
                   )}
                 >
                   <span className={cn(
-                    "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
+                    "absolute top-0.5 w-4 h-4 rounded-full bg-card shadow transition-transform",
                     day.enabled ? "translate-x-5" : "translate-x-0.5"
                   )} />
                 </button>
-                <span className={cn("text-sm font-medium w-8", day.enabled ? "text-gray-900" : "text-gray-400")}>
+                <span className={cn("text-sm font-medium w-8", day.enabled ? "text-foreground" : "text-muted-foreground")}>
                   {label}
                 </span>
                 {day.enabled && day.slots.length === 0 && (
-                  <span className="text-xs text-gray-400 italic">No time slots — add one</span>
+                  <span className="text-xs text-muted-foreground italic">No time slots — add one</span>
                 )}
               </div>
 
               {/* Slots */}
               {day.enabled && (
-                <div className="border-t border-gray-100 px-4 py-2 space-y-2 bg-gray-50/50">
+                <div className="border-t border-border px-4 py-2 space-y-2 bg-background/50">
                   {day.slots.map((slot) => {
                     const invalid = slot.start >= slot.end && slot.end !== "00:00";
                     return (
@@ -234,17 +234,17 @@ function WeekScheduleSetup({
                         <select
                           value={slot.start}
                           onChange={(e) => updateSlot(dow, slot.id, "start", e.target.value)}
-                          className="flex-1 text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
+                          className="flex-1 text-sm border border-border rounded-lg px-2 py-1.5 bg-card"
                         >
                           {TIME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </select>
-                        <span className="text-gray-400 text-xs shrink-0">to</span>
+                        <span className="text-muted-foreground text-xs shrink-0">to</span>
                         <select
                           value={slot.end}
                           onChange={(e) => updateSlot(dow, slot.id, "end", e.target.value)}
                           className={cn(
-                            "flex-1 text-sm border rounded-lg px-2 py-1.5 bg-white",
-                            invalid ? "border-red-300" : "border-gray-200"
+                            "flex-1 text-sm border rounded-lg px-2 py-1.5 bg-card",
+                            invalid ? "border-red-300 dark:border-red-500/30" : "border-border"
                           )}
                         >
                           {TIME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -253,14 +253,14 @@ function WeekScheduleSetup({
                           onClick={() => removeSlot(dow, slot.id)}
                           className="p-1 hover:bg-red-50 rounded-md transition-colors shrink-0"
                         >
-                          <X className="w-3.5 h-3.5 text-gray-400 hover:text-red-400" />
+                          <X className="w-3.5 h-3.5 text-muted-foreground hover:text-red-400" />
                         </button>
                       </div>
                     );
                   })}
                   <button
                     onClick={() => addSlot(dow)}
-                    className="flex items-center gap-1.5 text-xs text-blue-600 font-medium hover:text-blue-700 py-0.5"
+                    className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary py-0.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add time slot
@@ -271,9 +271,9 @@ function WeekScheduleSetup({
           );
         })}
 
-        {error && <p className="text-red-600 text-sm px-1">{error}</p>}
+        {error && <p className="text-red-600 dark:text-red-400 text-sm px-1">{error}</p>}
         {infoMsg && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-700">
+          <div className="bg-primary-light border border-primary rounded-lg px-4 py-3 text-sm text-primary">
             {infoMsg} — Go to <strong>Settings → Regenerate My Study Plan</strong> to start a fresh plan.
           </div>
         )}
@@ -284,8 +284,8 @@ function WeekScheduleSetup({
           className={cn(
             "w-full py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2",
             canSubmit && !submitting
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              ? "bg-primary text-white hover:bg-primary-dark"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
           )}
         >
           {submitting ? (
@@ -393,14 +393,14 @@ export default function SchedulePage() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-gray-900">Study Schedule</h1>
+              <h1 className="text-2xl font-bold text-foreground">Study Schedule</h1>
               {weekNumber >= 1 && (
-                <span className="px-2.5 py-0.5 rounded-full text-sm font-semibold bg-blue-100 text-blue-700">
+                <span className="px-2.5 py-0.5 rounded-full text-sm font-semibold bg-primary-light text-primary">
                   Week {weekNumber}
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d, yyyy")}
             </p>
           </div>
@@ -408,9 +408,9 @@ export default function SchedulePage() {
           <div className="flex items-center gap-1.5 mt-0.5">
             <button
               onClick={() => setWeekStart((w) => addDays(w, -7))}
-              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+              className="p-2 rounded-lg border border-border hover:bg-background transition-colors"
             >
-              <ChevronLeft className="w-4 h-4 text-gray-600" />
+              <ChevronLeft className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
               onClick={() => !isCurrentWeek && setWeekStart(currentWeekMon)}
@@ -418,33 +418,33 @@ export default function SchedulePage() {
               className={cn(
                 "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors min-w-25 text-center",
                 isCurrentWeek
-                  ? "text-gray-400 bg-gray-100 cursor-default"
-                  : "text-blue-600 bg-blue-50 hover:bg-blue-100 cursor-pointer"
+                  ? "text-muted-foreground bg-muted cursor-default"
+                  : "text-primary bg-primary-light hover:bg-primary-light cursor-pointer"
               )}
             >
               {relativeWeekLabel(weekDiff)}
             </button>
             <button
               onClick={() => setWeekStart((w) => addDays(w, 7))}
-              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+              className="p-2 rounded-lg border border-border hover:bg-background transition-colors"
             >
-              <ChevronRight className="w-4 h-4 text-gray-600" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
         </div>
 
         {/* ── Week summary bar ─────────────────────────────────────────── */}
         {weekSessions.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+          <div className="bg-card rounded-xl border border-border p-4 mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-800">
+              <span className="text-sm font-semibold text-foreground">
                 {relativeWeekLabel(weekDiff)} — {fmtMins(weekTotalMins)} total
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {weekCompleted} / {weekSessions.length} sessions done
               </span>
             </div>
-            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
               <div
                 className="h-2 bg-green-500 rounded-full transition-all"
                 style={{ width: `${weekSessions.length ? (weekCompleted / weekSessions.length) * 100 : 0}%` }}
@@ -456,9 +456,9 @@ export default function SchedulePage() {
         {/* ── No plan at all ───────────────────────────────────────────── */}
         {sessions.length === 0 && !showSetup ? (
           <div className="py-20 text-center">
-            <BookOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 mb-3">No study plan found.</p>
-            <Link href="/dashboard" className="text-blue-600 font-medium text-sm hover:underline">
+            <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground mb-3">No study plan found.</p>
+            <Link href="/dashboard" className="text-primary font-medium text-sm hover:underline">
               Generate your study plan →
             </Link>
           </div>
@@ -484,20 +484,20 @@ export default function SchedulePage() {
                 <div
                   key={i}
                   className={cn(
-                    "rounded-xl border bg-white transition-colors",
-                    isToday ? "border-blue-300 shadow-sm shadow-blue-100" : "border-gray-200"
+                    "rounded-xl border bg-card transition-colors",
+                    isToday ? "border-primary shadow-sm shadow-blue-100" : "border-border"
                   )}
                 >
                   {/* Day header */}
                   <div className={cn(
                     "flex items-start gap-4 px-4 py-3 rounded-t-xl",
-                    isToday ? "bg-blue-600" : hasContent ? "bg-gray-50" : "bg-white"
+                    isToday ? "bg-primary" : hasContent ? "bg-background" : "bg-card"
                   )}>
                     <div className="w-12 shrink-0">
-                      <p className={cn("text-xs font-semibold uppercase tracking-wider", isToday ? "text-blue-100" : "text-gray-400")}>
+                      <p className={cn("text-xs font-semibold uppercase tracking-wider", isToday ? "text-primary-foreground" : "text-muted-foreground")}>
                         {format(day, "EEE")}
                       </p>
-                      <p className={cn("text-xl font-bold leading-tight", isToday ? "text-white" : "text-gray-800")}>
+                      <p className={cn("text-xl font-bold leading-tight", isToday ? "text-white" : "text-foreground")}>
                         {format(day, "d")}
                       </p>
                     </div>
@@ -505,7 +505,7 @@ export default function SchedulePage() {
                     {daySlots.length > 0 ? (
                       <div className="flex flex-col gap-0.5 pt-0.5 min-w-27.5">
                         {daySlots.map((slot, si) => (
-                          <div key={si} className={cn("flex items-center gap-1 text-xs font-medium", isToday ? "text-blue-100" : "text-gray-500")}>
+                          <div key={si} className={cn("flex items-center gap-1 text-xs font-medium", isToday ? "text-primary-foreground" : "text-muted-foreground")}>
                             <Clock className="w-3 h-3 shrink-0" />
                             <span>{slot.startTime} – {slot.endTime}</span>
                           </div>
@@ -513,16 +513,16 @@ export default function SchedulePage() {
                       </div>
                     ) : (
                       <div className="pt-1.5">
-                        <span className={cn("text-sm", isToday ? "text-blue-200" : "text-gray-300")}>Free</span>
+                        <span className={cn("text-sm", isToday ? "text-primary-foreground" : "text-muted-foreground")}>Free</span>
                       </div>
                     )}
 
                     {daySessions.length > 0 && (
                       <div className="flex items-center gap-3 ml-auto pt-1">
-                        <span className={cn("text-sm font-medium", isToday ? "text-blue-100" : "text-gray-600")}>
+                        <span className={cn("text-sm font-medium", isToday ? "text-primary-foreground" : "text-muted-foreground")}>
                           {fmtMins(dayMins)}
                         </span>
-                        <span className={cn("text-xs", isToday ? "text-blue-200" : "text-gray-400")}>
+                        <span className={cn("text-xs", isToday ? "text-primary-foreground" : "text-muted-foreground")}>
                           {dayDone}/{daySessions.length} done
                         </span>
                         {isToday && dayDone === daySessions.length && daySessions.length > 0 && (
@@ -536,30 +536,30 @@ export default function SchedulePage() {
 
                   {/* Sessions */}
                   {daySessions.length > 0 && (
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-border">
                       {daySessions.map((s) => {
-                        const colors = SUBJECT_COLOR[s.subjectCode] ?? { badge: "bg-gray-100 text-gray-600", dot: "bg-gray-400" };
+                        const colors = SUBJECT_COLOR[s.subjectCode] ?? { badge: "bg-muted text-muted-foreground", dot: "bg-muted-foreground" };
                         const done = s.status === "COMPLETED";
                         return (
                           <Link key={s.id} href={`/study/${s.id}`}>
                             <div className={cn(
-                              "flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors",
+                              "flex items-center gap-3 px-4 py-3 hover:bg-background transition-colors",
                               done && "opacity-50"
                             )}>
                               {done
                                 ? <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-                                : <Circle className="w-4 h-4 text-gray-300 shrink-0" />
+                                : <Circle className="w-4 h-4 text-muted-foreground shrink-0" />
                               }
                               <div className={cn("w-2 h-2 rounded-full shrink-0", colors.dot)} />
                               <div className="flex-1 min-w-0">
-                                <p className={cn("text-sm font-medium text-gray-900 truncate", done && "line-through")}>
+                                <p className={cn("text-sm font-medium text-foreground truncate", done && "line-through")}>
                                   {s.subtopicName}
                                 </p>
                                 <span className={cn("inline-block text-[11px] font-medium px-1.5 py-0.5 rounded-full mt-0.5", colors.badge)}>
                                   {SUBJECT_LABEL[s.subjectCode] ?? s.subjectCode}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-1 text-gray-400 shrink-0">
+                              <div className="flex items-center gap-1 text-muted-foreground shrink-0">
                                 <Clock className="w-3 h-3" />
                                 <span className="text-xs">{fmtMins(s.durationMins)}</span>
                               </div>

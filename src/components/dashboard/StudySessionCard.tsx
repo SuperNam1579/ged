@@ -37,8 +37,8 @@ export default function StudySessionCard({
       className={cn(
         "flex items-center gap-4 p-4 rounded-xl border transition-colors",
         isCompleted
-          ? "bg-gray-50 border-gray-200 opacity-75"
-          : "bg-white border-gray-200 hover:border-blue-200 hover:shadow-sm"
+          ? "bg-background border-border opacity-75"
+          : "bg-card border-border hover:border-primary hover:shadow-sm"
       )}
     >
       {/* Status indicator */}
@@ -46,7 +46,7 @@ export default function StudySessionCard({
         {isCompleted ? (
           <CheckCircle className="w-6 h-6 text-green-500" />
         ) : (
-          <div className="w-6 h-6 rounded-full border-2 border-gray-300" />
+          <div className="w-6 h-6 rounded-full border-2 border-border" />
         )}
       </div>
 
@@ -54,13 +54,13 @@ export default function StudySessionCard({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <SubjectBadge code={subjectCode} />
-          <span className="text-xs text-gray-500">{topicName}</span>
+          <span className="text-xs text-muted-foreground">{topicName}</span>
         </div>
-        <p className={cn("text-sm font-semibold truncate", isCompleted ? "line-through text-gray-400" : "text-gray-900")}>
+        <p className={cn("text-sm font-semibold truncate", isCompleted ? "line-through text-muted-foreground" : "text-foreground")}>
           {subtopicName}
         </p>
         <div className="flex items-center gap-3 mt-1.5">
-          <span className="flex items-center gap-1 text-xs text-gray-500">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="w-3 h-3" />
             {durationMins} min
           </span>

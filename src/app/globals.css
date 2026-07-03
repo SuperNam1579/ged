@@ -1,33 +1,119 @@
 @import "tailwindcss";
 
-@theme {
-  /* Colors — Duolingo Design System */
-  --color-duo-green: #58cc02;
-  --color-duo-green-dark: #3f8f01;
-  --color-duo-green-light: #d7ffb8;
-  --color-sky-blue: #1cb0f6;
-  --color-sky-blue-dark: #0d91d4;
-  --color-sunshine-yellow: #ffc700;
-  --color-grape-soda: #a570ff;
-  --color-bubblegum-pink: #cc348d;
-  --color-snow-white: #ffffff;
-  --color-cloud-gray: #e5e5e5;
-  --color-silver: #afafaf;
-  --color-graphite: #777777;
-  --color-charcoal: #4b4b4b;
-  --color-almost-black: #3c3c3c;
+/* Enable class-based dark mode (.dark on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
   /* Typography */
-  --font-feather: 'Fredoka One', ui-sans-serif, system-ui, sans-serif;
+  --font-feather: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
   --font-din-round: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
 
   /* Border Radius */
   --radius-duo: 12px;
 }
 
+/*
+  Semantic + legacy tokens mapped to live CSS variables so every utility
+  (bg-primary, bg-duo-green, text-charcoal, …) automatically flips in dark mode.
+*/
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-gold: var(--gold);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  /* ── Legacy Duolingo tokens remapped onto the blue/white system ── */
+  --color-duo-green: var(--primary);
+  --color-duo-green-dark: var(--primary-dark);
+  --color-duo-green-light: var(--primary-light);
+  --color-sky-blue: var(--accent);
+  --color-sky-blue-dark: var(--accent-dark);
+  --color-sunshine-yellow: var(--gold);
+  --color-grape-soda: var(--accent);
+  --color-bubblegum-pink: var(--danger);
+  --color-snow-white: #ffffff;
+  --color-cloud-gray: var(--border);
+  --color-silver: var(--muted-foreground);
+  --color-graphite: var(--muted-foreground);
+  --color-charcoal: var(--foreground);
+  --color-almost-black: var(--foreground);
+}
+
+/* ── Light theme — blue on white ── */
 :root {
-  --background: #ffffff;
-  --foreground: #3c3c3c;
+  --background: #f4f8ff;
+  --foreground: #0f2748;
+  --card: #ffffff;
+  --card-foreground: #0f2748;
+  --muted: #e9f2fd;
+  --muted-foreground: #5b769a;
+  --border: #d8e6f7;
+  --input: #d8e6f7;
+  --ring: #1e90e8;
+
+  --primary: #1e90e8;
+  --primary-dark: #1670be;
+  --primary-light: #d8ecfd;
+  --primary-foreground: #ffffff;
+
+  --accent: #1cb0f6;
+  --accent-dark: #0d91d4;
+  --accent-foreground: #ffffff;
+
+  --gold: #ffb020;
+  --success: #17a673;
+  --warning: #f5a623;
+  --danger: #e5484d;
+}
+
+/* ── Dark theme — blue on navy-black ── */
+.dark {
+  --background: #060d1c;
+  --foreground: #e7f0fc;
+  --card: #0f1c33;
+  --card-foreground: #e7f0fc;
+  --muted: #16253f;
+  --muted-foreground: #93a7c6;
+  --border: #223451;
+  --input: #223451;
+  --ring: #3aa5f7;
+
+  --primary: #2f9bf0;
+  --primary-dark: #195f9c;
+  --primary-light: #123456;
+  --primary-foreground: #ffffff;
+
+  --accent: #38b6ff;
+  --accent-dark: #1f8fd6;
+  --accent-foreground: #06121f;
+
+  --gold: #ffc85c;
+  --success: #26c489;
+  --warning: #f5b942;
+  --danger: #ff6369;
+}
+
+html {
+  background: var(--background);
 }
 
 body {
@@ -42,28 +128,28 @@ body {
   box-sizing: border-box;
 }
 
-/* Duolingo 3D button press effect */
+/* Duolingo-style 3D button press effect (now blue) */
 .btn-duo-primary:active {
   transform: translateY(2px);
-  box-shadow: 0 2px 0 #3f8f01 !important;
+  box-shadow: 0 2px 0 var(--primary-dark) !important;
 }
 
 .btn-duo-secondary:active {
   transform: translateY(2px);
-  box-shadow: 0 2px 0 #b5b5b5 !important;
+  box-shadow: 0 2px 0 var(--border) !important;
 }
 
-/* Scrollbar styling */
+/* Theme-aware scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--muted);
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--border);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--muted-foreground);
 }

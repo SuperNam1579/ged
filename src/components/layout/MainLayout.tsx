@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import Sidebar from "./Sidebar";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -16,7 +17,7 @@ export default function MainLayout({ children, userName, daysUntilExam }: MainLa
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-background">
 
       {/* ── Mobile backdrop ──────────────────────────────── */}
       {mobileOpen && (
@@ -62,20 +63,21 @@ export default function MainLayout({ children, userName, daysUntilExam }: MainLa
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
 
         {/* Mobile top bar — hidden on md+ */}
-        <header className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 shrink-0 md:hidden">
+        <header className="flex items-center gap-3 px-4 py-3 bg-card border-b border-border shrink-0 md:hidden">
           <button
             onClick={() => setMobileOpen(true)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-muted transition-colors"
             aria-label="Open navigation menu"
           >
-            <Menu className="w-5 h-5 text-gray-600" />
+            <Menu className="w-5 h-5 text-muted-foreground" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
-              <BookOpen className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2 flex-1">
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center shrink-0">
+              <BookOpen className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-bold text-gray-900 text-sm tracking-normal">GED Prep</span>
+            <span className="font-bold text-foreground text-sm tracking-normal">GED Prep</span>
           </div>
+          <ThemeToggle className="border-0 bg-transparent px-2 hover:bg-muted" />
         </header>
 
         {/* Page content — sole scrolling region */}

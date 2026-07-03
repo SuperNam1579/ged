@@ -60,17 +60,17 @@ export default function QuizPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (error || !quiz) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <p className="text-red-600 font-medium mb-4">{error || "Quiz not found."}</p>
+          <p className="text-red-600 dark:text-red-400 font-medium mb-4">{error || "Quiz not found."}</p>
           <Link href="/dashboard">
             <Button variant="secondary">Back to Dashboard</Button>
           </Link>
@@ -127,29 +127,29 @@ export default function QuizPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4">
+      <header className="bg-card border-b border-border px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
+            <Link href="/dashboard" className="text-muted-foreground hover:text-muted-foreground transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-blue-600" />
-              <span className="text-base font-semibold text-gray-900">Quiz</span>
+              <BookOpen className="w-5 h-5 text-primary" />
+              <span className="text-base font-semibold text-foreground">Quiz</span>
             </div>
           </div>
-          <span className="text-sm text-gray-500 font-medium">{quiz.subtopicName}</span>
+          <span className="text-sm text-muted-foreground font-medium">{quiz.subtopicName}</span>
         </div>
       </header>
 
       {/* Progress */}
-      <div className="bg-white border-b border-gray-100 px-6 py-3">
+      <div className="bg-card border-b border-border px-6 py-3">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500 font-medium">Question {currentIdx + 1} of {totalQuestions}</span>
-            <span className="text-xs text-blue-600 font-semibold">{Math.round(progressValue)}%</span>
+            <span className="text-xs text-muted-foreground font-medium">Question {currentIdx + 1} of {totalQuestions}</span>
+            <span className="text-xs text-primary font-semibold">{Math.round(progressValue)}%</span>
           </div>
           <ProgressBar value={progressValue} showPercent={false} variant="blue" size="sm" />
         </div>
@@ -158,11 +158,11 @@ export default function QuizPage() {
       {/* Question */}
       <div className="flex-1 flex items-start justify-center px-6 py-10">
         <div className="w-full max-w-2xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-6">
-            <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-4">
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-8 mb-6">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-4">
               {quiz.subjectCode} · {quiz.subtopicName}
             </p>
-            <p className="text-xl font-semibold text-gray-900 leading-relaxed">
+            <p className="text-xl font-semibold text-foreground leading-relaxed">
               {currentQuestion.text}
             </p>
           </div>
@@ -193,16 +193,16 @@ export default function QuizPage() {
                 className={cn(
                   "w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4",
                   selectedOption === option.id
-                    ? "border-blue-500 bg-blue-50 shadow-sm"
-                    : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                    ? "border-primary bg-primary-light shadow-sm"
+                    : "border-border bg-card hover:border-border hover:bg-background"
                 )}
               >
                 <span
                   className={cn(
                     "shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
                     selectedOption === option.id
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-600"
+                      ? "bg-primary text-white"
+                      : "bg-muted text-muted-foreground"
                   )}
                 >
                   {OPTION_LABELS[i]}
@@ -210,7 +210,7 @@ export default function QuizPage() {
                 <span
                   className={cn(
                     "text-sm font-medium leading-relaxed",
-                    selectedOption === option.id ? "text-blue-900" : "text-gray-700"
+                    selectedOption === option.id ? "text-primary" : "text-foreground"
                   )}
                 >
                   {option.text}
