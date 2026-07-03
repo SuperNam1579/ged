@@ -34,6 +34,7 @@ export default function Mascot({
       width={size}
       height={size}
       priority={priority}
+      unoptimized
       className={className}
     />
   );
