@@ -19,7 +19,11 @@ const PreferencesSchema = z.object({
     .min(145, "Minimum passing score is 145")
     .max(200, "Maximum GED score is 200"),
 
-  studyGoal: z.enum(["PASS", "COLLEGE_READY", "COLLEGE_READY_CREDIT"]),
+  studyGoal: z.literal("PASS"),
+
+  // Optional so existing callers that only update targetExamDate (e.g. Settings)
+  // keep working without re-selecting subjects every time.
+  selectedSubjectCodes: z.array(z.enum(["MATH", "RLA", "SCI", "SS"])).min(1).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -35,16 +39,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { targetExamDate, targetScore, studyGoal } = parsed.data;
+  const { targetExamDate, targetScore, studyGoal, selectedSubjectCodes } = parsed.data;
 
   const prefs = await db.userPreferences.upsert({
     where: { userId: authUser.id },
-    update: { targetExamDate: new Date(targetExamDate), targetScore, studyGoal },
+    update: {
+      targetExamDate: new Date(targetExamDate),
+      targetScore,
+      studyGoal,
+      // Only touch this field when the caller actually sent a selection, so a
+      // partial update (e.g. Settings only changing the exam date) doesn't
+      // wipe out the subjects chosen during onboarding.
+      ...(selectedSubjectCodes ? { selectedSubjectCodes } : {}),
+    },
     create: {
       userId: authUser.id,
       targetExamDate: new Date(targetExamDate),
       targetScore,
       studyGoal,
+      selectedSubjectCodes: selectedSubjectCodes ?? [],
     },
   });
 

@@ -6,8 +6,20 @@ export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const prefs = await db.userPreferences.findUnique({
+    where: { userId: authUser.id },
+    select: { selectedSubjectCodes: true },
+  });
+
+  // Fall back to every subject for accounts from before subject selection was
+  // persisted (empty/missing selection) so their pre-assessment isn't blank.
+  const subjectCodes = prefs?.selectedSubjectCodes?.length ? prefs.selectedSubjectCodes : null;
+
   const all = await db.assessment.findMany({
-    where: { type: "PRE" },
+    where: {
+      type: "PRE",
+      ...(subjectCodes ? { subject: { code: { in: subjectCodes } } } : {}),
+    },
     include: {
       subject: { select: { id: true, name: true, code: true } },
       questions: {

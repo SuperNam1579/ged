@@ -43,3 +43,10 @@ next-env.d.ts
 # prisma
 prisma/dev.db
 prisma/dev.db-journal
+
+# Claude Code local config (not project config)
+.claude/
+
+# Design reference files (local only — not part of source)
+/*.html
+/*.png

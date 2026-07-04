@@ -320,7 +320,12 @@ export default function OnboardingPage() {
       const prefRes = await fetch("/api/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({ studyGoal: "PASS", targetScore: 145, targetExamDate: examDate }),
+        body: JSON.stringify({
+          studyGoal: "PASS",
+          targetScore: 145,
+          targetExamDate: examDate,
+          selectedSubjectCodes: selectedSubjects,
+        }),
       });
       if (!prefRes.ok) throw new Error((await prefRes.json()).error ?? "Failed to save preferences");
 
