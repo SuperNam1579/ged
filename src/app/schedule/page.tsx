@@ -206,17 +206,23 @@ function WeekScheduleSetup({
               <div className="flex items-center gap-3 px-4 py-2.5">
                 <button
                   onClick={() => toggleDay(dow)}
+                  role="switch"
+                  aria-checked={day.enabled}
+                  aria-label={`Toggle ${label}`}
                   className={cn(
-                    "w-10 h-5 rounded-full transition-colors relative shrink-0",
+                    "w-11 h-6 p-0 rounded-full transition-colors relative shrink-0",
                     day.enabled ? "bg-primary" : "bg-muted"
                   )}
                 >
+                  {/* Explicit left anchor + p-0 so the knob is positioned from a
+                      known origin — otherwise the button's default padding shifts
+                      the knob and translate-x pushes it over the day label. */}
                   <span className={cn(
-                    "absolute top-0.5 w-4 h-4 rounded-full bg-card shadow transition-transform",
-                    day.enabled ? "translate-x-5" : "translate-x-0.5"
+                    "absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-card shadow transition-transform",
+                    day.enabled ? "translate-x-5" : "translate-x-0"
                   )} />
                 </button>
-                <span className={cn("text-sm font-medium w-8", day.enabled ? "text-foreground" : "text-muted-foreground")}>
+                <span className={cn("text-sm font-medium w-10 shrink-0", day.enabled ? "text-foreground" : "text-muted-foreground")}>
                   {label}
                 </span>
                 {day.enabled && day.slots.length === 0 && (

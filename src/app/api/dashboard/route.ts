@@ -90,7 +90,16 @@ export async function GET(req: NextRequest) {
   }
   const profMap = new Map(proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score]));
 
-  const subjectSummaries = subjects.map((subject) => {
+  // Only surface the subjects the user chose in onboarding (fall back to all
+  // for legacy accounts that never saved a selection).
+  const selectedCodes = user?.preferences?.selectedSubjectCodes?.length
+    ? new Set(user.preferences.selectedSubjectCodes)
+    : null;
+  const scopedSubjects = selectedCodes
+    ? subjects.filter((s) => selectedCodes.has(s.code))
+    : subjects;
+
+  const subjectSummaries = scopedSubjects.map((subject) => {
     const allSubtopicIds = subject.categories.flatMap((c) =>
       c.topics.flatMap((t) => t.subtopics.map((s) => s.id))
     );

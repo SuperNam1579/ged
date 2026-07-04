@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ClipboardList, CheckSquare, Square, Clock, AlertCircle } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
@@ -46,13 +46,31 @@ const SUBJECTS = [
 export default function MockTestPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(["MATH", "RLA", "SS", "SCI"]);
+  // null = user hasn't changed the default yet → treat as "all available".
+  const [selectedOverride, setSelectedOverride] = useState<string[] | null>(null);
   const [starting, setStarting] = useState(false);
 
+  // Only offer the subjects the user chose in onboarding (fall back to all four
+  // for legacy accounts that never saved a selection).
+  const chosenCodes = useMemo(() => {
+    const raw = (user?.preferences as { selectedSubjectCodes?: string[] } | null)?.selectedSubjectCodes;
+    return raw && raw.length > 0 ? raw : null;
+  }, [user]);
+
+  const availableSubjects = useMemo(
+    () => (chosenCodes ? SUBJECTS.filter((s) => chosenCodes.includes(s.code)) : SUBJECTS),
+    [chosenCodes]
+  );
+
+  // Effective selection defaults to every available subject until the user
+  // deselects one — derived during render, so no effect/setState churn.
+  const selectedSubjects = selectedOverride ?? availableSubjects.map((s) => s.code);
+
   const toggleSubject = (code: string) => {
-    setSelectedSubjects((prev) =>
-      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
-    );
+    setSelectedOverride((prev) => {
+      const base = prev ?? availableSubjects.map((s) => s.code);
+      return base.includes(code) ? base.filter((c) => c !== code) : [...base, code];
+    });
   };
 
   const totalTime = selectedSubjects.length * 30;
@@ -62,6 +80,18 @@ export default function MockTestPage() {
     setStarting(true);
     router.push(`/mock-test/session?subjects=${selectedSubjects.join(",")}`);
   };
+
+  // Wait for the user (and their subject selection) to load before rendering,
+  // so we don't briefly show all four subjects and then narrow to the chosen ones.
+  if (authLoading) {
+    return (
+      <MainLayout userName={user?.name}>
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout userName={user?.name}>
@@ -106,7 +136,7 @@ export default function MockTestPage() {
         {/* Subject selection */}
         <h2 className="font-semibold text-foreground mb-4">Select subjects to include</h2>
         <div className="space-y-3 mb-8">
-          {SUBJECTS.map((subject) => {
+          {availableSubjects.map((subject) => {
             const isSelected = selectedSubjects.includes(subject.code);
             return (
               <button
