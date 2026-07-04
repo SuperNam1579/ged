@@ -53,28 +53,13 @@ export default auth(async (req) => {
   }
 
   // ── Primary auth check: NextAuth JWT session (authjs.session-token cookie) ──
+  // Note: getAuthUser() checks the custom `auth-token` cookie BEFORE the
+  // NextAuth session, so a credentials session (auth-token) always wins when
+  // both cookies exist. Cross-user bleed is prevented by (a) no-store on API
+  // responses, (b) logout clearing BOTH cookies, and (c) credentials login
+  // clearing the NextAuth cookie — NOT by mutating cookies here, which proved
+  // too aggressive (it could delete a valid credentials session).
   if (req.auth?.user) {
-    // A NextAuth (Google) session is authoritative. But getAuthUser() checks
-    // the custom `auth-token` cookie FIRST — so a stale credentials token left
-    // over from a *different* account in the same browser would shadow this
-    // Google session and serve the wrong user's data. Strip it from both the
-    // forwarded request (so THIS request resolves to the Google user) and the
-    // browser (so it's gone for future requests).
-    if (req.cookies.get("auth-token")) {
-      const requestHeaders = new Headers(req.headers);
-      const cookieHeader = requestHeaders.get("cookie") ?? "";
-      const filtered = cookieHeader
-        .split(";")
-        .map((c) => c.trim())
-        .filter((c) => c && !c.startsWith("auth-token="))
-        .join("; ");
-      requestHeaders.set("cookie", filtered);
-
-      const res = NextResponse.next({ request: { headers: requestHeaders } });
-      if (isApi) res.headers.set("Cache-Control", "no-store, max-age=0");
-      res.cookies.delete("auth-token");
-      return res;
-    }
     return pass();
   }
 
