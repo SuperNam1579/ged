@@ -8,7 +8,10 @@ import { z } from "zod";
 const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  rememberMe: z.boolean().optional(),
 });
+
+const REMEMBER_ME_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +25,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 400 });
     }
 
-    const { email, password } = parsed.data;
+    const { email, password, rememberMe } = parsed.data;
 
     const user = await db.user.findUnique({
       where: { email },
@@ -69,7 +72,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const token = await signToken({ sub: user.id, email: user.email, name: user.name });
+    // Remembered sessions get a 30-day token; otherwise the token is capped at
+    // 1 day as a safety net, and the cookie itself is a browser-session cookie
+    // (no maxAge) so it clears out when the browser fully closes.
+    const token = await signToken(
+      { sub: user.id, email: user.email, name: user.name },
+      rememberMe ? "30d" : "1d"
+    );
 
     audit({
       action: "AUTH_LOGIN_SUCCESS",
@@ -90,7 +99,9 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+      // Omitting maxAge makes this a session cookie that clears when the
+      // browser closes; only set it when the user opted into "remember me".
+      ...(rememberMe ? { maxAge: REMEMBER_ME_SECONDS } : {}),
     });
 
     return response;

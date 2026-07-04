@@ -21,12 +21,13 @@ export async function verifyToken(
 }
 
 export async function signToken(
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  expiresIn: string = "1d"
 ): Promise<string> {
   return new jose.SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setJti(crypto.randomUUID())
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime(expiresIn)
     .sign(JWT_SECRET);
 }
