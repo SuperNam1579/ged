@@ -22,6 +22,17 @@ const PUBLIC_PATHS = new Set([
 export default auth(async (req) => {
   const { pathname } = req.nextUrl;
 
+  // API responses carry per-user data (sessions, preferences, dashboards) and
+  // must never be cached by the browser or a CDN — otherwise one user can be
+  // served another user's cached response in the same browser. Force no-store
+  // on every /api response at a single choke point.
+  const isApi = pathname.startsWith("/api/");
+  const pass = () => {
+    const res = NextResponse.next();
+    if (isApi) res.headers.set("Cache-Control", "no-store, max-age=0");
+    return res;
+  };
+
   // Static assets — skip immediately.
   if (
     pathname.startsWith("/_next") ||
@@ -33,7 +44,7 @@ export default auth(async (req) => {
 
   // All /api/auth/* are public: our custom auth routes + NextAuth's catch-all.
   if (pathname.startsWith("/api/auth/")) {
-    return NextResponse.next();
+    return pass();
   }
 
   // Public pages.
@@ -43,7 +54,28 @@ export default auth(async (req) => {
 
   // ── Primary auth check: NextAuth JWT session (authjs.session-token cookie) ──
   if (req.auth?.user) {
-    return NextResponse.next();
+    // A NextAuth (Google) session is authoritative. But getAuthUser() checks
+    // the custom `auth-token` cookie FIRST — so a stale credentials token left
+    // over from a *different* account in the same browser would shadow this
+    // Google session and serve the wrong user's data. Strip it from both the
+    // forwarded request (so THIS request resolves to the Google user) and the
+    // browser (so it's gone for future requests).
+    if (req.cookies.get("auth-token")) {
+      const requestHeaders = new Headers(req.headers);
+      const cookieHeader = requestHeaders.get("cookie") ?? "";
+      const filtered = cookieHeader
+        .split(";")
+        .map((c) => c.trim())
+        .filter((c) => c && !c.startsWith("auth-token="))
+        .join("; ");
+      requestHeaders.set("cookie", filtered);
+
+      const res = NextResponse.next({ request: { headers: requestHeaders } });
+      if (isApi) res.headers.set("Cache-Control", "no-store, max-age=0");
+      res.cookies.delete("auth-token");
+      return res;
+    }
+    return pass();
   }
 
   // ── Fallback: legacy custom auth-token cookie ─────────────────────────────
@@ -79,7 +111,7 @@ export default auth(async (req) => {
           // Revocation check failed — fail open (prefer availability over blocking).
         }
       }
-      return NextResponse.next();
+      return pass();
     }
 
     // Legacy token present but invalid — clear it so the browser isn't stuck

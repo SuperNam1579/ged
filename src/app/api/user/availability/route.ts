@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const subtopicData = subtopics.map((s: typeof subtopics[0]) => ({
+  const allSubtopicData = subtopics.map((s: typeof subtopics[0]) => ({
     id: s.id,
     name: s.name,
     topicId: s.topicId,
@@ -91,6 +91,16 @@ export async function POST(req: NextRequest) {
     difficultyLevel: s.difficultyLevel,
     prerequisiteIds: s.prerequisites.map((p) => p.prerequisiteId),
   }));
+
+  // Restrict the plan to the subjects the user chose in onboarding. Legacy
+  // accounts with no saved selection fall back to all subjects so their plan
+  // isn't left empty.
+  const selectedCodes = preferences.selectedSubjectCodes?.length
+    ? new Set(preferences.selectedSubjectCodes)
+    : null;
+  const subtopicData = selectedCodes
+    ? allSubtopicData.filter((s) => selectedCodes.has(s.subjectCode))
+    : allSubtopicData;
 
   // Load proficiency scores
   const proficiencies = await db.userSubtopicProficiency.findMany({

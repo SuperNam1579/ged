@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       },
     },
   });
-  const subtopicData = subtopics.map((s: typeof subtopics[0]) => ({
+  const allSubtopicData = subtopics.map((s: typeof subtopics[0]) => ({
     id: s.id,
     name: s.name,
     topicId: s.topicId,
@@ -92,6 +92,15 @@ export async function POST(req: NextRequest) {
     difficultyLevel: s.difficultyLevel,
     prerequisiteIds: s.prerequisites.map((p) => p.prerequisiteId),
   }));
+
+  // Restrict regeneration to the subjects chosen in onboarding (fall back to
+  // all subjects for legacy accounts with no selection saved).
+  const selectedCodes = preferences.selectedSubjectCodes?.length
+    ? new Set(preferences.selectedSubjectCodes)
+    : null;
+  const subtopicData = selectedCodes
+    ? allSubtopicData.filter((s) => selectedCodes.has(s.subjectCode))
+    : allSubtopicData;
 
   // Load proficiency scores
   const proficiencies = await db.userSubtopicProficiency.findMany({

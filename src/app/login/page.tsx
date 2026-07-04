@@ -68,6 +68,11 @@ function LoginContent() {
   /* Global error (NextAuth param errors, OAuth errors, unexpected) */
   const [globalError, setGlobalError] = useState("");
 
+  /* Login was rejected because the email isn't verified yet — show a distinct
+     prompt with a resend option instead of a generic error. */
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
   /* ── Blur validators ── */
   const validateEmailFormat = (v: string) => {
     if (!v) return "Email is required.";
@@ -85,10 +90,27 @@ function LoginContent() {
     else setFieldErrors((p) => ({ ...p, password: "" }));
   };
 
+  /* ── Resend verification email ── */
+  const handleResendVerification = async () => {
+    setResendState("sending");
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      setResendState(res.ok ? "sent" : "error");
+    } catch {
+      setResendState("error");
+    }
+  };
+
   /* ── Submit ── */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setGlobalError("");
+    setNeedsVerification(false);
+    setResendState("idle");
 
     // Validate both fields before hitting the API
     const emailErr = validateEmailFormat(email);
@@ -109,10 +131,15 @@ function LoginContent() {
 
       if (!res.ok) {
         const msg = data.error ?? "Sign in failed. Please try again.";
-        // Credential errors (wrong email/password) go to the password field
-        // so the user knows to look there — but we intentionally keep the
-        // message ambiguous ("Invalid email or password") for security.
-        if (res.status === 401 || msg.toLowerCase().includes("invalid")) {
+        // 403 = correct password but email not verified yet. Surface a dedicated
+        // prompt with a resend option rather than a vague error the user might
+        // misread as a wrong password.
+        if (res.status === 403 || msg.toLowerCase().includes("verify")) {
+          setNeedsVerification(true);
+        } else if (res.status === 401 || msg.toLowerCase().includes("invalid")) {
+          // Credential errors (wrong email/password) go to the password field
+          // so the user knows to look there — but we intentionally keep the
+          // message ambiguous ("Invalid email or password") for security.
           setFieldErrors((p) => ({ ...p, password: msg }));
         } else {
           setGlobalError(msg);
@@ -225,6 +252,40 @@ function LoginContent() {
           {passwordReset && (
             <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400">
               Password updated successfully. You can now sign in.
+            </div>
+          )}
+
+          {/* Email-not-verified prompt — distinct from a wrong-password error,
+              with an inline resend so the user isn't stuck thinking their
+              password is wrong. */}
+          {needsVerification && (
+            <div className="mb-4 rounded-[11px] px-3.5 py-3"
+              style={{ background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.35)" }}>
+              <p className="text-[13px] font-semibold text-amber-700 dark:text-amber-400 leading-normal">
+                Your email isn&apos;t verified yet
+              </p>
+              <p className="text-[12.5px] text-amber-700/90 dark:text-amber-400/90 leading-normal mt-0.5">
+                Check your inbox for the verification link — you need to confirm your email before signing in.
+              </p>
+              {resendState === "sent" ? (
+                <p className="text-[12.5px] font-semibold text-green-700 dark:text-green-400 mt-2">
+                  ✓ A new verification link has been sent.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendState === "sending"}
+                  className={`mt-2 text-[12.5px] font-bold text-primary hover:underline disabled:opacity-60 disabled:cursor-not-allowed rounded ${FOCUS_RING}`}
+                >
+                  {resendState === "sending" ? "Sending…" : "Resend verification email"}
+                </button>
+              )}
+              {resendState === "error" && (
+                <p className="text-[12px] text-red-600 dark:text-red-400 mt-1.5">
+                  Couldn&apos;t send right now. Please try again in a moment.
+                </p>
+              )}
             </div>
           )}
 

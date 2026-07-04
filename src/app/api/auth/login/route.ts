@@ -104,6 +104,12 @@ export async function POST(req: NextRequest) {
       ...(rememberMe ? { maxAge: REMEMBER_ME_SECONDS } : {}),
     });
 
+    // Clear any leftover NextAuth (Google) session cookie so this credentials
+    // login establishes exactly one session and can't be shadowed by a stale
+    // Google session belonging to a different account in the same browser.
+    response.cookies.delete("authjs.session-token");
+    response.cookies.delete("__Secure-authjs.session-token");
+
     return response;
   } catch (err) {
     console.error("Login error:", err);

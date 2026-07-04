@@ -40,6 +40,14 @@ export async function POST(req: NextRequest) {
   });
 
   const response = NextResponse.json({ success: true });
+
+  // Clear the custom credentials cookie AND the NextAuth (Google) session
+  // cookie. Previously only auth-token was cleared, so a Google-authenticated
+  // session survived "logout" and could bleed into the next person using the
+  // same browser. Both the plain and __Secure- prefixed names are cleared so
+  // this works in dev (http) and production (https).
   response.cookies.delete("auth-token");
+  response.cookies.delete("authjs.session-token");
+  response.cookies.delete("__Secure-authjs.session-token");
   return response;
 }
