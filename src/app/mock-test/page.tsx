@@ -112,22 +112,22 @@ export default function MockTestPage() {
         </div>
 
         {/* Info bar */}
-        <div className="flex items-center gap-6 p-4 bg-primary-light border border-primary rounded-xl mb-8">
+        <div className="flex items-center gap-3 sm:gap-6 p-4 bg-primary-light border border-primary rounded-xl mb-8">
           <div className="text-center">
             <p className="text-xl font-bold text-primary">{selectedSubjects.length * 10}</p>
             <p className="text-xs text-primary">Questions</p>
           </div>
-          <div className="w-px h-8 bg-primary-light" />
+          <div className="hidden sm:block w-px h-8 bg-primary-light" />
           <div className="text-center">
             <p className="text-xl font-bold text-primary">{totalTime}</p>
             <p className="text-xs text-primary">Minutes</p>
           </div>
-          <div className="w-px h-8 bg-primary-light" />
+          <div className="hidden sm:block w-px h-8 bg-primary-light" />
           <div className="text-center">
             <p className="text-xl font-bold text-primary">145</p>
             <p className="text-xs text-primary">Passing Score</p>
           </div>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-primary">
+          <div className="hidden sm:flex ml-auto items-center gap-1.5 text-xs text-primary">
             <Clock className="w-3.5 h-3.5" />
             ~{totalTime} min total
           </div>

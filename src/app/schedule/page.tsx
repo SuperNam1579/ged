@@ -396,7 +396,7 @@ export default function SchedulePage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
 
         {/* ── Header ──────────────────────────────────────────────────── */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 gap-3 sm:gap-0">
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-foreground">Study Schedule</h1>
@@ -411,7 +411,7 @@ export default function SchedulePage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 mt-0.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setWeekStart((w) => addDays(w, -7))}
               className="p-2 rounded-lg border border-border hover:bg-background transition-colors"

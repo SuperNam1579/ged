@@ -11,7 +11,7 @@ function DuoNavbar() {
       style={{ background: "#060D1C", borderBottom: "1px solid rgba(255,255,255,.07)" }}
     >
       <div
-        className="max-w-[1200px] mx-auto px-10 flex items-center justify-between"
+        className="max-w-[1200px] mx-auto px-4 md:px-10 flex items-center justify-between"
         style={{ height: 64 }}
       >
         {/* Logo */}
@@ -27,7 +27,7 @@ function DuoNavbar() {
           </span>
         </div>
 
-        {/* Nav links */}
+        {/* Nav links — hidden on mobile */}
         <div
           className="hidden md:flex items-center gap-8"
           style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,.45)" }}
@@ -38,11 +38,11 @@ function DuoNavbar() {
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center gap-[10px]">
+        <div className="flex items-center gap-2 md:gap-[10px]">
           <Link
             href="/login"
             style={{
-              padding: "9px 18px",
+              padding: "8px 14px",
               background: "transparent",
               color: "rgba(255,255,255,.65)",
               border: "1.5px solid rgba(255,255,255,.18)",
@@ -57,7 +57,7 @@ function DuoNavbar() {
           <Link
             href="/register"
             style={{
-              padding: "9px 20px",
+              padding: "8px 16px",
               background: "#1e90e8",
               color: "white",
               borderRadius: 10,
@@ -67,7 +67,7 @@ function DuoNavbar() {
               textDecoration: "none",
             }}
           >
-            Get Started →
+            Get Started
           </Link>
         </div>
       </div>
@@ -105,9 +105,9 @@ function HeroSection() {
           zIndex: 0,
         }}
       />
-      {/* Light right panel (diagonal) */}
+      {/* Light right panel (diagonal) — desktop only */}
       <div
-        className="absolute"
+        className="absolute hidden md:block"
         style={{
           right: 0, top: 0, bottom: 0, width: "54%",
           background: "#EFF6FF",
@@ -115,9 +115,9 @@ function HeroSection() {
           zIndex: 1,
         }}
       />
-      {/* Blue accent strip at diagonal edge */}
+      {/* Blue accent strip at diagonal edge — desktop only */}
       <div
-        className="absolute pointer-events-none"
+        className="absolute hidden md:block pointer-events-none"
         style={{
           right: 0, top: 0, bottom: 0, width: "54%",
           clipPath: "polygon(9% 0,calc(9% + 3px) 0,calc(0% + 3px) 100%,0% 100%)",
@@ -127,16 +127,13 @@ function HeroSection() {
         }}
       />
 
-      {/* Main grid */}
+      {/* Main grid: 1-col on mobile, 2-col on desktop */}
       <div
-        className="relative max-w-[1200px] mx-auto"
-        style={{ display: "grid", gridTemplateColumns: "46% 54%", minHeight: 680, zIndex: 10 }}
+        className="relative max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[46%_54%] min-h-[auto] md:min-h-[680px]"
+        style={{ zIndex: 10 }}
       >
         {/* LEFT: Text column */}
-        <div
-          className="flex flex-col justify-center"
-          style={{ padding: "72px 48px 180px 40px" }}
-        >
+        <div className="flex flex-col justify-center px-5 py-12 md:pt-[72px] md:pr-[48px] md:pb-[180px] md:pl-[40px]">
           {/* Badge */}
           <div
             className="inline-flex items-center gap-2 self-start"
@@ -144,7 +141,7 @@ function HeroSection() {
               border: "1px solid rgba(255,255,255,.14)",
               borderRadius: 100,
               padding: "5px 14px",
-              marginBottom: 22,
+              marginBottom: 20,
             }}
           >
             <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#1e90e8", flexShrink: 0 }} />
@@ -155,13 +152,13 @@ function HeroSection() {
 
           {/* Heading */}
           <h1
+            className="text-[38px] md:text-[60px]"
             style={{
               fontFamily: "var(--font-feather)",
-              fontSize: 60,
               fontWeight: 700,
               lineHeight: 1.06,
               color: "white",
-              marginBottom: 18,
+              marginBottom: 16,
             }}
           >
             Study smart.<br />
@@ -169,13 +166,13 @@ function HeroSection() {
           </h1>
 
           {/* Description */}
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,.52)", lineHeight: 1.72, maxWidth: 380, marginBottom: 32 }}>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,.52)", lineHeight: 1.72, maxWidth: 380, marginBottom: 28 }}>
             Adaptive AI maps your exact gaps and builds a personalized study plan —
             every minute counts toward your diploma.
           </p>
 
           {/* CTA buttons */}
-          <div className="flex flex-wrap items-center gap-3" style={{ marginBottom: 22 }}>
+          <div className="flex flex-wrap items-center gap-3" style={{ marginBottom: 20 }}>
             <Link
               href="/register"
               className="inline-flex items-center gap-2"
@@ -197,7 +194,7 @@ function HeroSection() {
             </Link>
           </div>
 
-          {/* Trust pills with checkmarks */}
+          {/* Trust pills */}
           <div className="flex items-center flex-wrap gap-[14px]">
             {["Free forever", "57 topics", "AI plan"].map((label) => (
               <div key={label} className="flex items-center gap-[5px]">
@@ -211,10 +208,10 @@ function HeroSection() {
           </div>
         </div>
 
-        {/* RIGHT: Mascots + floating cards */}
+        {/* RIGHT: Mascots + floating cards — desktop only */}
         <div
-          className="relative"
-          style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "24px 16px 0 100px", minHeight: 560 }}
+          className="hidden md:flex relative"
+          style={{ alignItems: "flex-end", justifyContent: "center", padding: "24px 16px 0 100px", minHeight: 560 }}
         >
           {/* Soft glow behind characters */}
           <div
@@ -313,8 +310,8 @@ function HeroSection() {
 
 function StatItem({ value, label }: { value: string; label: string }) {
   return (
-    <div className="text-center" style={{ flex: 1 }}>
-      <div style={{ fontFamily: "var(--font-feather)", fontSize: 52, fontWeight: 700, color: "white", lineHeight: 1 }}>
+    <div className="text-center py-2 md:py-0">
+      <div className="text-[36px] md:text-[52px]" style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "white", lineHeight: 1 }}>
         {value}
       </div>
       <div style={{ fontSize: 11, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: ".12em", marginTop: 6, fontWeight: 600 }}>
@@ -325,16 +322,15 @@ function StatItem({ value, label }: { value: string; label: string }) {
 }
 
 function StatsSection() {
-
   return (
-    <div style={{ background: "#1e90e8", padding: "40px 40px" }}>
-      <div className="max-w-[1200px] mx-auto flex items-center justify-between">
+    <div className="px-4 py-8 md:px-[40px] md:py-[40px]" style={{ background: "#1e90e8" }}>
+      <div className="max-w-[1200px] mx-auto grid grid-cols-2 gap-6 md:flex md:items-center md:justify-between md:gap-0">
         <StatItem value="57" label="Topics covered" />
-        <div style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
+        <div className="hidden md:block" style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
         <StatItem value="4" label="GED subjects" />
-        <div style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
+        <div className="hidden md:block" style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
         <StatItem value="AI" label="Adaptive plan" />
-        <div style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
+        <div className="hidden md:block" style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
         <StatItem value="Free" label="To start" />
       </div>
     </div>
@@ -345,33 +341,28 @@ function StatsSection() {
 
 function FeaturesSection() {
   return (
-    <section id="features" style={{ padding: "96px 40px" }}>
+    <section id="features" className="px-4 py-16 md:px-[40px] md:py-24">
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
-        <div style={{ marginBottom: 56 }}>
+        <div style={{ marginBottom: 48 }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: "#1e90e8", textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 12 }}>
             What we offer
           </p>
           <h2
-            style={{ fontFamily: "var(--font-feather)", fontSize: 48, fontWeight: 700, color: "var(--foreground)", lineHeight: 1.1 }}
+            className="text-[32px] md:text-[48px]"
+            style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "var(--foreground)", lineHeight: 1.1 }}
           >
             Everything you need<br />to pass, in one place.
           </h2>
         </div>
 
-        {/* Bento grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "3fr 2fr",
-            gridTemplateRows: "240px 240px",
-            gap: 18,
-          }}
-        >
-          {/* Card 1: Assessment — spans 2 rows */}
+        {/* Bento grid: single column on mobile, 2-col bento on desktop */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[3fr_2fr] md:gap-[18px] md:[grid-template-rows:240px_240px]">
+
+          {/* Card 1: Assessment — spans 2 rows on desktop */}
           <div
+            className="md:row-span-2"
             style={{
-              gridRow: "span 2",
               background: "#f4f8ff",
               borderRadius: 24,
               padding: 36,
@@ -384,17 +375,10 @@ function FeaturesSection() {
             {/* Faded number */}
             <div
               style={{
-                position: "absolute",
-                right: -20,
-                bottom: -44,
-                fontFamily: "var(--font-feather)",
-                fontSize: 190,
-                fontWeight: 700,
-                color: "#1e90e8",
-                opacity: 0.055,
-                lineHeight: 1,
-                pointerEvents: "none",
-                userSelect: "none",
+                position: "absolute", right: -20, bottom: -44,
+                fontFamily: "var(--font-feather)", fontSize: 190, fontWeight: 700,
+                color: "#1e90e8", opacity: 0.055, lineHeight: 1,
+                pointerEvents: "none", userSelect: "none",
               }}
             >
               01
@@ -453,10 +437,10 @@ function FeaturesSection() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-end",
+              minHeight: 220,
             }}
           >
             <div style={{ position: "absolute", right: -14, top: -28, fontFamily: "var(--font-feather)", fontSize: 110, fontWeight: 700, color: "rgba(255,255,255,.08)", lineHeight: 1, pointerEvents: "none" }}>02</div>
-            {/* Mini schedule bars */}
             <div style={{ marginBottom: 16, display: "flex", flexDirection: "column", gap: 6, position: "relative", zIndex: 1 }}>
               {[{ label: "MATH", w: "80%", c: "rgba(255,255,255,.7)" }, { label: "SCI", w: "52%", c: "rgba(255,255,255,.5)" }, { label: "RLA", w: "68%", c: "#FBBF24" }].map((b) => (
                 <div key={b.label} className="flex items-center gap-2">
@@ -490,10 +474,10 @@ function FeaturesSection() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-end",
+              minHeight: 220,
             }}
           >
             <div style={{ position: "absolute", right: -14, top: -28, fontFamily: "var(--font-feather)", fontSize: 110, fontWeight: 700, color: "#1e90e8", opacity: 0.055, lineHeight: 1, pointerEvents: "none" }}>03</div>
-            {/* Mini donut rings */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16, position: "relative", zIndex: 1 }}>
               {[
                 { pct: 75, color: "#2563EB", label: "Math" },
@@ -505,9 +489,7 @@ function FeaturesSection() {
                   <div style={{ position: "relative", width: 54, height: 54, margin: "0 auto 4px" }}>
                     <div
                       style={{
-                        width: 54,
-                        height: 54,
-                        borderRadius: "50%",
+                        width: 54, height: 54, borderRadius: "50%",
                         background: `conic-gradient(${d.color} ${d.pct}%,#d8e6f7 0)`,
                         WebkitMask: "radial-gradient(farthest-side,transparent 56%,black 0)",
                         mask: "radial-gradient(farthest-side,transparent 56%,black 0)",
@@ -566,14 +548,17 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section id="how-it-works" style={{ background: "#f4f8ff", padding: "0 40px 96px" }}>
+    <section id="how-it-works" className="px-4 pb-16 md:px-[40px] md:pb-24" style={{ background: "#f4f8ff" }}>
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
-        <div style={{ padding: "72px 0 52px" }}>
+        <div className="pt-16 pb-10 md:pt-[72px] md:pb-[52px]">
           <p style={{ fontSize: 11, fontWeight: 700, color: "#1e90e8", textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 12 }}>
             The process
           </p>
-          <h2 style={{ fontFamily: "var(--font-feather)", fontSize: 48, fontWeight: 700, color: "#0f2748", lineHeight: 1.1 }}>
+          <h2
+            className="text-[32px] md:text-[48px]"
+            style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "#0f2748", lineHeight: 1.1 }}
+          >
             Three steps.<br />One diploma.
           </h2>
         </div>
@@ -583,19 +568,14 @@ function HowItWorksSection() {
           {steps.map((s) => (
             <div
               key={s.num}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "180px 1fr",
-                alignItems: "start",
-                borderBottom: "1px solid #d8e6f7",
-                padding: "48px 0",
-                position: "relative",
-              }}
+              className="grid grid-cols-1 md:grid-cols-[180px_1fr] relative py-8 md:py-[48px]"
+              style={{ borderBottom: "1px solid #d8e6f7" }}
             >
               {/* Left color bar */}
               <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: s.color, borderRadius: 2 }} />
-              {/* Big number */}
+              {/* Big number — hidden on mobile */}
               <div
+                className="hidden md:block"
                 style={{
                   fontFamily: "var(--font-feather)",
                   fontSize: 110,
@@ -610,11 +590,14 @@ function HowItWorksSection() {
                 {s.num}
               </div>
               {/* Content */}
-              <div style={{ paddingTop: 8 }}>
+              <div className="pl-5 md:pl-0 md:pt-2">
                 <p style={{ fontSize: 11, fontWeight: 700, color: s.color, textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 10 }}>
                   {s.eyebrow}
                 </p>
-                <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 28, fontWeight: 700, color: "#0f2748", marginBottom: 14 }}>
+                <h3
+                  className="text-[22px] md:text-[28px]"
+                  style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "#0f2748", marginBottom: 12 }}
+                >
                   {s.title}
                 </h3>
                 <p style={{ fontSize: 15, color: "#5b769a", lineHeight: 1.7, maxWidth: 520 }}>
@@ -699,19 +682,22 @@ function SubjectsSection() {
   ];
 
   return (
-    <section id="subjects" style={{ padding: "96px 40px" }}>
+    <section id="subjects" className="px-4 py-16 md:px-[40px] md:py-24">
       <div className="max-w-[1200px] mx-auto">
-        {/* Header split */}
-        <div className="flex items-end justify-between flex-wrap gap-4" style={{ marginBottom: 52 }}>
+        {/* Header */}
+        <div className="flex items-end justify-between flex-wrap gap-4" style={{ marginBottom: 40 }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, color: "#1e90e8", textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 12 }}>
               Full coverage
             </p>
-            <h2 style={{ fontFamily: "var(--font-feather)", fontSize: 48, fontWeight: 700, color: "#0f2748", lineHeight: 1.1 }}>
+            <h2
+              className="text-[32px] md:text-[48px]"
+              style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "#0f2748", lineHeight: 1.1 }}
+            >
               All 4 GED subjects.
             </h2>
           </div>
-          <p style={{ fontSize: 15, color: "#5b769a", maxWidth: 280, lineHeight: 1.6 }}>
+          <p className="hidden md:block" style={{ fontSize: 15, color: "#5b769a", maxWidth: 280, lineHeight: 1.6 }}>
             57 topics. Every subtopic on exam day. Nothing left out.
           </p>
         </div>
@@ -721,27 +707,28 @@ function SubjectsSection() {
           {subjects.map((s, i) => (
             <div
               key={s.name}
-              className="flex items-center gap-5"
+              className="flex items-center gap-3 sm:gap-5"
               style={{
-                padding: "26px 0",
+                padding: "20px 0",
                 borderTop: "1px solid #d8e6f7",
                 borderBottom: i === subjects.length - 1 ? "1px solid #d8e6f7" : undefined,
               }}
             >
               {/* Color bar */}
-              <div style={{ width: 3, height: 52, background: s.color, borderRadius: 2, flexShrink: 0 }} />
+              <div style={{ width: 3, height: 44, background: s.color, borderRadius: 2, flexShrink: 0 }} />
               {/* Icon */}
-              <div style={{ width: 46, height: 46, background: s.iconBg, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 42, height: 42, background: s.iconBg, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {s.icon}
               </div>
               {/* Content */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: ".09em", color: s.color, fontWeight: 700, marginBottom: 4 }}>{s.topics}</div>
-                <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 2 }}>{s.name}</h3>
-                <p style={{ fontSize: 13, color: "#5b769a" }}>{s.desc}</p>
+                <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: ".09em", color: s.color, fontWeight: 700, marginBottom: 3 }}>{s.topics}</div>
+                <h3 className="text-[15px] md:text-[20px]" style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "#0f2748", marginBottom: 1 }}>{s.name}</h3>
+                <p className="hidden sm:block" style={{ fontSize: 13, color: "#5b769a" }}>{s.desc}</p>
               </div>
-              {/* Badge */}
+              {/* Badge — hidden on mobile */}
               <div
+                className="hidden sm:block"
                 style={{
                   flexShrink: 0,
                   background: s.badgeBg,
@@ -755,8 +742,8 @@ function SubjectsSection() {
               >
                 {s.badge}
               </div>
-              {/* Arrow */}
-              <div style={{ fontSize: 13, color: s.color, fontWeight: 600, flexShrink: 0 }}>Explore →</div>
+              {/* Arrow — hidden on mobile */}
+              <div className="hidden sm:block" style={{ fontSize: 13, color: s.color, fontWeight: 600, flexShrink: 0 }}>Explore →</div>
             </div>
           ))}
         </div>
@@ -770,12 +757,12 @@ function SubjectsSection() {
 function CtaSection() {
   return (
     <section
+      className="px-4 py-16 md:px-[40px] md:py-[72px]"
       style={{
         background: "linear-gradient(135deg,#030C1A 0%,#050E1D 45%,#1D4ED8 100%)",
-        padding: "72px 40px",
         position: "relative",
         overflow: "hidden",
-        minHeight: 260,
+        minHeight: 240,
       }}
     >
       {/* Dot pattern */}
@@ -788,9 +775,9 @@ function CtaSection() {
       />
       <div className="max-w-[640px] mx-auto text-center relative" style={{ zIndex: 1 }}>
         <h2
+          className="text-[30px] md:text-[50px]"
           style={{
             fontFamily: "var(--font-feather)",
-            fontSize: 50,
             fontWeight: 700,
             color: "white",
             lineHeight: 1.12,
@@ -799,14 +786,14 @@ function CtaSection() {
         >
           Ready to pass<br />your GED?
         </h2>
-        <p style={{ fontSize: 16, color: "rgba(255,255,255,.55)", marginBottom: 32, lineHeight: 1.65 }}>
+        <p style={{ fontSize: 16, color: "rgba(255,255,255,.55)", marginBottom: 28, lineHeight: 1.65 }}>
           Start free today. No credit card. No commitment. Just results.
         </p>
         <Link
           href="/register"
           style={{
             display: "inline-block",
-            padding: "15px 40px",
+            padding: "14px 36px",
             background: "white",
             color: "#1e90e8",
             borderRadius: 14,
@@ -827,7 +814,7 @@ function CtaSection() {
 
 function Footer() {
   return (
-    <footer style={{ borderTop: "1px solid #d8e6f7", padding: "24px 40px", background: "var(--card)" }}>
+    <footer className="px-4 py-6 md:px-[40px]" style={{ borderTop: "1px solid #d8e6f7", background: "var(--card)" }}>
       <div className="max-w-[1200px] mx-auto flex items-center justify-between flex-wrap gap-3">
         {/* Logo */}
         <div className="flex items-center gap-[9px]">

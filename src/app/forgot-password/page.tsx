@@ -140,7 +140,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
         </div>
         <span className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>GED Prep</span>
       </div>
-      <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-8">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8">
         {children}
       </div>
     </div>

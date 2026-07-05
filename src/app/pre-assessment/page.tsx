@@ -233,7 +233,7 @@ export default function PreAssessmentPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-card border-b border-border px-6 py-4">
+      <header className="bg-card border-b border-border px-4 sm:px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -258,7 +258,7 @@ export default function PreAssessmentPage() {
       </header>
 
       {/* Progress */}
-      <div className="bg-card border-b border-border px-6 py-3">
+      <div className="bg-card border-b border-border px-4 sm:px-6 py-3">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground font-medium">
@@ -278,7 +278,7 @@ export default function PreAssessmentPage() {
       </div>
 
       {/* Subject tabs */}
-      <div className="bg-card border-b border-border px-6 py-2">
+      <div className="bg-card border-b border-border px-4 sm:px-6 py-2 overflow-x-auto">
         <div className="max-w-2xl mx-auto flex gap-2">
           {assessments.map((a, i) => (
             <div
@@ -301,9 +301,9 @@ export default function PreAssessmentPage() {
       </div>
 
       {/* Question */}
-      <div className="flex-1 flex items-start justify-center px-6 py-10">
+      <div className="flex-1 flex items-start justify-center px-4 py-6 sm:px-6 sm:py-10">
         <div className="w-full max-w-2xl">
-          <div className="bg-card rounded-2xl border border-border shadow-sm p-8 mb-6">
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-4 sm:p-8 mb-6">
             <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-4">
               Question {currentQuestionIdx + 1} of{" "}
               {currentAssessment.questions.length}
@@ -337,7 +337,7 @@ export default function PreAssessmentPage() {
                   }
                 }}
                 className={cn(
-                  "w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4",
+                  "w-full text-left px-3 py-3 sm:px-5 sm:py-4 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4",
                   selectedOption === option.id
                     ? "border-primary bg-primary-light shadow-sm"
                     : "border-border bg-card hover:border-border hover:bg-background",
@@ -345,7 +345,7 @@ export default function PreAssessmentPage() {
               >
                 <span
                   className={cn(
-                    "shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                    "shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-sm font-bold",
                     selectedOption === option.id
                       ? "bg-primary text-white"
                       : "bg-muted text-muted-foreground",

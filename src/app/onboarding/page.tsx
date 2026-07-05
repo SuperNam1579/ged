@@ -365,7 +365,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-card border-b border-border px-6 py-4">
+      <header className="bg-card border-b border-border px-4 sm:px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-[9px]">
             <div
@@ -390,7 +390,7 @@ export default function OnboardingPage() {
       </header>
 
       {step < 4 && (
-        <div className="bg-card border-b border-border px-6 py-2">
+        <div className="bg-card border-b border-border px-4 sm:px-6 py-2">
           <div className="max-w-3xl mx-auto">
             <ProgressBar value={(step / 3) * 100} showPercent={false} variant="blue" size="sm" />
           </div>
@@ -398,7 +398,7 @@ export default function OnboardingPage() {
       )}
 
       {/* Content */}
-      <div className="flex-1 px-6 py-10">
+      <div className="flex-1 px-4 py-6 sm:px-6 sm:py-10">
         <div className="max-w-3xl mx-auto">
 
           {/* ── Step 1: Subjects ───────────────────────────────────────── */}

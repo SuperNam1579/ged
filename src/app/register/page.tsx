@@ -360,7 +360,7 @@ export default function RegisterPage() {
       </div>
 
       {/* ── Right panel (form) ── */}
-      <div className="flex-1 flex items-center justify-center bg-background py-[60px] px-6 lg:px-12">
+      <div className="flex-1 flex items-center justify-center bg-background py-10 sm:py-[60px] px-6 lg:px-12">
         <div className="w-full max-w-[380px]">
           {/* Logo */}
           <div className="flex items-center gap-[9px] mb-8">
