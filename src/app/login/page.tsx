@@ -50,6 +50,7 @@ function LoginContent() {
 
   const passwordReset = searchParams.get("reset") === "success";
   const emailVerified = searchParams.get("verified") === "true";
+  const sessionExpired = searchParams.get("expired") === "1";
   const nextAuthError = searchParams.get("error");
   const nextAuthErrorMessage = nextAuthError
     ? (NEXTAUTH_ERRORS[nextAuthError] ?? NEXTAUTH_ERRORS.Default)
@@ -250,6 +251,13 @@ function LoginContent() {
 
           <h1 className="text-[28px] font-bold text-foreground mb-1.5" style={{ fontFamily: "var(--font-feather)" }}>Welcome back</h1>
           <p className="text-sm text-muted-foreground mb-6">Sign in to continue your study journey.</p>
+
+          {/* Session-expired notice (auto-recovery redirected here) */}
+          {sessionExpired && (
+            <div className="mb-4 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/25 text-sm text-amber-700 dark:text-amber-400">
+              Your session ended. Please sign in again.
+            </div>
+          )}
 
           {/* Success banners */}
           {emailVerified && (

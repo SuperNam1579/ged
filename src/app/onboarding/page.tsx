@@ -10,6 +10,7 @@ import {
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
+import { clearExistingSession } from "@/lib/auth-client";
 
 // ─── Subject definitions ────────────────────────────────────────────────────
 // Colors & topic counts mirror the landing page's Subjects section so the
@@ -327,6 +328,14 @@ export default function OnboardingPage() {
           selectedSubjectCodes: selectedSubjects,
         }),
       });
+      // A 401/404 here means the session is stale/orphaned (e.g. the account was
+      // deleted while a cookie lingered). Self-heal: clear it and send to login
+      // rather than leaving the user stuck on an "Unauthorized" banner.
+      if (prefRes.status === 401 || prefRes.status === 404) {
+        await clearExistingSession();
+        router.replace("/login?expired=1");
+        return;
+      }
       if (!prefRes.ok) throw new Error((await prefRes.json()).error ?? "Failed to save preferences");
 
       const slots: { dayOfWeek: number; startTime: string; endTime: string }[] = [];
