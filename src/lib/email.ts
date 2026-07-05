@@ -3,6 +3,12 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+if (!process.env.NEXT_PUBLIC_APP_URL) {
+  console.warn(
+    "[email] NEXT_PUBLIC_APP_URL is not set — email links will use http://localhost:3000. " +
+    "In production, set NEXT_PUBLIC_APP_URL=https://www.ged-nn.com in Vercel environment variables."
+  );
+}
 const FROM_EMAIL = process.env.EMAIL_FROM ?? "GED Prep <noreply@yourdomain.com>";
 
 export async function sendVerificationEmail(

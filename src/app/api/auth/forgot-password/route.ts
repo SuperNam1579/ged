@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { db } from "@/lib/db";
 import { generateVerificationToken, passwordResetTokenExpiry } from "@/lib/token";
 import { sendPasswordResetEmail } from "@/lib/email";
@@ -69,8 +69,10 @@ export async function POST(req: NextRequest) {
       success: true,
     });
 
-    sendPasswordResetEmail(email, user.name ?? "", raw).catch((err) =>
-      console.error("[forgot-password] Failed to send reset email:", err)
+    after(() =>
+      sendPasswordResetEmail(email, user.name ?? "", raw).catch((err) =>
+        console.error("[forgot-password] Failed to send reset email:", err)
+      )
     );
 
     return NextResponse.json(GENERIC_OK);

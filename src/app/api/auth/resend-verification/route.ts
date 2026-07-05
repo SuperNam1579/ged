@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { db } from "@/lib/db";
 import {
   generateVerificationToken,
@@ -69,8 +69,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    sendVerificationEmail(email, user.name ?? "", raw).catch((err) =>
-      console.error("[resend-verification] Failed to send email:", err)
+    after(() =>
+      sendVerificationEmail(email, user.name ?? "", raw).catch((err) =>
+        console.error("[resend-verification] Failed to send email:", err)
+      )
     );
 
     return NextResponse.json(GENERIC_OK);

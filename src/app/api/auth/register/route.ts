@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { hashPassword } from "@/lib/auth";
@@ -72,10 +72,12 @@ export async function POST(req: NextRequest) {
       success: true,
     });
 
-    // Fire-and-forget: don't block the response on email delivery.
-    // Log failures so they can be investigated / retried out-of-band.
-    sendVerificationEmail(email, name, raw).catch((err) =>
-      console.error("[register] Failed to send verification email:", err)
+    // Schedule email after response is sent so Vercel keeps the function alive
+    // until delivery completes — avoids silent drops on serverless cold-start teardown.
+    after(() =>
+      sendVerificationEmail(email, name, raw).catch((err) =>
+        console.error("[register] Failed to send verification email:", err)
+      )
     );
 
     return NextResponse.json(
