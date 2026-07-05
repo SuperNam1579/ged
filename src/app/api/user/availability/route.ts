@@ -41,6 +41,14 @@ export async function POST(req: NextRequest) {
   const { weekStartDate: weekStartStr, slots } = parsed.data;
   const weekStart = new Date(weekStartStr);
 
+  // For the current (or a past-dated) week most of the Mon–Sun window has
+  // already gone by, so anchor generation at today and roll a full 7-day window
+  // forward — otherwise the plan would only cover the couple of days left in the
+  // week (or none). Future weeks keep their own Monday-anchored window.
+  const todayMidnight = new Date();
+  todayMidnight.setHours(0, 0, 0, 0);
+  const genAnchor = weekStart < todayMidnight ? todayMidnight : weekStart;
+
   const preferences = await db.userPreferences.findUnique({
     where: { userId: authUser.id },
   });
@@ -169,7 +177,7 @@ export async function POST(req: NextRequest) {
           targetScore: preferences.targetScore,
         },
         weeklyAvailability: slots,
-        weekStartDate: weekStart,
+        weekStartDate: genAnchor,
         weeklyAvailabilityId: weeklyAvail.id,
         subtopics: weekSubtopics,
         triggerReason: "SCHEDULE_CHANGE" as TriggerReason,

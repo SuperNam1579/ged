@@ -43,7 +43,11 @@ export async function runGeneticAlgorithm(
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const startDate = weekStartDate ?? today;
+  // Never schedule sessions on days that have already passed: clamp the window
+  // start to today. For a multi-week regeneration this simply trims the current
+  // week to its remaining days (later weeks are unaffected).
+  const rawStart = weekStartDate ?? today;
+  const startDate = rawStart < today ? today : rawStart;
   const endDate = weekStartDate
     ? new Date(weekStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
     : preferences.targetExamDate;
