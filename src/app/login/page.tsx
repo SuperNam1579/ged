@@ -3,7 +3,8 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn, signOut } from "next-auth/react";
+import { signIn } from "next-auth/react";
+import { clearExistingSession } from "@/lib/auth-client";
 import { BookOpen } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -164,12 +165,13 @@ function LoginContent() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    // Clear any existing NextAuth session first so Google is always treated as
-    // a fresh sign-in, not "link a provider to whoever is currently signed in"
-    // — the latter is what attached one account's Google identity to another
-    // user. (Auth.js only sees its own session during OAuth, so clearing it is
-    // enough; combined with prompt=select_account the user always picks fresh.)
-    await signOut({ redirect: false }).catch(() => {});
+    // Clear BOTH sessions before a fresh Google sign-in:
+    //  - the custom auth-token (getAuthUser checks it first — a leftover one
+    //    from a since-deleted/other account would otherwise shadow the result,
+    //    causing 401/404s), and
+    //  - the NextAuth session (so Google is a fresh login, not "link to whoever
+    //    is currently signed in").
+    await clearExistingSession();
     await signIn("google", { callbackUrl: callbackUrl || "/dashboard" });
   };
 

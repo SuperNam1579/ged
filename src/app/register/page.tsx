@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, signOut } from "next-auth/react";
+import { signIn } from "next-auth/react";
+import { clearExistingSession } from "@/lib/auth-client";
 import { BookOpen } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -257,9 +258,9 @@ export default function RegisterPage() {
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
-    // Clear any existing session so Google is a fresh sign-in, never linked to
-    // whoever is currently signed in (which caused wrong-account linking).
-    await signOut({ redirect: false }).catch(() => {});
+    // Clear any existing session (auth-token + NextAuth) so Google is a fresh
+    // sign-in, never linked to / shadowed by whoever is currently signed in.
+    await clearExistingSession();
     // Route through /dashboard, which sends users to onboarding only when they
     // have no preferences yet. Hardcoding /onboarding here forced *returning*
     // Google users (who already onboarded) back through onboarding.
