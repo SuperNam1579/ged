@@ -239,6 +239,69 @@ function ExamDatePicker({
   );
 }
 
+// ─── Date-of-birth picker (Month / Day / Year dropdowns, ages 16–100) ──────────
+
+function DobPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const parts = value ? value.split("-") : ["", "", ""];
+  const [year, setYear] = useState(parts[0]);
+  const [month, setMonth] = useState(parts[1] ? String(parseInt(parts[1])) : "");
+  const [day, setDay] = useState(parts[2] ? String(parseInt(parts[2])) : "");
+
+  const currentYear = new Date().getFullYear();
+  // Oldest 100, youngest 16.
+  const years = useMemo(
+    () => Array.from({ length: 85 }, (_, i) => currentYear - 16 - i),
+    [currentYear]
+  );
+
+  const daysInMonth = useMemo(() => {
+    if (!month || !year) return 31;
+    return new Date(parseInt(year), parseInt(month), 0).getDate();
+  }, [month, year]);
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const emit = (y: string, m: string, d: string) => {
+    if (y && m && d) onChange(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`);
+    else onChange("");
+  };
+  const handleYear = (v: string) => { setYear(v); emit(v, month, day); };
+  const handleMonth = (v: string) => {
+    setMonth(v);
+    const maxDay = v && year ? new Date(parseInt(year), parseInt(v), 0).getDate() : 31;
+    const clamped = day && parseInt(day) > maxDay ? "" : day;
+    if (clamped !== day) setDay(clamped);
+    emit(year, v, clamped);
+  };
+  const handleDay = (v: string) => { setDay(v); emit(year, month, v); };
+  const selectStyle = { WebkitAppearance: "none" as const };
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      <div className="relative">
+        <select aria-label="Birth month" value={month} onChange={(e) => handleMonth(e.target.value)} className={DATE_SELECT_CLS} style={selectStyle}>
+          <option value="">Month</option>
+          {MONTHS.map((m, i) => <option key={m} value={String(i + 1)}>{m}</option>)}
+        </select>
+        <DateSelectChevron />
+      </div>
+      <div className="relative">
+        <select aria-label="Birth day" value={day} onChange={(e) => handleDay(e.target.value)} className={DATE_SELECT_CLS} style={selectStyle}>
+          <option value="">Day</option>
+          {days.map((d) => <option key={d} value={String(d)}>{d}</option>)}
+        </select>
+        <DateSelectChevron />
+      </div>
+      <div className="relative">
+        <select aria-label="Birth year" value={year} onChange={(e) => handleYear(e.target.value)} className={DATE_SELECT_CLS} style={selectStyle}>
+          <option value="">Year</option>
+          {years.map((y) => <option key={y} value={String(y)}>{y}</option>)}
+        </select>
+        <DateSelectChevron />
+      </div>
+    </div>
+  );
+}
+
 // ─── Main component ─────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
@@ -252,10 +315,24 @@ export default function OnboardingPage() {
   const [examDate, setExamDate] = useState("");
   const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
 
+  // Google sign-ups skip the credentials form, so they never provided a date
+  // of birth. If it's missing we collect it here (with the same 16+ rule).
+  const [needsDob, setNeedsDob] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState("");
+
   useEffect(() => {
     fetch("/api/csrf")
       .then((r) => r.json())
       .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d: { user?: { dateOfBirth?: string | null } }) => {
+        if (d.user && !d.user.dateOfBirth) setNeedsDob(true);
+      })
       .catch(() => {});
   }, []);
 
@@ -303,9 +380,16 @@ export default function OnboardingPage() {
 
   // ── Validation ──────────────────────────────────────────────────────────
 
+  const dobValid = () => {
+    if (!dateOfBirth) return false;
+    const age = (Date.now() - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    return age >= 16 && age <= 120;
+  };
+
   const canProceed = () => {
     if (step === 1) return selectedSubjects.length > 0;
     if (step === 2) {
+      if (needsDob && !dobValid()) return false;
       if (!examDate || examDate < minDate) return false;
       return Object.values(schedule).some((d) => d.enabled && d.slots.length > 0);
     }
@@ -318,6 +402,21 @@ export default function OnboardingPage() {
     setError("");
     setLoading(true);
     try {
+      // Persist the date of birth first for Google accounts that never gave one.
+      if (needsDob) {
+        const dobRes = await fetch("/api/user/profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+          body: JSON.stringify({ dateOfBirth }),
+        });
+        if (dobRes.status === 401 || dobRes.status === 404) {
+          await clearExistingSession();
+          router.replace("/login?expired=1");
+          return;
+        }
+        if (!dobRes.ok) throw new Error((await dobRes.json()).error ?? "Failed to save date of birth");
+      }
+
       const prefRes = await fetch("/api/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
@@ -475,6 +574,20 @@ export default function OnboardingPage() {
                 When is your exam?
               </h1>
               <p className="text-muted-foreground mb-8">We&apos;ll use this to create a realistic study schedule that fits your timeline.</p>
+
+              {/* Date of birth — only for accounts that never provided one (Google sign-ups) */}
+              {needsDob && (
+                <div className="mb-8">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    Date of birth
+                  </label>
+                  <DobPicker value={dateOfBirth} onChange={setDateOfBirth} />
+                  {dateOfBirth && !dobValid() && (
+                    <p className="mt-1.5 text-xs text-danger">You must be at least 16 years old to use GED Prep.</p>
+                  )}
+                  <p className="mt-1.5 text-xs text-muted-foreground">We need this to confirm you meet the age requirement.</p>
+                </div>
+              )}
 
               {/* Exam date */}
               <div className="mb-8">

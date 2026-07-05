@@ -25,6 +25,14 @@ export default function SettingsPage() {
   const [regenError, setRegenError] = useState("");
   const [csrfToken, setCsrfToken] = useState("");
 
+  // Display-name editing. null = not edited yet → falls back to the loaded name.
+  const [nameOverride, setNameOverride] = useState<string | null>(null);
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameSuccess, setNameSuccess] = useState(false);
+  const [nameError, setNameError] = useState("");
+  const name = nameOverride ?? user?.name ?? "";
+  const nameChanged = name.trim() !== (user?.name ?? "") && name.trim().length >= 2;
+
   useEffect(() => {
     fetch("/api/csrf")
       .then((r) => r.json())
@@ -69,6 +77,32 @@ export default function SettingsPage() {
       setSaveError("Network error. Please try again.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveName = async () => {
+    if (!nameChanged) return;
+    setNameSaving(true);
+    setNameSuccess(false);
+    setNameError("");
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!res.ok) {
+        setNameError((await res.json()).error ?? "Failed to update name.");
+      } else {
+        setNameSuccess(true);
+        setTimeout(() => setNameSuccess(false), 3000);
+        // Reflect the saved name immediately without a full reload.
+        setNameOverride(name.trim());
+      }
+    } catch {
+      setNameError("Network error. Please try again.");
+    } finally {
+      setNameSaving(false);
     }
   };
 
@@ -127,10 +161,27 @@ export default function SettingsPage() {
           </CardHeader>
           <CardBody className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Name</label>
-              <div className="px-3.5 py-2.5 rounded-lg border border-border bg-background text-sm text-muted-foreground">
-                {user?.name}
+              <label htmlFor="displayName" className="block text-sm font-medium text-foreground mb-1.5">Display name</label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="displayName"
+                  type="text"
+                  value={name}
+                  maxLength={100}
+                  onChange={(e) => { setNameOverride(e.target.value); setNameError(""); }}
+                  placeholder="Your name"
+                  className="flex-1 px-3.5 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                />
+                <Button onClick={handleSaveName} loading={nameSaving} disabled={!nameChanged || nameSaving} size="sm">
+                  Save
+                </Button>
               </div>
+              {nameSuccess && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+                  <Check className="w-3.5 h-3.5" /> Name updated!
+                </p>
+              )}
+              {nameError && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{nameError}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
