@@ -42,16 +42,23 @@ export async function getAuthUser(
   // Handles users who authenticated via NextAuth providers rather than the
   // custom credentials route. No circular dependency: getToken is from the
   // next-auth package, not from our src/auth.ts.
-  const nextAuthToken = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-  });
-  if (nextAuthToken?.sub) {
-    return {
-      id: nextAuthToken.sub,
-      email: (nextAuthToken.email as string) ?? "",
-      name: (nextAuthToken.name as string | null) ?? null,
-    };
+  //
+  // getToken derives the cookie name (and JWT salt) from `secureCookie`, which
+  // it infers from NEXTAUTH_URL. On production the session cookie is
+  // `__Secure-authjs.session-token`, but a misconfigured/absent NEXTAUTH_URL
+  // makes getToken look for the unprefixed name and return null — which would
+  // 401 every Google user and bounce them back into onboarding. Try both the
+  // secure and non-secure variants so resolution works regardless of env.
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+  for (const secureCookie of [true, false]) {
+    const nextAuthToken = await getToken({ req, secret, secureCookie });
+    if (nextAuthToken?.sub) {
+      return {
+        id: nextAuthToken.sub,
+        email: (nextAuthToken.email as string) ?? "",
+        name: (nextAuthToken.name as string | null) ?? null,
+      };
+    }
   }
 
   return null;

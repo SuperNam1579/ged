@@ -257,7 +257,10 @@ export default function RegisterPage() {
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
-    await signIn("google", { callbackUrl: "/onboarding" });
+    // Route through /dashboard, which sends users to onboarding only when they
+    // have no preferences yet. Hardcoding /onboarding here forced *returning*
+    // Google users (who already onboarded) back through onboarding.
+    await signIn("google", { callbackUrl: "/dashboard" });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
