@@ -41,14 +41,6 @@ export async function POST(req: NextRequest) {
   const { weekStartDate: weekStartStr, slots } = parsed.data;
   const weekStart = new Date(weekStartStr);
 
-  // For the current (or a past-dated) week most of the Mon–Sun window has
-  // already gone by, so anchor generation at today and roll a full 7-day window
-  // forward — otherwise the plan would only cover the couple of days left in the
-  // week (or none). Future weeks keep their own Monday-anchored window.
-  const todayMidnight = new Date();
-  todayMidnight.setHours(0, 0, 0, 0);
-  const genAnchor = weekStart < todayMidnight ? todayMidnight : weekStart;
-
   const preferences = await db.userPreferences.findUnique({
     where: { userId: authUser.id },
   });
@@ -119,12 +111,45 @@ export async function POST(req: NextRequest) {
     proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score])
   );
 
-  // ── Week budget: total available minutes from slots ──────────────────────
-  const totalSlotMins = slots.reduce((sum, s) => {
+  // ── Generation window + budget ────────────────────────────────────────────
+  // Plan only the days of THIS week that haven't passed yet, and size the budget
+  // to the capacity of exactly those days — otherwise a full-week budget gets
+  // crammed onto the couple of days that are actually left (e.g. everything
+  // piled onto Sunday). If the current week has no days left at all, roll the
+  // window (and budget) forward to next week so onboarding still gets a plan.
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const slotMins = (s: { startTime: string; endTime: string }) => {
     const [sh, sm] = s.startTime.split(":").map(Number);
     const [eh, em] = s.endTime.split(":").map(Number);
-    return sum + Math.max(0, eh * 60 + em - (sh * 60 + sm));
-  }, 0);
+    return Math.max(0, eh * 60 + em - (sh * 60 + sm));
+  };
+
+  // Capacity (minutes) of the available days inside [max(anchor,today), anchor+7).
+  const windowStats = (anchor: Date) => {
+    const start = anchor < today ? today : anchor;
+    const end = new Date(anchor.getTime() + 7 * DAY_MS);
+    let mins = 0;
+    let dayCount = 0;
+    for (const cur = new Date(start); cur < end; cur.setDate(cur.getDate() + 1)) {
+      const daySlots = slots.filter((s) => s.dayOfWeek === cur.getDay());
+      if (daySlots.length > 0) {
+        dayCount++;
+        for (const s of daySlots) mins += slotMins(s);
+      }
+    }
+    return { mins, dayCount };
+  };
+
+  let genAnchor = weekStart;
+  let { mins: totalSlotMins, dayCount } = windowStats(genAnchor);
+  if (dayCount === 0) {
+    // No study days left this week → generate for next week instead.
+    genAnchor = new Date(weekStart.getTime() + 7 * DAY_MS);
+    ({ mins: totalSlotMins, dayCount } = windowStats(genAnchor));
+  }
 
   // ── Exclude subtopics already in the active plan (completed OR still pending) ─
   // This prevents the same topic from appearing twice across weeks.
@@ -179,6 +204,9 @@ export async function POST(req: NextRequest) {
         weeklyAvailability: slots,
         weekStartDate: genAnchor,
         weeklyAvailabilityId: weeklyAvail.id,
+        // engine computes endDate = genAnchor + 7d and clamps the start to today,
+        // so the window matches the [max(genAnchor,today), genAnchor+7) capacity
+        // the budget above was sized against.
         subtopics: weekSubtopics,
         triggerReason: "SCHEDULE_CHANGE" as TriggerReason,
         existingPlanVersion: latestPlan?.version,
