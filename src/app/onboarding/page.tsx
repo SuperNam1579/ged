@@ -448,7 +448,10 @@ export default function OnboardingPage() {
       const availRes = await fetch("/api/user/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({ weekStartDate: thisMonday(), slots }),
+        // The schedule entered here is the user's initial recurring availability,
+        // so save it as the template (applyToFutureWeeks) — future weeks pre-fill
+        // from it instead of asking the user to re-enter everything.
+        body: JSON.stringify({ weekStartDate: thisMonday(), slots, applyToFutureWeeks: true }),
       });
       if (!availRes.ok) throw new Error((await availRes.json()).error ?? "Failed to generate plan");
 

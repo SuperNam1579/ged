@@ -90,6 +90,17 @@ function scheduleToSlots(schedule: Schedule): Array<{ dayOfWeek: number; startTi
   );
 }
 
+function slotsToSchedule(slots: AvailabilitySlot[]): Schedule {
+  const sched: Schedule = Object.fromEntries(
+    [0, 1, 2, 3, 4, 5, 6].map((d) => [d, { enabled: false, slots: [] as TimeSlot[] }])
+  ) as Schedule;
+  for (const s of slots) {
+    sched[s.dayOfWeek].enabled = true;
+    sched[s.dayOfWeek].slots.push({ id: crypto.randomUUID(), start: s.startTime, end: s.endTime });
+  }
+  return sched;
+}
+
 // ─── WeekScheduleSetup ───────────────────────────────────────────────────────
 
 function WeekScheduleSetup({
@@ -101,22 +112,48 @@ function WeekScheduleSetup({
   csrfToken: string;
   onSuccess: () => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [loadingDraft, setLoadingDraft] = useState(true);
+  const [hasTemplate, setHasTemplate] = useState(true);
+  const [source, setSource] = useState<"template" | "confirmed">("template");
+  const [pastByDow, setPastByDow] = useState<Record<number, boolean>>({});
   const [schedule, setSchedule] = useState<Schedule>(EMPTY_SCHEDULE);
+  const [applyToFuture, setApplyToFuture] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [infoMsg, setInfoMsg] = useState("");
 
+  // Pre-fill this week's availability: the confirmed snapshot if it exists,
+  // otherwise a draft projected from the recurring template. Nothing is saved
+  // until the user hits Generate.
+  useEffect(() => {
+    const weekStartDate = format(weekStart, "yyyy-MM-dd");
+    fetch(`/api/user/availability/week?weekStartDate=${weekStartDate}`)
+      .then((r) => r.json())
+      .then((d: {
+        source?: "template" | "confirmed";
+        hasTemplate?: boolean;
+        slots?: AvailabilitySlot[];
+        days?: { dayOfWeek: number; isPast: boolean }[];
+      }) => {
+        setSource(d.source ?? "template");
+        setHasTemplate(d.hasTemplate ?? d.source === "confirmed");
+        setPastByDow(Object.fromEntries((d.days ?? []).map((x) => [x.dayOfWeek, x.isPast])));
+        setSchedule(slotsToSchedule(d.slots ?? []));
+        setLoadingDraft(false);
+      })
+      .catch(() => setLoadingDraft(false));
+  }, [weekStart]);
+
   const toggleDay = (dow: number) =>
     setSchedule((prev) => ({
       ...prev,
-      [dow]: { ...prev[dow], enabled: !prev[dow].enabled, slots: prev[dow].enabled ? [] : [{ id: crypto.randomUUID(), start: "00:00", end: "00:00" }] },
+      [dow]: { ...prev[dow], enabled: !prev[dow].enabled, slots: prev[dow].enabled ? [] : [{ id: crypto.randomUUID(), start: "18:00", end: "20:00" }] },
     }));
 
   const addSlot = (dow: number) =>
     setSchedule((prev) => ({
       ...prev,
-      [dow]: { ...prev[dow], slots: [...prev[dow].slots, { id: crypto.randomUUID(), start: "00:00", end: "00:00" }] },
+      [dow]: { ...prev[dow], slots: [...prev[dow].slots, { id: crypto.randomUUID(), start: "18:00", end: "20:00" }] },
     }));
 
   const removeSlot = (dow: number, id: string) =>
@@ -135,7 +172,9 @@ function WeekScheduleSetup({
     }));
 
   const validSlots = scheduleToSlots(schedule);
-  const canSubmit = validSlots.length > 0;
+  // Only the days that haven't passed can actually be studied this week.
+  const futureSlots = validSlots.filter((s) => !pastByDow[s.dayOfWeek]);
+  const canSubmit = futureSlots.length > 0;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -146,13 +185,12 @@ function WeekScheduleSetup({
       const res = await fetch("/api/user/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({ weekStartDate, slots: validSlots }),
+        body: JSON.stringify({ weekStartDate, slots: validSlots, applyToFutureWeeks: applyToFuture }),
       });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(d.error ?? "Failed to save schedule.");
       } else if (d.message) {
-        // All subtopics already scheduled — nothing new to add
         setInfoMsg(d.message);
       } else {
         onSuccess();
@@ -164,19 +202,28 @@ function WeekScheduleSetup({
     }
   };
 
-  if (!open) {
+  if (loadingDraft) {
+    return (
+      <div className="rounded-xl border border-border p-8 flex items-center justify-center">
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // No recurring availability yet → send the user to set it up once.
+  if (!hasTemplate && source === "template") {
     return (
       <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
         <CalendarDays className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-        <p className="text-sm font-medium text-muted-foreground mb-1">No schedule set for this week</p>
-        <p className="text-xs text-muted-foreground mb-4">Add your available study times to generate a plan</p>
-        <button
-          onClick={() => setOpen(true)}
+        <p className="text-sm font-medium text-foreground mb-1">Set up your recurring availability first</p>
+        <p className="text-xs text-muted-foreground mb-4">Tell us when you&apos;re usually free — we&apos;ll reuse it every week so you don&apos;t have to re-enter it.</p>
+        <Link
+          href="/availability"
           className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Set up schedule for {relativeWeekLabel(1)}
-        </button>
+          Set up availability
+        </Link>
       </div>
     );
   }
@@ -187,54 +234,57 @@ function WeekScheduleSetup({
       <div className="flex items-center justify-between px-4 py-3 border-b border-primary">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            Set up schedule · {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d")}
+            Review this week · {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d")}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Choose the days and times you can study</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {source === "confirmed"
+              ? "Adjust and regenerate this week's plan."
+              : "Pre-filled from your usual availability — tweak only what changed this week."}
+          </p>
         </div>
-        <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
-          <X className="w-4 h-4 text-muted-foreground" />
-        </button>
       </div>
 
       {/* Day rows */}
       <div className="p-4 space-y-3">
         {WEEK_DAYS.map(({ label, dow }) => {
           const day = schedule[dow];
+          const isPast = !!pastByDow[dow];
           return (
-            <div key={dow} className="bg-card rounded-lg border border-border overflow-hidden">
+            <div key={dow} className={cn("bg-card rounded-lg border border-border overflow-hidden", isPast && "opacity-60")}>
               {/* Day toggle */}
               <div className="flex items-center gap-3 px-4 py-2.5">
                 <button
-                  onClick={() => toggleDay(dow)}
+                  onClick={() => !isPast && toggleDay(dow)}
                   role="switch"
                   aria-checked={day.enabled}
                   aria-label={`Toggle ${label}`}
+                  disabled={isPast}
                   className={cn(
                     "w-11 h-6 p-0 rounded-full transition-colors relative shrink-0",
-                    day.enabled ? "bg-primary" : "bg-muted"
+                    day.enabled && !isPast ? "bg-primary" : "bg-muted",
+                    isPast && "cursor-not-allowed"
                   )}
                 >
-                  {/* Explicit left anchor + p-0 so the knob is positioned from a
-                      known origin — otherwise the button's default padding shifts
-                      the knob and translate-x pushes it over the day label. */}
                   <span className={cn(
                     "absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-card shadow transition-transform",
                     day.enabled ? "translate-x-5" : "translate-x-0"
                   )} />
                 </button>
-                <span className={cn("text-sm font-medium w-10 shrink-0", day.enabled ? "text-foreground" : "text-muted-foreground")}>
+                <span className={cn("text-sm font-medium w-10 shrink-0", day.enabled && !isPast ? "text-foreground" : "text-muted-foreground")}>
                   {label}
                 </span>
-                {day.enabled && day.slots.length === 0 && (
+                {isPast ? (
+                  <span className="text-xs text-muted-foreground italic">Already passed</span>
+                ) : day.enabled && day.slots.length === 0 ? (
                   <span className="text-xs text-muted-foreground italic">No time slots — add one</span>
-                )}
+                ) : null}
               </div>
 
               {/* Slots */}
-              {day.enabled && (
+              {day.enabled && !isPast && (
                 <div className="border-t border-border px-4 py-2 space-y-2 bg-background/50">
                   {day.slots.map((slot) => {
-                    const invalid = slot.start >= slot.end && slot.end !== "00:00";
+                    const invalid = slot.start >= slot.end;
                     return (
                       <div key={slot.id} className="flex items-center gap-2">
                         <select
@@ -277,6 +327,25 @@ function WeekScheduleSetup({
           );
         })}
 
+        {/* Apply to future weeks */}
+        <label className="flex items-center gap-2.5 pt-1 cursor-pointer select-none">
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={applyToFuture}
+            onClick={() => setApplyToFuture((v) => !v)}
+            className="w-4.5 h-4.5 rounded border border-border flex items-center justify-center shrink-0 transition-colors"
+            style={applyToFuture ? { background: "var(--primary)", borderColor: "var(--primary)" } : {}}
+          >
+            {applyToFuture && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </button>
+          <span className="text-sm text-foreground">Apply these changes to future weeks</span>
+        </label>
+
         {error && <p className="text-red-600 dark:text-red-400 text-sm px-1">{error}</p>}
         {infoMsg && (
           <div className="bg-primary-light border border-primary rounded-lg px-4 py-3 text-sm text-primary">
@@ -297,7 +366,7 @@ function WeekScheduleSetup({
           {submitting ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Generating plan…</>
           ) : (
-            "Generate Plan for This Week"
+            "Generate Study Plan"
           )}
         </button>
       </div>
@@ -349,7 +418,6 @@ export default function SchedulePage() {
 
   const weekDiff = differenceInCalendarWeeks(weekStart, currentWeekMon, { weekStartsOn: 1 });
   const isCurrentWeek = weekDiff === 0;
-  const isFutureWeek = weekDiff > 0;
 
   const planWeekStart = sessions.length > 0
     ? startOfWeek(
@@ -373,8 +441,9 @@ export default function SchedulePage() {
   const weekTotalMins = weekSessions.reduce((a, s) => a + s.durationMins, 0);
   const weekCompleted = weekSessions.filter((s) => s.status === "COMPLETED").length;
 
-  // Show setup form if: future week AND no availability set AND no sessions
-  const showSetup = isFutureWeek && slots.length === 0 && weekSessions.length === 0;
+  // Show the review/generate panel for the current or a future week that has no
+  // plan yet. (Past weeks and weeks that already have sessions don't show it.)
+  const showSetup = weekDiff >= 0 && weekSessions.length === 0;
 
   const handleScheduleSuccess = () => {
     fetchSessions();

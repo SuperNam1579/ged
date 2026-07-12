@@ -23,6 +23,9 @@ const AvailabilitySchema = z.object({
     return date.getDay() === 1; // must be Monday
   }, "weekStartDate must be a valid Monday (ISO date)"),
   slots: z.array(SlotSchema).min(1, "At least one time slot is required"),
+  // "Apply these changes to future weeks" — also save the edited slots as the
+  // recurring template, so later weeks pre-fill with them.
+  applyToFutureWeeks: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -38,7 +41,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { weekStartDate: weekStartStr, slots } = parsed.data;
+  const { weekStartDate: weekStartStr, slots, applyToFutureWeeks } = parsed.data;
   const weekStart = new Date(weekStartStr);
 
   const preferences = await db.userPreferences.findUnique({
@@ -68,6 +71,25 @@ export async function POST(req: NextRequest) {
         endTime: s.endTime,
       })),
     });
+
+    // "Apply to future weeks" → also persist these slots as the recurring
+    // template so upcoming weeks pre-fill with them. Past snapshots are untouched.
+    if (applyToFutureWeeks) {
+      const template = await tx.weeklyAvailabilityTemplate.upsert({
+        where: { userId: authUser.id },
+        create: { userId: authUser.id },
+        update: {},
+      });
+      await tx.weeklyAvailabilityTemplateSlot.deleteMany({ where: { templateId: template.id } });
+      await tx.weeklyAvailabilityTemplateSlot.createMany({
+        data: slots.map((s) => ({
+          templateId: template.id,
+          dayOfWeek: s.dayOfWeek,
+          startTime: s.startTime,
+          endTime: s.endTime,
+        })),
+      });
+    }
 
     return avail;
   });

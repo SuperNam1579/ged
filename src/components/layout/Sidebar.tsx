@@ -5,16 +5,17 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import {
-  LayoutDashboard, TrendingUp, Calendar, ClipboardList, Settings,
+  LayoutDashboard, TrendingUp, Calendar, CalendarClock, ClipboardList, Settings,
   BookOpen, LogOut, X, ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/progress",  label: "Progress",  icon: TrendingUp      },
-  { href: "/schedule",  label: "Schedule",  icon: Calendar         },
-  { href: "/mock-test", label: "Mock Test", icon: ClipboardList    },
-  { href: "/settings",  label: "Settings",  icon: Settings         },
+  { href: "/dashboard",    label: "Dashboard",    icon: LayoutDashboard },
+  { href: "/progress",     label: "Progress",     icon: TrendingUp      },
+  { href: "/schedule",     label: "Schedule",     icon: Calendar        },
+  { href: "/availability", label: "Availability", icon: CalendarClock   },
+  { href: "/mock-test",    label: "Mock Test",    icon: ClipboardList   },
+  { href: "/settings",     label: "Settings",     icon: Settings        },
 ];
 
 function MiniKaiFace() {
