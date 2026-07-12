@@ -231,17 +231,31 @@ function WeekScheduleSetup({
   return (
     <div className="rounded-xl border border-primary bg-primary-light/30">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-primary">
-        <div>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-primary gap-3">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground">
             Review this week · {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d")}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {source === "confirmed"
-              ? "Adjust and regenerate this week's plan."
-              : "Pre-filled from your usual availability — tweak only what changed this week."}
+              ? "This week's availability is already saved. Adjust it and regenerate to update the plan."
+              : "Nothing is saved yet — this is a draft pre-filled from your usual availability. Edit it, then click Generate to save it as this week's plan."}
           </p>
         </div>
+        {/* Unmistakable draft-vs-saved indicator, per user feedback that the two
+            looked identical: a saved-availability week and an unsaved draft
+            rendered through the same form and were easy to confuse. */}
+        <span
+          className={cn(
+            "shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap",
+            source === "confirmed"
+              ? "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400"
+              : "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400"
+          )}
+        >
+          <span className={cn("w-1.5 h-1.5 rounded-full", source === "confirmed" ? "bg-green-500" : "bg-amber-500")} />
+          {source === "confirmed" ? "Saved" : "Draft — not saved"}
+        </span>
       </div>
 
       {/* Day rows */}
@@ -369,6 +383,11 @@ function WeekScheduleSetup({
             "Generate Study Plan"
           )}
         </button>
+        <p className="text-xs text-muted-foreground text-center">
+          {source === "confirmed"
+            ? "This regenerates the plan using the availability above."
+            : "This saves the availability above for this week and generates its plan."}
+        </p>
       </div>
     </div>
   );
@@ -585,6 +604,14 @@ export default function SchedulePage() {
                             <span>{slot.startTime} – {slot.endTime}</span>
                           </div>
                         ))}
+                        {/* Explains why an available day has no sessions: it had
+                            already passed when the plan was generated, so the GA
+                            skipped it — otherwise this looks like a bug. */}
+                        {daySessions.length === 0 && day < new Date(new Date().setHours(0, 0, 0, 0)) && (
+                          <span className={cn("text-[11px] italic", isToday ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                            Already passed when generated
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <div className="pt-1.5">
