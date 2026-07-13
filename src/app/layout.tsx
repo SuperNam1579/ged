@@ -18,9 +18,16 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "GED Prep — Adaptive Study Platform",
+  metadataBase: new URL("https://www.ged-nn.com"),
+  title: {
+    default: "GED Prep — Adaptive Study Platform",
+    template: "%s | GED Prep",
+  },
   description:
     "AI-powered adaptive GED exam preparation with personalized study plans driven by Genetic Algorithm optimization.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
