@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Check, Sparkles } from "lucide-react";
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
@@ -108,8 +108,13 @@ export default function PreAssessmentPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground font-medium">Loading assessment...</p>
+          <div className="relative w-14 h-14 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-2xl bg-primary-light flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-primary" />
+            </div>
+            <div className="absolute -inset-1.5 rounded-2xl border-2 border-primary/30 border-t-primary animate-spin" />
+          </div>
+          <p className="text-muted-foreground font-medium">Loading your assessment…</p>
         </div>
       </div>
     );
@@ -130,9 +135,14 @@ export default function PreAssessmentPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-sm px-4">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full bg-primary-light flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-primary" />
+            </div>
+            <div className="absolute -inset-2 rounded-full border-4 border-primary/25 border-t-primary animate-spin" />
+          </div>
           <h2 className="text-xl font-bold text-foreground mb-2">
-            Analyzing your performance...
+            Analyzing your performance…
           </h2>
           <p className="text-muted-foreground text-sm">
             Our AI is reviewing your answers and setting up your personalized
@@ -284,16 +294,15 @@ export default function PreAssessmentPage() {
             <div
               key={a.id}
               className={cn(
-                "px-3 py-1 rounded-md text-xs font-medium",
+                "flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold transition-colors",
                 i === currentAssessmentIdx
-                  ? (SUBJECT_COLORS[a.subjectCode] ??
-                      "bg-primary-light text-primary")
+                  ? cn(SUBJECT_COLORS[a.subjectCode] ?? "bg-primary-light text-primary", "ring-1 ring-inset ring-current/20")
                   : i < currentAssessmentIdx
                     ? "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400"
                     : "bg-muted text-muted-foreground",
               )}
             >
-              {i < currentAssessmentIdx ? "✓ " : ""}
+              {i < currentAssessmentIdx && <Check className="w-3 h-3 shrink-0" />}
               {a.subjectCode}
             </div>
           ))}

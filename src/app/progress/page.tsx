@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingUp, AlertTriangle, BookOpen } from "lucide-react";
+import { TrendingUp, AlertTriangle, BookOpen, Award, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
@@ -66,6 +66,21 @@ interface GALog {
   worstFitness: number;
 }
 
+function StatTile({
+  icon: Icon, iconClass, label, value, sub,
+}: { icon: typeof TrendingUp; iconClass: string; label: string; value: React.ReactNode; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2 mb-1.5">
+        <Icon className={`w-3.5 h-3.5 ${iconClass}`} />
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      </div>
+      <div className="text-xl font-bold text-foreground leading-tight">{value}</div>
+      {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
 const SUBJECT_COLORS: Record<string, string> = {
   MATH: "bg-primary",
   RLA: "bg-green-500",
@@ -105,6 +120,12 @@ export default function ProgressPage() {
     .sort((a, b) => a.score - b.score)
     .slice(0, 5);
 
+  const attemptedSubjects = subjectSummaries.filter((s) => s.attemptedCount > 0);
+  const subjectsPassing = attemptedSubjects.filter((s) => 100 + s.proficiencyScore >= 145).length;
+  const avgScore = attemptedSubjects.length
+    ? Math.round(attemptedSubjects.reduce((a, s) => a + s.proficiencyScore, 0) / attemptedSubjects.length)
+    : null;
+
   if (authLoading || loading) {
     return (
       <MainLayout userName={user?.name}>
@@ -122,6 +143,37 @@ export default function ProgressPage() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground">My Progress</h1>
           <p className="text-muted-foreground mt-1">Track your proficiency and identify areas for improvement.</p>
+        </div>
+
+        {/* Stat tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatTile
+            icon={TrendingUp}
+            iconClass="text-primary"
+            label="Overall Completion"
+            value={`${Math.round(overallProgress)}%`}
+            sub="Sessions done"
+          />
+          <StatTile
+            icon={ClipboardCheck}
+            iconClass="text-purple-500"
+            label="Assessments Taken"
+            value={attempts.length}
+          />
+          <StatTile
+            icon={Award}
+            iconClass="text-green-500"
+            label="Subjects Passing"
+            value={`${subjectsPassing} / ${attemptedSubjects.length || subjectSummaries.length}`}
+            sub="Est. 145+/200"
+          />
+          <StatTile
+            icon={AlertTriangle}
+            iconClass="text-orange-500"
+            label="Avg Score"
+            value={avgScore !== null ? `${avgScore}%` : "—"}
+            sub="On attempted subjects"
+          />
         </div>
 
         {/* Overall progress */}
@@ -224,8 +276,9 @@ export default function ProgressPage() {
             </CardHeader>
             <CardBody className="p-0">
               {weakestSubtopics.length === 0 ? (
-                <div className="px-6 py-8 text-center text-sm text-muted-foreground">
-                  Complete some quizzes to see your weak areas.
+                <div className="px-6 py-10 text-center">
+                  <AlertTriangle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Complete some quizzes to see your weak areas.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
@@ -266,8 +319,9 @@ export default function ProgressPage() {
             </CardHeader>
             <CardBody className="p-0">
               {attempts.length === 0 ? (
-                <div className="px-6 py-8 text-center text-sm text-muted-foreground">
-                  No assessments completed yet.
+                <div className="px-6 py-10 text-center">
+                  <BookOpen className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No assessments completed yet.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">

@@ -7,6 +7,7 @@ import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
 import SubjectBadge from "@/components/ui/SubjectBadge";
+import Toast from "@/components/ui/Toast";
 
 interface Option {
   id: string;
@@ -55,6 +56,12 @@ function MockSessionContent() {
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const flashError = (msg: string) => {
+    setSubmitError(msg);
+    setShowErrorToast(true);
+    setTimeout(() => setShowErrorToast(false), 4000);
+  };
   const [results, setResults] = useState<MockResult[]>([]);
   const [done, setDone] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
@@ -112,7 +119,7 @@ function MockSessionContent() {
               {Math.round(totalScore)}%
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Mock Test Complete</h1>
-            <p className="text-muted-foreground">Here's how you performed across all subjects.</p>
+            <p className="text-muted-foreground">Here&apos;s how you performed across all subjects.</p>
           </div>
 
           {triggered && (
@@ -193,7 +200,7 @@ function MockSessionContent() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        setSubmitError(d.error ?? "Failed to submit. Please try again.");
+        flashError(d.error ?? "Failed to submit. Please try again.");
         return;
       }
       const data = await res.json();
@@ -216,7 +223,7 @@ function MockSessionContent() {
         setCurrentQuestionIndex(0);
       }
     } catch {
-      setSubmitError("Network error. Please try again.");
+      flashError("Network error. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -319,6 +326,8 @@ function MockSessionContent() {
           </div>
         </div>
       </main>
+
+      <Toast message={submitError} show={showErrorToast} variant="error" />
     </div>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Settings, User, RefreshCw, Check } from "lucide-react";
+import { Settings, User, RefreshCw } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Spinner from "@/components/ui/Spinner";
+import Toast from "@/components/ui/Toast";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 interface Preferences {
@@ -19,16 +20,21 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const [regenSuccess, setRegenSuccess] = useState(false);
   const [regenError, setRegenError] = useState("");
   const [csrfToken, setCsrfToken] = useState("");
+
+  // Success confirmations for all three forms on this page funnel through one
+  // shared toast instead of three separately-styled inline messages.
+  const [toastMsg, setToastMsg] = useState("");
+  const flashToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3000);
+  };
 
   // Display-name editing. null = not edited yet → falls back to the loaded name.
   const [nameOverride, setNameOverride] = useState<string | null>(null);
   const [nameSaving, setNameSaving] = useState(false);
-  const [nameSuccess, setNameSuccess] = useState(false);
   const [nameError, setNameError] = useState("");
   const name = nameOverride ?? user?.name ?? "";
   const nameChanged = name.trim() !== (user?.name ?? "") && name.trim().length >= 2;
@@ -58,7 +64,6 @@ export default function SettingsPage() {
   const handleSave = async () => {
     if (!prefs) return;
     setSaving(true);
-    setSaveSuccess(false);
     setSaveError("");
     try {
       const res = await fetch("/api/user/preferences", {
@@ -70,8 +75,7 @@ export default function SettingsPage() {
         const d = await res.json();
         setSaveError(d.error ?? "Failed to save preferences.");
       } else {
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+        flashToast("Preferences saved!");
       }
     } catch {
       setSaveError("Network error. Please try again.");
@@ -83,7 +87,6 @@ export default function SettingsPage() {
   const handleSaveName = async () => {
     if (!nameChanged) return;
     setNameSaving(true);
-    setNameSuccess(false);
     setNameError("");
     try {
       const res = await fetch("/api/user/profile", {
@@ -94,8 +97,7 @@ export default function SettingsPage() {
       if (!res.ok) {
         setNameError((await res.json()).error ?? "Failed to update name.");
       } else {
-        setNameSuccess(true);
-        setTimeout(() => setNameSuccess(false), 3000);
+        flashToast("Name updated!");
         // Reflect the saved name immediately without a full reload.
         setNameOverride(name.trim());
       }
@@ -108,7 +110,6 @@ export default function SettingsPage() {
 
   const handleRegenerate = async () => {
     setRegenerating(true);
-    setRegenSuccess(false);
     setRegenError("");
     try {
       const res = await fetch("/api/ga/generate", {
@@ -120,8 +121,7 @@ export default function SettingsPage() {
         const d = await res.json().catch(() => ({}));
         setRegenError(d.error ?? "Failed to regenerate study plan. Please try again.");
       } else {
-        setRegenSuccess(true);
-        setTimeout(() => setRegenSuccess(false), 5000);
+        flashToast("New study plan generated! Visit your schedule to see it.");
       }
     } catch {
       setRegenError("Network error. Please try again.");
@@ -176,11 +176,6 @@ export default function SettingsPage() {
                   Save
                 </Button>
               </div>
-              {nameSuccess && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
-                  <Check className="w-3.5 h-3.5" /> Name updated!
-                </p>
-              )}
               {nameError && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{nameError}</p>}
             </div>
             <div>
@@ -206,12 +201,6 @@ export default function SettingsPage() {
                 onChange={(e) => setPrefs({ ...prefs, targetExamDate: e.target.value })}
               />
               <div className="flex items-center justify-between">
-                {saveSuccess && (
-                  <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 text-sm font-medium">
-                    <Check className="w-4 h-4" />
-                    Preferences saved!
-                  </div>
-                )}
                 {saveError && <p className="text-red-600 dark:text-red-400 text-sm">{saveError}</p>}
                 <div className="ml-auto">
                   <Button onClick={handleSave} loading={saving}>
@@ -237,12 +226,6 @@ export default function SettingsPage() {
               deactivate your current plan and create a new one based on your latest proficiency
               scores and schedule.
             </p>
-            {regenSuccess && (
-              <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 text-sm font-medium mb-4">
-                <Check className="w-4 h-4" />
-                New study plan generated! Visit your schedule to see it.
-              </div>
-            )}
             {regenError && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{regenError}</p>}
             <Button
               variant="secondary"
@@ -256,6 +239,8 @@ export default function SettingsPage() {
           </CardBody>
         </Card>
       </div>
+
+      <Toast message={toastMsg} show={!!toastMsg} />
     </MainLayout>
   );
 }

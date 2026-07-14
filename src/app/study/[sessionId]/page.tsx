@@ -188,7 +188,7 @@ export default function StudySessionPage() {
             <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-2xl p-8 text-center mb-6">
               <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
               <h2 className="text-lg font-bold text-green-900 dark:text-green-300 mb-2">Session Complete!</h2>
-              <p className="text-sm text-green-700 mb-6">
+              <p className="text-sm text-green-700 dark:text-green-400 mb-6">
                 Great work! You studied {session.subtopicName} for {formatTime(elapsed)}.
               </p>
               <div className="flex items-center justify-center gap-3">

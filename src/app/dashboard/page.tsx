@@ -52,6 +52,44 @@ function buildWeekDays(streakDays: number) {
   });
 }
 
+// ─── Loading skeleton ────────────────────────────────────────────────────────
+// Mirrors the page's actual layout (stat band, greeting, hero card, two-column
+// content) so the loading state doesn't flash a jarring blank screen before
+// settling into the real content.
+
+function SkeletonBlock({ className }: { className?: string }) {
+  return <div className={cn("animate-pulse rounded-lg bg-muted", className)} />;
+}
+
+function DashboardSkeleton() {
+  return (
+    <>
+      <div className="grid grid-cols-2 lg:grid-cols-4 shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="px-5 py-5 lg:px-6" style={{ borderRight: i < 3 ? "1px solid var(--border)" : undefined }}>
+            <SkeletonBlock className="h-2.5 w-16 mb-2" />
+            <SkeletonBlock className="h-7 w-12" />
+          </div>
+        ))}
+      </div>
+      <div className="px-4 py-5 lg:px-9 lg:py-8">
+        <SkeletonBlock className="h-7 w-56 mb-2" />
+        <SkeletonBlock className="h-4 w-72 mb-6" />
+        <SkeletonBlock className="h-24 w-full mb-6 rounded-2xl" />
+        <SkeletonBlock className="h-16 w-full mb-6 rounded-2xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 mb-6">
+          <SkeletonBlock className="h-64 w-full rounded-2xl" />
+          <SkeletonBlock className="h-64 w-full rounded-2xl" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-5">
+          <SkeletonBlock className="h-40 w-full rounded-2xl" />
+          <SkeletonBlock className="h-40 w-full rounded-2xl" />
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function StatCell({
@@ -218,9 +256,7 @@ export default function DashboardPage() {
   if (authLoading || loading) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center h-[calc(100vh-56px)]">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
+        <DashboardSkeleton />
       </MainLayout>
     );
   }
@@ -555,11 +591,8 @@ export default function DashboardPage() {
               className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-sm transition-all"
               style={{ background: "var(--card)", border: "1px solid var(--border)" }}
             >
-              <div style={{
-                width: 34, height: 34, borderRadius: 9, background: "#FFF7ED",
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
-                <Calendar className="w-4 h-4" style={{ color: "#F97316" }} />
+              <div className="flex items-center justify-center shrink-0 rounded-[9px] w-8.5 h-8.5 bg-orange-50 dark:bg-orange-500/15">
+                <Calendar className="w-4 h-4 text-orange-500" />
               </div>
               <div>
                 <div className="text-[13px] font-bold text-foreground">Schedule</div>
@@ -572,11 +605,8 @@ export default function DashboardPage() {
               className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-sm transition-all"
               style={{ background: "var(--card)", border: "1px solid var(--border)" }}
             >
-              <div style={{
-                width: 34, height: 34, borderRadius: 9, background: "#F0FDF4",
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
-                <TrendingUp className="w-4 h-4" style={{ color: "#22C55E" }} />
+              <div className="flex items-center justify-center shrink-0 rounded-[9px] w-8.5 h-8.5 bg-green-50 dark:bg-green-500/15">
+                <TrendingUp className="w-4 h-4 text-green-500" />
               </div>
               <div>
                 <div className="text-[13px] font-bold text-foreground">My Progress</div>
