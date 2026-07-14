@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarDays, Plus, X, Check, Clock } from "lucide-react";
+import { CalendarDays, Plus, X, Clock, Moon, Sun, CalendarRange, Eraser } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
+import Toast from "@/components/ui/Toast";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils/cn";
 
@@ -59,6 +60,24 @@ function slotsToSchedule(slots: TemplateSlot[]): Schedule {
   }
   return sched;
 }
+
+// ─── Presets ────────────────────────────────────────────────────────────────
+
+function buildPreset(dows: number[], start: string, end: string): Schedule {
+  const sched: Schedule = Object.fromEntries(
+    [0, 1, 2, 3, 4, 5, 6].map((d) => [d, { enabled: false, slots: [] as TimeSlot[] }])
+  ) as Schedule;
+  for (const dow of dows) {
+    sched[dow] = { enabled: true, slots: [{ id: crypto.randomUUID(), start, end }] };
+  }
+  return sched;
+}
+
+const PRESETS: { label: string; icon: typeof Moon; build: () => Schedule }[] = [
+  { label: "Weekday evenings", icon: Moon, build: () => buildPreset([1, 2, 3, 4, 5], "18:00", "20:00") },
+  { label: "Weekends", icon: Sun, build: () => buildPreset([6, 0], "09:00", "12:00") },
+  { label: "Every day", icon: CalendarRange, build: () => buildPreset([0, 1, 2, 3, 4, 5, 6], "09:00", "11:00") },
+];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -183,21 +202,55 @@ export default function AvailabilityPage() {
           </div>
         )}
 
+        {/* Quick presets */}
+        <div className="flex flex-wrap items-center gap-2 mb-5">
+          <span className="text-xs font-medium text-muted-foreground mr-0.5">Quick fill:</span>
+          {PRESETS.map(({ label, icon: Icon, build }) => (
+            <button
+              key={label}
+              onClick={() => setSchedule(build())}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-xs font-medium text-foreground hover:border-primary/50 hover:bg-primary-light/40 transition-colors"
+            >
+              <Icon className="w-3.5 h-3.5 text-primary" />
+              {label}
+            </button>
+          ))}
+          {activeDays > 0 && (
+            <button
+              onClick={() => setSchedule(EMPTY_SCHEDULE)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-red-500 transition-colors"
+            >
+              <Eraser className="w-3.5 h-3.5" />
+              Clear all
+            </button>
+          )}
+        </div>
+
         {/* Day rows */}
-        <div className="bg-card rounded-xl border border-border divide-y divide-border mb-5">
+        <div className="space-y-2.5 mb-6">
           {WEEK_DAYS.map(({ label, dow }) => {
             const day = schedule[dow];
+            const dayMins = day.enabled ? day.slots.reduce((a, s) => a + slotMins(s), 0) : 0;
+            const dayHours = Math.round(dayMins / 6) / 10;
             return (
-              <div key={dow} className="px-4 py-3.5">
-                <div className="flex items-start gap-3">
-                  {/* toggle */}
+              <div
+                key={dow}
+                className={cn(
+                  "rounded-xl border transition-all overflow-hidden",
+                  day.enabled
+                    ? "border-primary/40 bg-primary-light/20 shadow-sm shadow-blue-100/50 dark:shadow-none"
+                    : "border-border bg-card"
+                )}
+              >
+                {/* Day header */}
+                <div className="flex items-center gap-3 px-4 py-3">
                   <button
                     onClick={() => toggleDay(dow)}
                     role="switch"
                     aria-checked={day.enabled}
                     aria-label={`Toggle ${label}`}
                     className={cn(
-                      "w-11 h-6 p-0 rounded-full transition-colors relative shrink-0 mt-0.5",
+                      "w-11 h-6 p-0 rounded-full transition-colors relative shrink-0",
                       day.enabled ? "bg-primary" : "bg-muted"
                     )}
                   >
@@ -206,71 +259,100 @@ export default function AvailabilityPage() {
                       day.enabled ? "translate-x-5" : "translate-x-0"
                     )} />
                   </button>
-                  <span className={cn("w-24 text-sm font-semibold shrink-0 mt-1", day.enabled ? "text-foreground" : "text-muted-foreground")}>
+                  <span className={cn("text-sm font-semibold", day.enabled ? "text-foreground" : "text-muted-foreground")}>
                     {label}
                   </span>
-
-                  <div className="flex-1 space-y-2">
+                  <div className="ml-auto">
                     {day.enabled ? (
-                      <>
-                        {day.slots.map((slot) => {
-                          const invalid = slot.start >= slot.end;
-                          const selCls = cn(
-                            "px-2.5 py-1.5 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 cursor-pointer",
-                            invalid ? "border-red-400 focus:ring-red-300 text-red-600 dark:text-red-400" : "border-border focus:ring-ring"
-                          );
-                          return (
-                            <div key={slot.id} className="flex flex-col gap-0.5">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <select value={slot.start} onChange={(e) => updateSlot(dow, slot.id, "start", e.target.value)} className={selCls}>
-                                  {TIME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                                </select>
-                                <span className="text-muted-foreground text-sm">—</span>
-                                <select value={slot.end} onChange={(e) => updateSlot(dow, slot.id, "end", e.target.value)} className={selCls}>
-                                  {TIME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                                </select>
-                                <button onClick={() => removeSlot(dow, slot.id)} className="p-1 text-muted-foreground hover:text-red-500 transition-colors">
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-                              {invalid && <p className="text-xs text-red-500 pl-1">End time must be after start time</p>}
-                            </div>
-                          );
-                        })}
-                        <button onClick={() => addSlot(dow)} className="flex items-center gap-1 text-sm text-primary hover:text-primary font-medium transition-colors">
-                          <Plus className="w-4 h-4" /> Add time
-                        </button>
-                      </>
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary-light px-2 py-0.5 rounded-full">
+                        <Clock className="w-3 h-3" />
+                        {dayHours}h
+                      </span>
                     ) : (
-                      <span className="text-sm text-muted-foreground mt-1 inline-block">Not available</span>
+                      <span className="text-xs text-muted-foreground">Not available</span>
                     )}
                   </div>
                 </div>
+
+                {/* Slots */}
+                {day.enabled && (
+                  <div className="border-t border-primary/15 bg-card/40 px-4 py-3 space-y-2">
+                    {day.slots.map((slot) => {
+                      const invalid = slot.start >= slot.end;
+                      const mins = slotMins(slot);
+                      const hrs = Math.round(mins / 6) / 10;
+                      const selCls = cn(
+                        "px-2.5 py-1.5 rounded-lg border bg-card text-sm font-medium focus:outline-none focus:ring-2 cursor-pointer transition-colors",
+                        invalid ? "border-red-400 focus:ring-red-300 text-red-600 dark:text-red-400" : "border-border focus:ring-ring hover:border-primary/50"
+                      );
+                      return (
+                        <div key={slot.id} className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <select value={slot.start} onChange={(e) => updateSlot(dow, slot.id, "start", e.target.value)} className={selCls}>
+                              {TIME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                            </select>
+                            <span className="text-muted-foreground text-sm">—</span>
+                            <select value={slot.end} onChange={(e) => updateSlot(dow, slot.id, "end", e.target.value)} className={selCls}>
+                              {TIME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                            </select>
+                            {!invalid && (
+                              <span className="text-xs font-medium text-muted-foreground tabular-nums">{hrs}h</span>
+                            )}
+                            <button
+                              onClick={() => removeSlot(dow, slot.id)}
+                              aria-label="Remove time slot"
+                              className="ml-auto p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          {invalid && <p className="text-xs text-red-500 pl-1">End time must be after start time</p>}
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => addSlot(dow)} className="flex items-center gap-1 text-sm text-primary hover:text-primary-dark font-medium transition-colors pt-0.5">
+                      <Plus className="w-4 h-4" /> Add time
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
 
         {/* Summary */}
-        <div className="flex items-center gap-3 bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 rounded-xl px-4 py-3 mb-5">
-          <Clock className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
-          <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">{totalHours} hour{totalHours !== 1 ? "s" : ""}</strong> · {activeDays} day{activeDays !== 1 ? "s" : ""} of usual weekly availability
-          </p>
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
+            <div className="w-9 h-9 rounded-lg bg-primary-light flex items-center justify-center shrink-0">
+              <Clock className="w-4.5 h-4.5 text-primary" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground leading-tight">{totalHours}h</p>
+              <p className="text-xs text-muted-foreground">weekly study time</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
+            <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-500/15 flex items-center justify-center shrink-0">
+              <CalendarDays className="w-4.5 h-4.5 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground leading-tight">{activeDays}</p>
+              <p className="text-xs text-muted-foreground">day{activeDays !== 1 ? "s" : ""} available</p>
+            </div>
+          </div>
         </div>
 
-        {/* Save */}
-        <div className="flex items-center justify-end gap-3">
-          {saved && (
-            <span className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400 font-medium">
-              <Check className="w-4 h-4" /> Saved!
-            </span>
-          )}
-          <Button onClick={handleSave} loading={saving} disabled={saving || activeDays === 0}>
-            {hasTemplate ? "Save changes" : "Save availability"}
-          </Button>
+        {/* Save — sticky so it stays reachable while editing a long list */}
+        <div className="sticky bottom-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-background/80 backdrop-blur border-t border-border flex items-center justify-end gap-3">
+          <div className="flex items-center gap-3">
+            <Button onClick={handleSave} loading={saving} disabled={saving || activeDays === 0}>
+              {hasTemplate ? "Save changes" : "Save availability"}
+            </Button>
+          </div>
         </div>
       </div>
+
+      <Toast message="Availability saved" show={saved} />
     </MainLayout>
   );
 }
