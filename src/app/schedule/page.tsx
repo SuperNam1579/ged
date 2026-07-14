@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { addDays, format, startOfWeek, isSameDay, parseISO, differenceInCalendarWeeks } from "date-fns";
 import {
   ChevronLeft, ChevronRight, Clock, CheckCircle2, Circle,
-  BookOpen, Plus, X, CalendarDays, Loader2,
+  BookOpen, Plus, X, CalendarDays, Loader2, Target, Sparkles, AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import MainLayout from "@/components/layout/MainLayout";
@@ -20,10 +20,63 @@ interface SessionEntry {
   subtopicName: string;
   subjectCode: string;
   subjectName: string;
+  topicName: string;
   scheduledDate: string;
   durationMins: number;
   status: string;
   difficultyLevel: number;
+  learningUrl: string | null;
+  order: number;
+}
+
+interface PlacedSession {
+  session: SessionEntry;
+  startMin: number; // minutes from midnight
+  endMin: number;
+}
+
+const GRID_DEFAULT_START_HOUR = 8;
+const GRID_DEFAULT_END_HOUR = 21;
+const GRID_ROW_PX = 56;
+const CARD_H = 50;
+const CARD_GAP = 6;
+
+function timeToMinutes(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function formatClock(min: number): string {
+  const h = Math.floor(min / 60) % 24;
+  const m = min % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+// Packs a day's sessions back-to-back into its availability slots (sessions
+// don't carry their own clock time — only a date — so this reconstructs the
+// timeline the GA implicitly assumed when it checked time feasibility).
+function layoutDaySessions(daySessions: SessionEntry[], daySlots: AvailabilitySlot[]): PlacedSession[] {
+  const slots = [...daySlots]
+    .map((s) => ({ start: timeToMinutes(s.startTime), end: timeToMinutes(s.endTime) }))
+    .sort((a, b) => a.start - b.start);
+
+  const ordered = [...daySessions].sort((a, b) => a.order - b.order);
+  const placed: PlacedSession[] = [];
+  let slotIdx = 0;
+  let cursor = slots[0]?.start ?? GRID_DEFAULT_START_HOUR * 60;
+
+  for (const session of ordered) {
+    while (slotIdx < slots.length - 1 && cursor >= slots[slotIdx].end) {
+      slotIdx++;
+      cursor = Math.max(cursor, slots[slotIdx].start);
+    }
+    if (slotIdx < slots.length && cursor < slots[slotIdx].start) {
+      cursor = slots[slotIdx].start;
+    }
+    placed.push({ session, startMin: cursor, endMin: cursor + session.durationMins });
+    cursor += session.durationMins;
+  }
+  return placed;
 }
 
 interface AvailabilitySlot {
@@ -38,12 +91,13 @@ type Schedule = Record<number, DaySchedule>;
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const SUBJECT_COLOR: Record<string, { badge: string; dot: string }> = {
-  MATH: { badge: "bg-primary-light text-primary",    dot: "bg-primary" },
-  RLA:  { badge: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",   dot: "bg-green-500" },
-  SS:   { badge: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400",   dot: "bg-amber-500" },
-  SCI:  { badge: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400", dot: "bg-purple-500" },
+const SUBJECT_COLOR: Record<string, { badge: string; dot: string; border: string }> = {
+  MATH: { badge: "bg-primary-light text-primary",    dot: "bg-primary",     border: "border-l-primary" },
+  RLA:  { badge: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",   dot: "bg-green-500",  border: "border-l-green-500" },
+  SS:   { badge: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400",   dot: "bg-amber-500",  border: "border-l-amber-500" },
+  SCI:  { badge: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400", dot: "bg-purple-500", border: "border-l-purple-500" },
 };
+const DEFAULT_SUBJECT_COLOR = { badge: "bg-muted text-muted-foreground", dot: "bg-muted-foreground", border: "border-l-border" };
 const SUBJECT_LABEL: Record<string, string> = {
   MATH: "Math", RLA: "Language Arts", SS: "Social Studies", SCI: "Science",
 };
@@ -234,16 +288,16 @@ function WeekScheduleSetup({
       <div className="flex items-center justify-between px-4 py-3 border-b border-primary gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground">
-            Review this week · {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d")}
+            Confirm your availability · {format(weekStart, "MMM d")} – {format(addDays(weekStart, 6), "MMM d")}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {source === "confirmed"
-              ? "This week's availability is already saved. Adjust it and regenerate to update the plan."
-              : "Nothing is saved yet — this is a draft pre-filled from your usual availability. Edit it, then click Generate to save it as this week's plan."}
+              ? "You've confirmed this week already. Adjust anything below, then regenerate to update the plan."
+              : "We've pre-filled this from your usual availability — adjust anything that's different this week, then confirm to generate your plan."}
           </p>
         </div>
-        {/* Unmistakable draft-vs-saved indicator, per user feedback that the two
-            looked identical: a saved-availability week and an unsaved draft
+        {/* Unmistakable confirmed-vs-draft indicator, per user feedback that the
+            two looked identical: a confirmed week and an unconfirmed draft
             rendered through the same form and were easy to confuse. */}
         <span
           className={cn(
@@ -253,18 +307,29 @@ function WeekScheduleSetup({
               : "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400"
           )}
         >
-          <span className={cn("w-1.5 h-1.5 rounded-full", source === "confirmed" ? "bg-green-500" : "bg-amber-500")} />
-          {source === "confirmed" ? "Saved" : "Draft — not saved"}
+          {source === "confirmed"
+            ? <CheckCircle2 className="w-3.5 h-3.5" />
+            : <AlertCircle className="w-3.5 h-3.5" />
+          }
+          {source === "confirmed" ? "Confirmed" : "Not confirmed yet"}
         </span>
       </div>
 
       {/* Day rows */}
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-2.5">
         {WEEK_DAYS.map(({ label, dow }) => {
           const day = schedule[dow];
           const isPast = !!pastByDow[dow];
+          const active = day.enabled && !isPast;
           return (
-            <div key={dow} className={cn("bg-card rounded-lg border border-border overflow-hidden", isPast && "opacity-60")}>
+            <div
+              key={dow}
+              className={cn(
+                "rounded-lg border overflow-hidden transition-colors",
+                active ? "border-primary/40 bg-card border-l-4" : "border-border bg-card/60",
+                isPast && "opacity-50"
+              )}
+            >
               {/* Day toggle */}
               <div className="flex items-center gap-3 px-4 py-2.5">
                 <button
@@ -284,14 +349,16 @@ function WeekScheduleSetup({
                     day.enabled ? "translate-x-5" : "translate-x-0"
                   )} />
                 </button>
-                <span className={cn("text-sm font-medium w-10 shrink-0", day.enabled && !isPast ? "text-foreground" : "text-muted-foreground")}>
+                <span className={cn("text-sm font-medium w-10 shrink-0", active ? "text-foreground" : "text-muted-foreground")}>
                   {label}
                 </span>
-                {isPast ? (
-                  <span className="text-xs text-muted-foreground italic">Already passed</span>
-                ) : day.enabled && day.slots.length === 0 ? (
-                  <span className="text-xs text-muted-foreground italic">No time slots — add one</span>
-                ) : null}
+                <span className="ml-auto text-xs text-muted-foreground italic">
+                  {isPast
+                    ? "Already passed"
+                    : day.enabled
+                      ? (day.slots.length === 0 ? "No time slots — add one" : null)
+                      : "Not available"}
+                </span>
               </div>
 
               {/* Slots */}
@@ -379,17 +446,606 @@ function WeekScheduleSetup({
         >
           {submitting ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Generating plan…</>
+          ) : source === "confirmed" ? (
+            "Regenerate Study Plan"
           ) : (
-            "Generate Study Plan"
+            "Confirm & Generate Plan"
           )}
         </button>
         <p className="text-xs text-muted-foreground text-center">
           {source === "confirmed"
             ? "This regenerates the plan using the availability above."
-            : "This saves the availability above for this week and generates its plan."}
+            : "This confirms the availability above for this week and generates its plan."}
         </p>
       </div>
     </div>
+  );
+}
+
+// ─── StatCard ────────────────────────────────────────────────────────────────
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  iconClass,
+}: {
+  icon: typeof Clock;
+  label: string;
+  value: React.ReactNode;
+  sub?: React.ReactNode;
+  iconClass: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2 mb-1.5">
+        <Icon className={cn("w-3.5 h-3.5", iconClass)} />
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      </div>
+      <div className="text-xl font-bold text-foreground leading-tight">{value}</div>
+      {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+// ─── WeekCalendarGrid ────────────────────────────────────────────────────────
+
+function WeekCalendarGrid({
+  weekDays,
+  getSessionsForDay,
+  getSlotsForDay,
+  selectedDay,
+  onSelectDay,
+  onSelectSession,
+}: {
+  weekDays: Date[];
+  getSessionsForDay: (d: Date) => SessionEntry[];
+  getSlotsForDay: (d: Date) => AvailabilitySlot[];
+  selectedDay: Date | null;
+  onSelectDay: (d: Date) => void;
+  onSelectSession: (placed: PlacedSession) => void;
+}) {
+  const fmtClock = formatClock;
+
+  const dayLayouts = weekDays.map((day) => layoutDaySessions(getSessionsForDay(day), getSlotsForDay(day)));
+  const daySlotRanges = weekDays.map((day) =>
+    getSlotsForDay(day).map((s) => ({ start: timeToMinutes(s.startTime), end: timeToMinutes(s.endTime) }))
+  );
+
+  // Fit the visible hour range tightly around actual content (sessions +
+  // availability) with an hour of padding, rather than always spanning a fixed
+  // 08:00–21:00 — otherwise an evening-only schedule leaves the grid mostly
+  // empty and the blocks crammed at the bottom.
+  const contentMins = [
+    ...dayLayouts.flat().flatMap((p) => [p.startMin, p.endMin]),
+    ...daySlotRanges.flat().flatMap((s) => [s.start, s.end]),
+  ];
+  let rangeStartHour = GRID_DEFAULT_START_HOUR;
+  let rangeEndHour = GRID_DEFAULT_END_HOUR;
+  if (contentMins.length) {
+    rangeStartHour = Math.max(0, Math.floor(Math.min(...contentMins) / 60) - 1);
+    rangeEndHour = Math.min(24, Math.ceil(Math.max(...contentMins) / 60) + 1);
+    if (rangeEndHour - rangeStartHour < 6) rangeEndHour = Math.min(24, rangeStartHour + 6);
+  }
+  const hours = Array.from({ length: rangeEndHour - rangeStartHour }, (_, i) => rangeStartHour + i);
+  const minToTop = (min: number) => ((min - rangeStartHour * 60) / 60) * GRID_ROW_PX;
+
+  // Sessions are laid out as uniform, evenly-stacked cards (not time-proportional
+  // bars) so odd durations don't produce ugly blocks that start/end mid-cell and
+  // cross the hour lines. Each day's stack begins at its first session's time;
+  // the real clock time still shows inside every card.
+  const dayBaseTop = dayLayouts.map((placed) => (placed.length ? minToTop(placed[0].startMin) : 0));
+  const stackBottoms = dayLayouts.map((placed, i) =>
+    placed.length ? dayBaseTop[i] + placed.length * CARD_H + (placed.length - 1) * CARD_GAP : 0
+  );
+  const gridHeight = Math.max(hours.length * GRID_ROW_PX, ...stackBottoms) + 8;
+
+  return (
+    <div className="hidden sm:block rounded-xl border border-border bg-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <div className="min-w-175">
+          {/* Day headers */}
+          <div className="grid grid-cols-[56px_repeat(7,1fr)] border-b border-border">
+            <div />
+            {weekDays.map((day, i) => {
+              const isToday = isSameDay(day, new Date());
+              const isSelected = selectedDay && isSameDay(day, selectedDay);
+              return (
+                <button
+                  key={i}
+                  onClick={() => onSelectDay(day)}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-0.5 py-2.5 border-l border-border transition-colors hover:bg-background",
+                    isSelected && "bg-primary-light"
+                  )}
+                >
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {format(day, "EEE")}
+                  </span>
+                  <span
+                    className={cn(
+                      "w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold",
+                      isToday ? "bg-primary text-white" : "text-foreground"
+                    )}
+                  >
+                    {format(day, "d")}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Hour grid */}
+          <div className="grid grid-cols-[56px_repeat(7,1fr)]" style={{ height: gridHeight }}>
+            {/* Hour labels — sit just below each gridline, right-aligned, so the
+                number never overlaps the line it marks. */}
+            <div className="relative">
+              {hours.map((h, i) => (
+                <div
+                  key={h}
+                  className="absolute right-2 text-[11px] font-medium text-muted-foreground/80"
+                  style={{ top: i * GRID_ROW_PX + 4 }}
+                >
+                  {String(h).padStart(2, "0")}:00
+                </div>
+              ))}
+            </div>
+
+            {/* Day columns */}
+            {weekDays.map((day, i) => {
+              const isToday = isSameDay(day, new Date());
+              const placed = dayLayouts[i];
+              const slotRanges = daySlotRanges[i];
+              return (
+                <div
+                  key={i}
+                  onClick={() => onSelectDay(day)}
+                  className={cn(
+                    "relative border-l border-border cursor-pointer group",
+                    isToday && "bg-primary-light/10"
+                  )}
+                >
+                  {/* Availability shading — shows the free windows the plan was
+                      built around, so an empty grid reads as "free time" not "bug". */}
+                  {slotRanges.map((s, si) => (
+                    <div
+                      key={`slot-${si}`}
+                      className="absolute left-0 right-0 bg-primary/4 group-hover:bg-primary/8 transition-colors"
+                      style={{ top: minToTop(s.start), height: ((s.end - s.start) / 60) * GRID_ROW_PX }}
+                    />
+                  ))}
+
+                  {/* Hour gridlines */}
+                  {hours.map((h, hi) => (
+                    <div
+                      key={h}
+                      className="absolute left-0 right-0 border-t border-border/50"
+                      style={{ top: hi * GRID_ROW_PX }}
+                    />
+                  ))}
+
+                  {/* Session cards — uniform height, evenly stacked from the
+                      day's first slot start. */}
+                  {placed.map((p, j) => {
+                    const { session, startMin, endMin } = p;
+                    const colors = SUBJECT_COLOR[session.subjectCode] ?? DEFAULT_SUBJECT_COLOR;
+                    const top = dayBaseTop[i] + j * (CARD_H + CARD_GAP);
+                    const done = session.status === "COMPLETED";
+                    return (
+                      <button
+                        key={session.id}
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onSelectSession(p); }}
+                        className={cn(
+                          "absolute left-1.5 right-1.5 flex flex-col justify-center gap-0.5 rounded-lg px-2 py-1.5 overflow-hidden border-l-[3px] shadow-sm hover:shadow-md hover:-translate-y-px transition-all text-left",
+                          colors.badge,
+                          colors.border,
+                          done && "opacity-50"
+                        )}
+                        style={{ top, height: CARD_H }}
+                      >
+                        <div className="flex items-center gap-1 min-w-0">
+                          <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", colors.dot)} />
+                          <span className={cn("text-[11px] font-semibold truncate min-w-0", done && "line-through")}>
+                            {session.subtopicName}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-medium opacity-70 pl-2.5">
+                          {fmtClock(startMin)} – {fmtClock(endMin)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MobileDayCalendar ───────────────────────────────────────────────────────
+// Single-day view for narrow screens — a 7-column hour grid needs horizontal
+// scrolling to be readable, which is a poor mobile experience. This swaps to
+// one day at a time with a swipeable day strip instead.
+
+const SWIPE_THRESHOLD_PX = 40;
+
+function MobileDayCalendar({
+  weekDays,
+  getSessionsForDay,
+  getSlotsForDay,
+  onSelectSession,
+}: {
+  weekDays: Date[];
+  getSessionsForDay: (d: Date) => SessionEntry[];
+  getSlotsForDay: (d: Date) => AvailabilitySlot[];
+  onSelectSession: (placed: PlacedSession) => void;
+}) {
+  const todayIdx = weekDays.findIndex((d) => isSameDay(d, new Date()));
+  const [dayIndex, setDayIndex] = useState(todayIdx >= 0 ? todayIdx : 0);
+  const touchStartX = useRef<number | null>(null);
+
+  // Re-anchor to today (or the start of the week) whenever the parent moves
+  // to a different week, so the index doesn't point at the wrong day. Adjusted
+  // during render (React's recommended pattern) rather than an effect, since
+  // it's just resetting derived state in response to a prop change.
+  const weekKey = weekDays[0]?.getTime();
+  const [lastWeekKey, setLastWeekKey] = useState(weekKey);
+  if (weekKey !== lastWeekKey) {
+    setLastWeekKey(weekKey);
+    setDayIndex(todayIdx >= 0 ? todayIdx : 0);
+  }
+
+  const day = weekDays[dayIndex];
+  const placed = layoutDaySessions(getSessionsForDay(day), getSlotsForDay(day));
+  const slotRanges = getSlotsForDay(day).map((s) => ({
+    start: timeToMinutes(s.startTime),
+    end: timeToMinutes(s.endTime),
+  }));
+
+  const contentMins = [
+    ...placed.flatMap((p) => [p.startMin, p.endMin]),
+    ...slotRanges.flatMap((s) => [s.start, s.end]),
+  ];
+  let rangeStartHour = GRID_DEFAULT_START_HOUR;
+  let rangeEndHour = GRID_DEFAULT_END_HOUR;
+  if (contentMins.length) {
+    rangeStartHour = Math.max(0, Math.floor(Math.min(...contentMins) / 60) - 1);
+    rangeEndHour = Math.min(24, Math.ceil(Math.max(...contentMins) / 60) + 1);
+    if (rangeEndHour - rangeStartHour < 6) rangeEndHour = Math.min(24, rangeStartHour + 6);
+  }
+  const hours = Array.from({ length: rangeEndHour - rangeStartHour }, (_, i) => rangeStartHour + i);
+  const minToTop = (min: number) => ((min - rangeStartHour * 60) / 60) * GRID_ROW_PX;
+  const baseTop = placed.length ? minToTop(placed[0].startMin) : 0;
+  const stackBottom = placed.length ? baseTop + placed.length * CARD_H + (placed.length - 1) * CARD_GAP : 0;
+  const gridHeight = Math.max(hours.length * GRID_ROW_PX, stackBottom) + 8;
+
+  const goTo = (next: number) => setDayIndex(Math.min(6, Math.max(0, next)));
+
+  return (
+    <div className="sm:hidden rounded-xl border border-border bg-card overflow-hidden">
+      {/* Day strip */}
+      <div className="flex items-center border-b border-border px-1">
+        <button
+          onClick={() => goTo(dayIndex - 1)}
+          disabled={dayIndex === 0}
+          className="p-2 text-muted-foreground disabled:opacity-30 shrink-0"
+          aria-label="Previous day"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <div className="flex-1 grid grid-cols-7">
+          {weekDays.map((d, i) => {
+            const isToday = isSameDay(d, new Date());
+            const isSelected = i === dayIndex;
+            return (
+              <button
+                key={i}
+                onClick={() => setDayIndex(i)}
+                className={cn(
+                  "flex flex-col items-center gap-0.5 py-2 rounded-lg transition-colors",
+                  isSelected && "bg-primary-light"
+                )}
+              >
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {format(d, "EEEEE")}
+                </span>
+                <span
+                  className={cn(
+                    "w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold",
+                    isToday ? "bg-primary text-white" : "text-foreground"
+                  )}
+                >
+                  {format(d, "d")}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => goTo(dayIndex + 1)}
+          disabled={dayIndex === 6}
+          className="p-2 text-muted-foreground disabled:opacity-30 shrink-0"
+          aria-label="Next day"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Hour grid for the selected day — swipeable */}
+      <div
+        className="grid grid-cols-[44px_1fr] overflow-x-hidden"
+        style={{ height: gridHeight }}
+        onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+        onTouchEnd={(e) => {
+          if (touchStartX.current === null) return;
+          const delta = e.changedTouches[0].clientX - touchStartX.current;
+          if (Math.abs(delta) > SWIPE_THRESHOLD_PX) goTo(dayIndex + (delta < 0 ? 1 : -1));
+          touchStartX.current = null;
+        }}
+      >
+        <div className="relative">
+          {hours.map((h, i) => (
+            <div
+              key={h}
+              className="absolute right-2 text-[11px] font-medium text-muted-foreground/80"
+              style={{ top: i * GRID_ROW_PX + 4 }}
+            >
+              {String(h).padStart(2, "0")}:00
+            </div>
+          ))}
+        </div>
+
+        <div className="relative border-l border-border">
+          {slotRanges.map((s, si) => (
+            <div
+              key={`slot-${si}`}
+              className="absolute left-0 right-0 bg-primary/4"
+              style={{ top: minToTop(s.start), height: ((s.end - s.start) / 60) * GRID_ROW_PX }}
+            />
+          ))}
+          {hours.map((h, hi) => (
+            <div key={h} className="absolute left-0 right-0 border-t border-border/50" style={{ top: hi * GRID_ROW_PX }} />
+          ))}
+
+          {placed.map((p, j) => {
+            const { session, startMin, endMin } = p;
+            const colors = SUBJECT_COLOR[session.subjectCode] ?? DEFAULT_SUBJECT_COLOR;
+            const top = baseTop + j * (CARD_H + CARD_GAP);
+            const done = session.status === "COMPLETED";
+            return (
+              <button
+                key={session.id}
+                type="button"
+                onClick={() => onSelectSession(p)}
+                className={cn(
+                  "absolute left-2 right-2 flex flex-col justify-center gap-0.5 rounded-lg px-3 py-1.5 overflow-hidden border-l-[3px] shadow-sm active:shadow-md transition-all text-left",
+                  colors.badge,
+                  colors.border,
+                  done && "opacity-50"
+                )}
+                style={{ top, height: CARD_H }}
+              >
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", colors.dot)} />
+                  <span className={cn("text-[12px] font-semibold truncate min-w-0", done && "line-through")}>
+                    {session.subtopicName}
+                  </span>
+                </div>
+                <span className="text-[10px] font-medium opacity-70 pl-3">
+                  {formatClock(startMin)} – {formatClock(endMin)}
+                </span>
+              </button>
+            );
+          })}
+
+          {placed.length === 0 && slotRanges.length === 0 && (
+            <p className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+              Nothing scheduled
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SessionDetailModal ──────────────────────────────────────────────────────
+
+function SessionDetailModal({
+  placed,
+  onClose,
+}: {
+  placed: PlacedSession;
+  onClose: () => void;
+}) {
+  const { session, startMin, endMin } = placed;
+  const colors = SUBJECT_COLOR[session.subjectCode] ?? DEFAULT_SUBJECT_COLOR;
+  const done = session.status === "COMPLETED";
+  const fmtClock = (min: number) => {
+    const h = Math.floor(min / 60) % 24;
+    const m = min % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div className="pointer-events-auto w-full max-w-sm rounded-xl bg-card border border-border shadow-2xl overflow-hidden">
+          <div className={cn("border-l-4 px-5 pt-4 pb-3", colors.border)}>
+            <div className="flex items-start justify-between gap-3">
+              <span className={cn("inline-block text-[11px] font-medium px-1.5 py-0.5 rounded-full", colors.badge)}>
+                {SUBJECT_LABEL[session.subjectCode] ?? session.subjectCode}
+              </span>
+              <button
+                onClick={onClose}
+                className="p-1 -m-1 rounded-lg hover:bg-background transition-colors shrink-0"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+            <h2 className={cn("text-lg font-bold text-foreground mt-2", done && "line-through opacity-70")}>
+              {session.subtopicName}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{session.topicName}</p>
+          </div>
+
+          <div className="px-5 py-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4 shrink-0" />
+              <span>{fmtClock(startMin)} – {fmtClock(endMin)} · {fmtMins(session.durationMins)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {done
+                ? <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                : <Circle className="w-4 h-4 text-muted-foreground shrink-0" />
+              }
+              <span className="text-sm text-foreground">{done ? "Completed" : "Not started"}</span>
+            </div>
+
+            {/* What the study session includes — funnels the user into our own
+                study flow (timed lesson + progress tracking + quiz) rather than
+                shipping them straight out to an external resource. */}
+            <div className="rounded-lg bg-background border border-border px-3.5 py-3 space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">In this session</p>
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <BookOpen className="w-4 h-4 shrink-0 text-primary" />
+                <span>{session.learningUrl ? "Guided lesson material" : "Study time (from your notes)"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Clock className="w-4 h-4 shrink-0 text-primary" />
+                <span>Timed study with progress tracking</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Target className="w-4 h-4 shrink-0 text-primary" />
+                <span>Quiz to check your understanding</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-5 pb-5">
+            <Link
+              href={`/study/${session.id}`}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors"
+            >
+              {done ? "Review Session" : "Start Study Session"}
+            </Link>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── DayDetailPanel ──────────────────────────────────────────────────────────
+
+function DayDetailPanel({
+  day,
+  sessions,
+  slots,
+  onClose,
+}: {
+  day: Date;
+  sessions: SessionEntry[];
+  slots: AvailabilitySlot[];
+  onClose: () => void;
+}) {
+  const placed = layoutDaySessions(sessions, slots).sort((a, b) => a.startMin - b.startMin);
+  const totalMins = sessions.reduce((a, s) => a + s.durationMins, 0);
+  const nextSession = sessions.find((s) => s.status !== "COMPLETED") ?? sessions[0];
+  const fmtClock = (min: number) => {
+    const h = Math.floor(min / 60) % 24;
+    const m = min % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40 bg-black/30"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-105 bg-card border-l border-border shadow-2xl flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">{format(day, "EEEE, MMM d, yyyy")}</h2>
+            {sessions.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {sessions.length} session{sessions.length !== 1 ? "s" : ""} · {fmtMins(totalMins)} total
+              </p>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-background transition-colors shrink-0"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-3">
+          {placed.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-10">
+              No sessions scheduled for this day.
+            </p>
+          )}
+          {placed.map(({ session, startMin, endMin }) => {
+            const colors = SUBJECT_COLOR[session.subjectCode] ?? DEFAULT_SUBJECT_COLOR;
+            const done = session.status === "COMPLETED";
+            return (
+              <Link
+                key={session.id}
+                href={`/study/${session.id}`}
+                className={cn(
+                  "block rounded-lg border border-border border-l-4 pl-3 pr-4 py-3 hover:bg-background transition-colors",
+                  colors.border,
+                  done && "opacity-60"
+                )}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {fmtClock(startMin)} – {fmtClock(endMin)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{fmtMins(session.durationMins)}</span>
+                </div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  {done
+                    ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                    : <Circle className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  }
+                  <span className={cn("inline-block text-[11px] font-medium px-1.5 py-0.5 rounded-full", colors.badge)}>
+                    {SUBJECT_LABEL[session.subjectCode] ?? session.subjectCode}
+                  </span>
+                </div>
+                <p className={cn("text-sm font-semibold text-foreground mb-1", done && "line-through")}>
+                  {session.subtopicName}
+                </p>
+                <p className="text-xs text-muted-foreground">{session.topicName}</p>
+              </Link>
+            );
+          })}
+        </div>
+
+        {nextSession && (
+          <div className="p-5 border-t border-border shrink-0">
+            <Link
+              href={`/study/${nextSession.id}`}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors"
+            >
+              Start Study Session
+            </Link>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -401,6 +1057,9 @@ export default function SchedulePage() {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [csrfToken, setCsrfToken] = useState("");
+  const [fitnessScore, setFitnessScore] = useState<number | null>(null);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [selectedSession, setSelectedSession] = useState<PlacedSession | null>(null);
 
   const currentWeekMon = startOfWeek(new Date(), { weekStartsOn: 1 });
   const [weekStart, setWeekStart] = useState(currentWeekMon);
@@ -415,7 +1074,11 @@ export default function SchedulePage() {
   const fetchSessions = useCallback(() => {
     fetch("/api/sessions")
       .then((r) => r.json())
-      .then((data) => { setSessions(data.sessions ?? []); setLoading(false); })
+      .then((data) => {
+        setSessions(data.sessions ?? []);
+        setFitnessScore(typeof data.plan?.fitnessScore === "number" ? data.plan.fitnessScore : null);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, []);
 
@@ -434,6 +1097,13 @@ export default function SchedulePage() {
   }, [authLoading, weekStart]);
 
   useEffect(() => { fetchSlots(); }, [fetchSlots]);
+
+  // A day selected in a previous week view shouldn't linger once the user
+  // navigates away from that week.
+  const goToWeek = (next: Date) => {
+    setSelectedDay(null);
+    setWeekStart(next);
+  };
 
   const weekDiff = differenceInCalendarWeeks(weekStart, currentWeekMon, { weekStartsOn: 1 });
   const isCurrentWeek = weekDiff === 0;
@@ -460,6 +1130,18 @@ export default function SchedulePage() {
   const weekTotalMins = weekSessions.reduce((a, s) => a + s.durationMins, 0);
   const weekCompleted = weekSessions.filter((s) => s.status === "COMPLETED").length;
 
+  // Focus areas: subjects getting the most study time this week, ranked —
+  // the GA already weights weak subtopics heavier, so time share is a
+  // reasonable proxy for "what's being prioritized" without new backend data.
+  const minsBySubject = new Map<string, number>();
+  for (const s of weekSessions) {
+    minsBySubject.set(s.subjectCode, (minsBySubject.get(s.subjectCode) ?? 0) + s.durationMins);
+  }
+  const focusAreas = Array.from(minsBySubject.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([code], i) => ({ code, priority: i === 0 ? "High" : "Medium" }));
+
   // Show the review/generate panel for the current or a future week that has no
   // plan yet. (Past weeks and weeks that already have sessions don't show it.)
   const showSetup = weekDiff >= 0 && weekSessions.length === 0;
@@ -481,7 +1163,7 @@ export default function SchedulePage() {
 
   return (
     <MainLayout userName={user?.name}>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
 
         {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 gap-3 sm:gap-0">
@@ -501,13 +1183,13 @@ export default function SchedulePage() {
 
           <div className="flex items-center gap-1.5 shrink-0">
             <button
-              onClick={() => setWeekStart((w) => addDays(w, -7))}
+              onClick={() => goToWeek(addDays(weekStart, -7))}
               className="p-2 rounded-lg border border-border hover:bg-background transition-colors"
             >
               <ChevronLeft className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
-              onClick={() => !isCurrentWeek && setWeekStart(currentWeekMon)}
+              onClick={() => !isCurrentWeek && goToWeek(currentWeekMon)}
               disabled={isCurrentWeek}
               className={cn(
                 "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors min-w-25 text-center",
@@ -519,7 +1201,7 @@ export default function SchedulePage() {
               {relativeWeekLabel(weekDiff)}
             </button>
             <button
-              onClick={() => setWeekStart((w) => addDays(w, 7))}
+              onClick={() => goToWeek(addDays(weekStart, 7))}
               className="p-2 rounded-lg border border-border hover:bg-background transition-colors"
             >
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -527,23 +1209,41 @@ export default function SchedulePage() {
           </div>
         </div>
 
-        {/* ── Week summary bar ─────────────────────────────────────────── */}
+        {/* ── Stat cards ────────────────────────────────────────────────── */}
         {weekSessions.length > 0 && (
-          <div className="bg-card rounded-xl border border-border p-4 mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-foreground">
-                {relativeWeekLabel(weekDiff)} — {fmtMins(weekTotalMins)} total
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {weekCompleted} / {weekSessions.length} sessions done
-              </span>
-            </div>
-            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-2 bg-green-500 rounded-full transition-all"
-                style={{ width: `${weekSessions.length ? (weekCompleted / weekSessions.length) * 100 : 0}%` }}
-              />
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <StatCard
+              icon={CalendarDays}
+              label="Sessions"
+              value={`${weekCompleted} / ${weekSessions.length}`}
+              sub={relativeWeekLabel(weekDiff)}
+              iconClass="text-primary"
+            />
+            <StatCard
+              icon={Clock}
+              label="Study Time"
+              value={fmtMins(weekTotalMins)}
+              sub="Planned"
+              iconClass="text-amber-500"
+            />
+            <StatCard
+              icon={Target}
+              label="Focus Areas"
+              value={focusAreas.length
+                ? focusAreas.map((f) => SUBJECT_LABEL[f.code] ?? f.code).join(", ")
+                : "—"}
+              sub={focusAreas.length
+                ? focusAreas.map((f) => `${SUBJECT_LABEL[f.code] ?? f.code}: ${f.priority}`).join(" · ")
+                : undefined}
+              iconClass="text-red-500"
+            />
+            <StatCard
+              icon={Sparkles}
+              label="AI Fitness Score"
+              value={fitnessScore !== null ? `${Math.round(fitnessScore * 100)}%` : "—"}
+              sub={fitnessScore !== null ? "Great progress!" : undefined}
+              iconClass="text-purple-500"
+            />
           </div>
         )}
 
@@ -564,119 +1264,39 @@ export default function SchedulePage() {
             onSuccess={handleScheduleSuccess}
           />
         ) : (
-          /* ── Day rows ────────────────────────────────────────────────── */
-          <div className="space-y-2">
-            {weekDays.map((day, i) => {
-              const daySessions = getSessionsForDay(day);
-              const daySlots = getSlotsForDay(day);
-              const isToday = isSameDay(day, new Date());
-              const dayMins = daySessions.reduce((a, s) => a + s.durationMins, 0);
-              const dayDone = daySessions.filter((s) => s.status === "COMPLETED").length;
-              const hasContent = daySessions.length > 0 || daySlots.length > 0;
-
-              return (
-                <div
-                  key={i}
-                  className={cn(
-                    "rounded-xl border bg-card transition-colors",
-                    isToday ? "border-primary shadow-sm shadow-blue-100" : "border-border"
-                  )}
-                >
-                  {/* Day header */}
-                  <div className={cn(
-                    "flex items-start gap-4 px-4 py-3 rounded-t-xl",
-                    isToday ? "bg-primary" : hasContent ? "bg-background" : "bg-card"
-                  )}>
-                    <div className="w-12 shrink-0">
-                      <p className={cn("text-xs font-semibold uppercase tracking-wider", isToday ? "text-primary-foreground" : "text-muted-foreground")}>
-                        {format(day, "EEE")}
-                      </p>
-                      <p className={cn("text-xl font-bold leading-tight", isToday ? "text-white" : "text-foreground")}>
-                        {format(day, "d")}
-                      </p>
-                    </div>
-
-                    {daySlots.length > 0 ? (
-                      <div className="flex flex-col gap-0.5 pt-0.5 min-w-27.5">
-                        {daySlots.map((slot, si) => (
-                          <div key={si} className={cn("flex items-center gap-1 text-xs font-medium", isToday ? "text-primary-foreground" : "text-muted-foreground")}>
-                            <Clock className="w-3 h-3 shrink-0" />
-                            <span>{slot.startTime} – {slot.endTime}</span>
-                          </div>
-                        ))}
-                        {/* Explains why an available day has no sessions: it had
-                            already passed when the plan was generated, so the GA
-                            skipped it — otherwise this looks like a bug. */}
-                        {daySessions.length === 0 && day < new Date(new Date().setHours(0, 0, 0, 0)) && (
-                          <span className={cn("text-[11px] italic", isToday ? "text-primary-foreground/80" : "text-muted-foreground")}>
-                            Already passed when generated
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="pt-1.5">
-                        <span className={cn("text-sm", isToday ? "text-primary-foreground" : "text-muted-foreground")}>Free</span>
-                      </div>
-                    )}
-
-                    {daySessions.length > 0 && (
-                      <div className="flex items-center gap-3 ml-auto pt-1">
-                        <span className={cn("text-sm font-medium", isToday ? "text-primary-foreground" : "text-muted-foreground")}>
-                          {fmtMins(dayMins)}
-                        </span>
-                        <span className={cn("text-xs", isToday ? "text-primary-foreground" : "text-muted-foreground")}>
-                          {dayDone}/{daySessions.length} done
-                        </span>
-                        {isToday && dayDone === daySessions.length && daySessions.length > 0 && (
-                          <span className="text-xs bg-green-400/80 text-white px-2 py-0.5 rounded-full font-medium">
-                            ✓ Done
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sessions */}
-                  {daySessions.length > 0 && (
-                    <div className="divide-y divide-border">
-                      {daySessions.map((s) => {
-                        const colors = SUBJECT_COLOR[s.subjectCode] ?? { badge: "bg-muted text-muted-foreground", dot: "bg-muted-foreground" };
-                        const done = s.status === "COMPLETED";
-                        return (
-                          <Link key={s.id} href={`/study/${s.id}`}>
-                            <div className={cn(
-                              "flex items-center gap-3 px-4 py-3 hover:bg-background transition-colors",
-                              done && "opacity-50"
-                            )}>
-                              {done
-                                ? <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-                                : <Circle className="w-4 h-4 text-muted-foreground shrink-0" />
-                              }
-                              <div className={cn("w-2 h-2 rounded-full shrink-0", colors.dot)} />
-                              <div className="flex-1 min-w-0">
-                                <p className={cn("text-sm font-medium text-foreground truncate", done && "line-through")}>
-                                  {s.subtopicName}
-                                </p>
-                                <span className={cn("inline-block text-[11px] font-medium px-1.5 py-0.5 rounded-full mt-0.5", colors.badge)}>
-                                  {SUBJECT_LABEL[s.subjectCode] ?? s.subjectCode}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1 text-muted-foreground shrink-0">
-                                <Clock className="w-3 h-3" />
-                                <span className="text-xs">{fmtMins(s.durationMins)}</span>
-                              </div>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          /* ── Week calendar grid ───────────────────────────────────────── */
+          <>
+            <MobileDayCalendar
+              weekDays={weekDays}
+              getSessionsForDay={getSessionsForDay}
+              getSlotsForDay={getSlotsForDay}
+              onSelectSession={setSelectedSession}
+            />
+            <WeekCalendarGrid
+              weekDays={weekDays}
+              getSessionsForDay={getSessionsForDay}
+              getSlotsForDay={getSlotsForDay}
+              selectedDay={selectedDay}
+              onSelectDay={setSelectedDay}
+              onSelectSession={setSelectedSession}
+            />
+          </>
         )}
       </div>
+
+      {selectedSession ? (
+        <SessionDetailModal
+          placed={selectedSession}
+          onClose={() => setSelectedSession(null)}
+        />
+      ) : selectedDay && (
+        <DayDetailPanel
+          day={selectedDay}
+          sessions={getSessionsForDay(selectedDay)}
+          slots={getSlotsForDay(selectedDay)}
+          onClose={() => setSelectedDay(null)}
+        />
+      )}
     </MainLayout>
   );
 }
