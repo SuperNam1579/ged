@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { BookOpen } from "lucide-react";
+import Reveal from "@/components/ui/Reveal";
 
 /* ─── Navbar ─────────────────────────────────────────────────── */
 
@@ -41,6 +42,7 @@ function DuoNavbar() {
         <div className="flex items-center gap-2 md:gap-[10px]">
           <Link
             href="/login"
+            className="inline-block transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] hover:bg-white/10 active:scale-[0.95]"
             style={{
               padding: "8px 14px",
               background: "transparent",
@@ -56,6 +58,7 @@ function DuoNavbar() {
           </Link>
           <Link
             href="/register"
+            className="inline-block transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] hover:brightness-110 active:scale-[0.95]"
             style={{
               padding: "8px 16px",
               background: "#1e90e8",
@@ -128,9 +131,10 @@ function HeroSection() {
       />
 
       {/* Main grid: 1-col on mobile, 2-col on desktop */}
-      <div
+      <Reveal
         className="relative max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[46%_54%] min-h-[auto] md:min-h-[680px]"
         style={{ zIndex: 10 }}
+        amount={0}
       >
         {/* LEFT: Text column */}
         <div className="flex flex-col justify-center px-5 py-12 md:pt-[72px] md:pr-[48px] md:pb-[180px] md:pl-[40px]">
@@ -175,7 +179,7 @@ function HeroSection() {
           <div className="flex flex-wrap items-center gap-3" style={{ marginBottom: 20 }}>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2"
+              className="inline-flex items-center gap-2 transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] hover:brightness-110 active:scale-[0.95]"
               style={{
                 padding: "13px 24px",
                 background: "#1e90e8",
@@ -301,7 +305,7 @@ function HeroSection() {
             }}
           />
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -323,7 +327,7 @@ function StatItem({ value, label }: { value: string; label: string }) {
 
 function StatsSection() {
   return (
-    <div className="px-4 py-8 md:px-[40px] md:py-[40px]" style={{ background: "#1e90e8" }}>
+    <Reveal className="px-4 py-8 md:px-[40px] md:py-[40px]" style={{ background: "#1e90e8" }}>
       <div className="max-w-[1200px] mx-auto grid grid-cols-2 gap-6 md:flex md:items-center md:justify-between md:gap-0">
         <StatItem value="57" label="Topics covered" />
         <div className="hidden md:block" style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
@@ -333,7 +337,7 @@ function StatsSection() {
         <div className="hidden md:block" style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
         <StatItem value="Free" label="To start" />
       </div>
-    </div>
+    </Reveal>
   );
 }
 
@@ -344,7 +348,7 @@ function FeaturesSection() {
     <section id="features" className="px-4 py-16 md:px-[40px] md:py-24">
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
-        <div style={{ marginBottom: 48 }}>
+        <Reveal style={{ marginBottom: 48 }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: "#1e90e8", textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 12 }}>
             What we offer
           </p>
@@ -354,13 +358,13 @@ function FeaturesSection() {
           >
             Everything you need<br />to pass, in one place.
           </h2>
-        </div>
+        </Reveal>
 
         {/* Bento grid: single column on mobile, 2-col bento on desktop */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[3fr_2fr] md:gap-[18px] md:[grid-template-rows:240px_240px]">
 
           {/* Card 1: Assessment — spans 2 rows on desktop */}
-          <div
+          <Reveal
             className="md:row-span-2"
             style={{
               background: "#f4f8ff",
@@ -424,10 +428,11 @@ function FeaturesSection() {
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 22, fontWeight: 700, color: "#0f2748", marginBottom: 8 }}>Diagnostic Assessment</h3>
               <p style={{ fontSize: 14, color: "#5b769a", lineHeight: 1.6 }}>40 targeted questions map every knowledge gap — your plan targets only what you actually need.</p>
             </div>
-          </div>
+          </Reveal>
 
           {/* Card 2: Adaptive AI — blue bg */}
-          <div
+          <Reveal
+            delay={0.1}
             style={{
               background: "#1e90e8",
               borderRadius: 24,
@@ -461,10 +466,11 @@ function FeaturesSection() {
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "white", marginBottom: 6 }}>Adaptive AI Planning</h3>
               <p style={{ fontSize: 13, color: "rgba(255,255,255,.6)", lineHeight: 1.5 }}>Your plan reshapes in real time — harder topics get more time, mastered ones get skipped.</p>
             </div>
-          </div>
+          </Reveal>
 
           {/* Card 3: Progress — donut rings */}
-          <div
+          <Reveal
+            delay={0.2}
             style={{
               background: "#f4f8ff",
               borderRadius: 24,
@@ -510,7 +516,7 @@ function FeaturesSection() {
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 6 }}>Progress Tracking</h3>
               <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Subject scores, predicted GED result, and weak-area spotlights — always up to date.</p>
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>
@@ -551,7 +557,7 @@ function HowItWorksSection() {
     <section id="how-it-works" className="px-4 pb-16 md:px-[40px] md:pb-24" style={{ background: "#f4f8ff" }}>
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
-        <div className="pt-16 pb-10 md:pt-[72px] md:pb-[52px]">
+        <Reveal className="pt-16 pb-10 md:pt-[72px] md:pb-[52px]">
           <p style={{ fontSize: 11, fontWeight: 700, color: "#1e90e8", textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 12 }}>
             The process
           </p>
@@ -561,13 +567,14 @@ function HowItWorksSection() {
           >
             Three steps.<br />One diploma.
           </h2>
-        </div>
+        </Reveal>
 
         {/* Numbered rows */}
         <div style={{ borderTop: "1px solid #d8e6f7" }}>
-          {steps.map((s) => (
-            <div
+          {steps.map((s, i) => (
+            <Reveal
               key={s.num}
+              delay={i * 0.1}
               className="grid grid-cols-1 md:grid-cols-[180px_1fr] relative py-8 md:py-[48px]"
               style={{ borderBottom: "1px solid #d8e6f7" }}
             >
@@ -604,7 +611,7 @@ function HowItWorksSection() {
                   {s.body}
                 </p>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -685,7 +692,7 @@ function SubjectsSection() {
     <section id="subjects" className="px-4 py-16 md:px-[40px] md:py-24">
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
-        <div className="flex items-end justify-between flex-wrap gap-4" style={{ marginBottom: 40 }}>
+        <Reveal className="flex items-end justify-between flex-wrap gap-4" style={{ marginBottom: 40 }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, color: "#1e90e8", textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 12 }}>
               Full coverage
@@ -700,13 +707,14 @@ function SubjectsSection() {
           <p className="hidden md:block" style={{ fontSize: 15, color: "#5b769a", maxWidth: 280, lineHeight: 1.6 }}>
             57 topics. Every subtopic on exam day. Nothing left out.
           </p>
-        </div>
+        </Reveal>
 
         {/* Subject rows */}
         <div>
           {subjects.map((s, i) => (
-            <div
+            <Reveal
               key={s.name}
+              delay={i * 0.08}
               className="flex items-center gap-3 sm:gap-5"
               style={{
                 padding: "20px 0",
@@ -744,7 +752,7 @@ function SubjectsSection() {
               </div>
               {/* Arrow — hidden on mobile */}
               <div className="hidden sm:block" style={{ fontSize: 13, color: s.color, fontWeight: 600, flexShrink: 0 }}>Explore →</div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -773,7 +781,7 @@ function CtaSection() {
           backgroundSize: "28px 28px",
         }}
       />
-      <div className="max-w-[640px] mx-auto text-center relative" style={{ zIndex: 1 }}>
+      <Reveal className="max-w-[640px] mx-auto text-center relative" style={{ zIndex: 1 }}>
         <h2
           className="text-[30px] md:text-[50px]"
           style={{
@@ -791,6 +799,7 @@ function CtaSection() {
         </p>
         <Link
           href="/register"
+          className="transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] active:scale-[0.95]"
           style={{
             display: "inline-block",
             padding: "14px 36px",
@@ -805,7 +814,7 @@ function CtaSection() {
         >
           Create Free Account →
         </Link>
-      </div>
+      </Reveal>
     </section>
   );
 }

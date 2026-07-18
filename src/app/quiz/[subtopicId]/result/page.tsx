@@ -4,8 +4,29 @@ import { Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Info } from "lucide-react";
+import { motion } from "motion/react";
 import Button from "@/components/ui/Button";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { cn } from "@/lib/utils/cn";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
+
+// Deterministic burst — fixed angles/delays so server and client render
+// identically (no Math.random() in render, which would cause a hydration
+// mismatch on a "use client" page that's still SSR'd on first load).
+const CONFETTI = Array.from({ length: 14 }, (_, i) => {
+  const angle = (i / 14) * Math.PI * 2;
+  const distance = 70 + (i % 3) * 18;
+  return {
+    x: Math.cos(angle) * distance,
+    y: Math.sin(angle) * distance,
+    color: ["var(--success)", "var(--primary)", "var(--gold)"][i % 3],
+    delay: (i % 5) * 0.03,
+  };
+});
 
 function ScoreRing({ score, max }: { score: number; max: number }) {
   const pct = max > 0 ? Math.round((score / max) * 100) : 0;
@@ -18,6 +39,16 @@ function ScoreRing({ score, max }: { score: number; max: number }) {
 
   return (
     <div className="relative w-40 h-40 mx-auto">
+      {pct >= 80 && CONFETTI.map((c, i) => (
+        <motion.span
+          key={i}
+          className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full"
+          style={{ background: c.color }}
+          initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+          animate={{ x: c.x, y: c.y, opacity: 0, scale: 0.4 }}
+          transition={{ duration: 0.9, delay: 0.3 + c.delay, ease: "easeOut" }}
+        />
+      ))}
       <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
         <circle
           cx="64"
@@ -27,7 +58,7 @@ function ScoreRing({ score, max }: { score: number; max: number }) {
           stroke="var(--muted)"
           strokeWidth="12"
         />
-        <circle
+        <motion.circle
           cx="64"
           cy="64"
           r={radius}
@@ -35,13 +66,16 @@ function ScoreRing({ score, max }: { score: number; max: number }) {
           stroke={ringColor}
           strokeWidth="12"
           strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          style={{ transition: "stroke-dashoffset 0.8s ease-out" }}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset }}
+          transition={{ duration: 1, ease: "easeOut", delay: 0.15 }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-extrabold text-foreground">{score}/{max}</span>
+        <span className="text-3xl font-extrabold text-foreground">
+          <AnimatedNumber value={score} />/{max}
+        </span>
         <span className="text-sm text-muted-foreground font-medium">Correct</span>
       </div>
     </div>
@@ -69,7 +103,12 @@ function QuizResultContent() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg">
+      <motion.div
+        className="w-full max-w-lg"
+        initial={{ opacity: 0, y: 16, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
         {/* Card */}
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           {/* Header */}
@@ -80,8 +119,17 @@ function QuizResultContent() {
             )}
           >
             <ScoreRing score={score} max={max} />
-            <p className="mt-4 text-2xl font-bold text-foreground">{pct}%</p>
-            <p className={cn("text-base font-semibold mt-1", color)}>{label}</p>
+            <p className="mt-4 text-2xl font-bold text-foreground">
+              <AnimatedNumber value={pct} format={(n) => `${n}%`} />
+            </p>
+            <motion.p
+              className={cn("text-base font-semibold mt-1", color)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: "spring", stiffness: 400, damping: 20 }}
+            >
+              {label}
+            </motion.p>
           </div>
 
           {/* Body */}
@@ -99,31 +147,43 @@ function QuizResultContent() {
             {/* Result summary */}
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-foreground mb-3">Summary</h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center bg-green-50 dark:bg-green-500/10 rounded-xl py-3">
-                  <p className="text-2xl font-bold text-green-700">{score}</p>
+              <motion.div
+                className="grid grid-cols-3 gap-3"
+                initial="hidden"
+                animate="visible"
+                transition={{ staggerChildren: 0.08, delayChildren: 0.2 }}
+              >
+                <motion.div variants={fadeUp} className="text-center bg-green-50 dark:bg-green-500/10 rounded-xl py-3">
+                  <p className="text-2xl font-bold text-green-700"><AnimatedNumber value={score} /></p>
                   <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">Correct</p>
-                </div>
-                <div className="text-center bg-red-50 dark:bg-red-500/10 rounded-xl py-3">
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{max - score}</p>
+                </motion.div>
+                <motion.div variants={fadeUp} className="text-center bg-red-50 dark:bg-red-500/10 rounded-xl py-3">
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400"><AnimatedNumber value={max - score} /></p>
                   <p className="text-xs text-red-500 font-medium mt-0.5">Incorrect</p>
-                </div>
-                <div className="text-center bg-background rounded-xl py-3">
-                  <p className="text-2xl font-bold text-foreground">{pct}%</p>
+                </motion.div>
+                <motion.div variants={fadeUp} className="text-center bg-background rounded-xl py-3">
+                  <p className="text-2xl font-bold text-foreground"><AnimatedNumber value={pct} format={(n) => `${n}%`} /></p>
                   <p className="text-xs text-muted-foreground font-medium mt-0.5">Score</p>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
 
             {/* Question results */}
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-foreground mb-3">Questions at a glance</h3>
-              <div className="flex gap-2 flex-wrap">
+              <motion.div
+                className="flex gap-2 flex-wrap"
+                initial="hidden"
+                animate="visible"
+                transition={{ staggerChildren: 0.04, delayChildren: 0.3 }}
+              >
                 {Array.from({ length: max }, (_, i) => {
                   const correct = i < score;
                   return (
-                    <div
+                    <motion.div
                       key={i}
+                      variants={{ hidden: { opacity: 0, scale: 0 }, visible: { opacity: 1, scale: 1 } }}
+                      transition={{ type: "spring", stiffness: 500, damping: 22 }}
                       className={cn(
                         "flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold",
                         correct
@@ -136,10 +196,10 @@ function QuizResultContent() {
                       ) : (
                         <XCircle className="w-5 h-5" />
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })}
-              </div>
+              </motion.div>
             </div>
 
             {/* Feedback */}
@@ -170,7 +230,7 @@ function QuizResultContent() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

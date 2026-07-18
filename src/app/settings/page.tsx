@@ -2,13 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { Settings, User, RefreshCw } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Spinner from "@/components/ui/Spinner";
 import Toast from "@/components/ui/Toast";
+import { cn } from "@/lib/utils/cn";
 import { useAuth } from "@/lib/hooks/useAuth";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
+};
+
+function FormError({ message }: { message: string }) {
+  return (
+    <AnimatePresence>
+      {message && (
+        <motion.p
+          initial={{ opacity: 0, y: -6, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: "auto" }}
+          exit={{ opacity: 0, y: -6, height: 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-red-600 dark:text-red-400 text-sm overflow-hidden"
+        >
+          {message}
+        </motion.p>
+      )}
+    </AnimatePresence>
+  );
+}
 
 interface Preferences {
   targetExamDate: string;
@@ -151,93 +176,101 @@ export default function SettingsPage() {
           <p className="text-muted-foreground">Manage your account and study preferences.</p>
         </div>
 
-        {/* Profile */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-muted-foreground" />
-              <h2 className="font-semibold text-foreground">Profile</h2>
-            </div>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            <div>
-              <label htmlFor="displayName" className="block text-sm font-medium text-foreground mb-1.5">Display name</label>
-              <div className="flex items-center gap-2">
-                <input
-                  id="displayName"
-                  type="text"
-                  value={name}
-                  maxLength={100}
-                  onChange={(e) => { setNameOverride(e.target.value); setNameError(""); }}
-                  placeholder="Your name"
-                  className="flex-1 px-3.5 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                />
-                <Button onClick={handleSaveName} loading={nameSaving} disabled={!nameChanged || nameSaving} size="sm">
-                  Save
-                </Button>
-              </div>
-              {nameError && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{nameError}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-              <div className="px-3.5 py-2.5 rounded-lg border border-border bg-background text-sm text-muted-foreground">
-                {user?.email}
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-
-        {/* Study preferences */}
-        {prefs && (
-          <Card className="mb-6">
-            <CardHeader>
-              <h2 className="font-semibold text-foreground">Study Preferences</h2>
-            </CardHeader>
-            <CardBody className="space-y-6">
-              <Input
-                label="Target Exam Date"
-                type="date"
-                value={prefs.targetExamDate}
-                onChange={(e) => setPrefs({ ...prefs, targetExamDate: e.target.value })}
-              />
-              <div className="flex items-center justify-between">
-                {saveError && <p className="text-red-600 dark:text-red-400 text-sm">{saveError}</p>}
-                <div className="ml-auto">
-                  <Button onClick={handleSave} loading={saving}>
-                    Save Preferences
-                  </Button>
+        <motion.div initial="hidden" animate="visible" transition={{ staggerChildren: 0.1 }}>
+          {/* Profile */}
+          <motion.div variants={fadeUp}>
+            <Card className="mb-6">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-muted-foreground" />
+                  <h2 className="font-semibold text-foreground">Profile</h2>
                 </div>
-              </div>
-            </CardBody>
-          </Card>
-        )}
+              </CardHeader>
+              <CardBody className="space-y-4">
+                <div>
+                  <label htmlFor="displayName" className="block text-sm font-medium text-foreground mb-1.5">Display name</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="displayName"
+                      type="text"
+                      value={name}
+                      maxLength={100}
+                      onChange={(e) => { setNameOverride(e.target.value); setNameError(""); }}
+                      placeholder="Your name"
+                      className="flex-1 px-3.5 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                    />
+                    <Button onClick={handleSaveName} loading={nameSaving} disabled={!nameChanged || nameSaving} size="sm">
+                      Save
+                    </Button>
+                  </div>
+                  <FormError message={nameError} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+                  <div className="px-3.5 py-2.5 rounded-lg border border-border bg-background text-sm text-muted-foreground">
+                    {user?.email}
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          </motion.div>
 
-        {/* Study Plan regeneration */}
-        <Card className="border-orange-200 dark:border-orange-500/30">
-          <CardHeader className="border-orange-100 dark:border-orange-500/25">
-            <div className="flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 text-orange-500" />
-              <h2 className="font-semibold text-foreground">Study Plan</h2>
-            </div>
-          </CardHeader>
-          <CardBody>
-            <p className="text-sm text-muted-foreground mb-4">
-              Request a completely new study plan generated by the Genetic Algorithm. This will
-              deactivate your current plan and create a new one based on your latest proficiency
-              scores and schedule.
-            </p>
-            {regenError && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{regenError}</p>}
-            <Button
-              variant="secondary"
-              onClick={handleRegenerate}
-              loading={regenerating}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Regenerate My Study Plan
-            </Button>
-          </CardBody>
-        </Card>
+          {/* Study preferences */}
+          {prefs && (
+            <motion.div variants={fadeUp}>
+              <Card className="mb-6">
+                <CardHeader>
+                  <h2 className="font-semibold text-foreground">Study Preferences</h2>
+                </CardHeader>
+                <CardBody className="space-y-6">
+                  <Input
+                    label="Target Exam Date"
+                    type="date"
+                    value={prefs.targetExamDate}
+                    onChange={(e) => setPrefs({ ...prefs, targetExamDate: e.target.value })}
+                  />
+                  <div className="flex items-center justify-between">
+                    <FormError message={saveError} />
+                    <div className="ml-auto">
+                      <Button onClick={handleSave} loading={saving}>
+                        Save Preferences
+                      </Button>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Study Plan regeneration */}
+          <motion.div variants={fadeUp}>
+            <Card className="border-orange-200 dark:border-orange-500/30">
+              <CardHeader className="border-orange-100 dark:border-orange-500/25">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 text-orange-500" />
+                  <h2 className="font-semibold text-foreground">Study Plan</h2>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Request a completely new study plan generated by the Genetic Algorithm. This will
+                  deactivate your current plan and create a new one based on your latest proficiency
+                  scores and schedule.
+                </p>
+                <div className="mb-4"><FormError message={regenError} /></div>
+                <Button
+                  variant="secondary"
+                  onClick={handleRegenerate}
+                  loading={regenerating}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className={cn("w-4 h-4", regenerating && "animate-spin")} />
+                  Regenerate My Study Plan
+                </Button>
+              </CardBody>
+            </Card>
+          </motion.div>
+        </motion.div>
       </div>
 
       <Toast message={toastMsg} show={!!toastMsg} />

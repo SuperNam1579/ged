@@ -3,13 +3,21 @@
 import { useEffect, useState } from "react";
 import { TrendingUp, AlertTriangle, BookOpen, Award, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
+import { motion } from "motion/react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Button from "@/components/ui/Button";
 import SubjectBadge from "@/components/ui/SubjectBadge";
 import Spinner from "@/components/ui/Spinner";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
+import Reveal from "@/components/ui/Reveal";
 import dynamic from "next/dynamic";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const FitnessConvergenceChart = dynamic(
   () => import("@/components/charts/FitnessConvergenceChart"),
@@ -70,14 +78,14 @@ function StatTile({
   icon: Icon, iconClass, label, value, sub,
 }: { icon: typeof TrendingUp; iconClass: string; label: string; value: React.ReactNode; sub?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2 mb-1.5">
         <Icon className={`w-3.5 h-3.5 ${iconClass}`} />
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
       </div>
       <div className="text-xl font-bold text-foreground leading-tight">{value}</div>
       {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
-    </div>
+    </motion.div>
   );
 }
 
@@ -146,35 +154,40 @@ export default function ProgressPage() {
         </div>
 
         {/* Stat tiles */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <motion.div
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+          initial="hidden"
+          animate="visible"
+          transition={{ staggerChildren: 0.06 }}
+        >
           <StatTile
             icon={TrendingUp}
             iconClass="text-primary"
             label="Overall Completion"
-            value={`${Math.round(overallProgress)}%`}
+            value={<AnimatedNumber value={Math.round(overallProgress)} format={(n) => `${n}%`} />}
             sub="Sessions done"
           />
           <StatTile
             icon={ClipboardCheck}
             iconClass="text-purple-500"
             label="Assessments Taken"
-            value={attempts.length}
+            value={<AnimatedNumber value={attempts.length} />}
           />
           <StatTile
             icon={Award}
             iconClass="text-green-500"
             label="Subjects Passing"
-            value={`${subjectsPassing} / ${attemptedSubjects.length || subjectSummaries.length}`}
+            value={<><AnimatedNumber value={subjectsPassing} /> / {attemptedSubjects.length || subjectSummaries.length}</>}
             sub="Est. 145+/200"
           />
           <StatTile
             icon={AlertTriangle}
             iconClass="text-orange-500"
             label="Avg Score"
-            value={avgScore !== null ? `${avgScore}%` : "—"}
+            value={avgScore !== null ? <AnimatedNumber value={avgScore} format={(n) => `${n}%`} /> : "—"}
             sub="On attempted subjects"
           />
-        </div>
+        </motion.div>
 
         {/* Overall progress */}
         <Card className="mb-6">
@@ -199,12 +212,17 @@ export default function ProgressPage() {
             <p className="text-sm text-muted-foreground mt-0.5">Estimated GED score = 100 + proficiency score (Passing: 145/200)</p>
           </CardHeader>
           <CardBody className="space-y-6">
-            {subjectSummaries.map((subject) => {
+            {subjectSummaries.map((subject, i) => {
               const gedScore = 100 + subject.proficiencyScore;
               const isPassing = gedScore >= 145;
               const hasAttempts = subject.attemptedCount > 0;
               return (
-                <div key={subject.id}>
+                <motion.div
+                  key={subject.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.06 }}
+                >
                   {/* Subject header */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2.5">
@@ -233,12 +251,14 @@ export default function ProgressPage() {
                       </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
+                      <motion.div
+                        className={`h-full rounded-full ${
                           subject.proficiencyScore >= 70 ? "bg-green-500" :
                           subject.proficiencyScore >= 50 ? "bg-orange-400" : "bg-red-400"
                         }`}
-                        style={{ width: `${subject.proficiencyScore}%` }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${subject.proficiencyScore}%` }}
+                        transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.1 + i * 0.06 }}
                       />
                     </div>
                   </div>
@@ -253,13 +273,15 @@ export default function ProgressPage() {
                       </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all duration-500"
-                        style={{ width: `${subject.coveragePercent}%` }}
+                      <motion.div
+                        className="h-full bg-primary rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${subject.coveragePercent}%` }}
+                        transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.15 + i * 0.06 }}
                       />
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </CardBody>
@@ -281,19 +303,26 @@ export default function ProgressPage() {
                   <p className="text-sm text-muted-foreground">Complete some quizzes to see your weak areas.</p>
                 </div>
               ) : (
-                <div className="divide-y divide-border">
+                <motion.div
+                  className="divide-y divide-border"
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ staggerChildren: 0.06 }}
+                >
                   {weakestSubtopics.map((st) => (
-                    <div key={st.subtopicId} className="flex items-center justify-between px-6 py-3.5">
+                    <motion.div key={st.subtopicId} variants={fadeUp} className="flex items-center justify-between px-6 py-3.5">
                       <div className="flex-1 min-w-0 mr-4">
                         <div className="flex items-center gap-2 mb-1">
                           <SubjectBadge code={st.subjectCode} />
                         </div>
                         <p className="text-sm font-medium text-foreground truncate">{st.subtopicName}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <div className="flex-1 h-1.5 bg-muted rounded-full">
-                            <div
+                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <motion.div
                               className="h-1.5 bg-red-400 rounded-full"
-                              style={{ width: `${st.score}%` }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${st.score}%` }}
+                              transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.2 }}
                             />
                           </div>
                           <span className="text-xs text-red-600 dark:text-red-400 font-medium shrink-0">{Math.round(st.score)}%</span>
@@ -302,9 +331,9 @@ export default function ProgressPage() {
                       <Link href={`/quiz/${st.subtopicId}`}>
                         <Button size="sm" variant="secondary">Practice</Button>
                       </Link>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               )}
             </CardBody>
           </Card>
@@ -324,9 +353,14 @@ export default function ProgressPage() {
                   <p className="text-sm text-muted-foreground">No assessments completed yet.</p>
                 </div>
               ) : (
-                <div className="divide-y divide-border">
+                <motion.div
+                  className="divide-y divide-border"
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ staggerChildren: 0.06 }}
+                >
                   {attempts.slice(0, 6).map((a) => (
-                    <div key={a.id} className="flex items-center justify-between px-6 py-3.5">
+                    <motion.div key={a.id} variants={fadeUp} className="flex items-center justify-between px-6 py-3.5">
                       <div>
                         {a.subjectCode && <SubjectBadge code={a.subjectCode} className="mb-1" />}
                         <p className="text-sm font-medium text-foreground">{a.title}</p>
@@ -335,11 +369,11 @@ export default function ProgressPage() {
                         </p>
                       </div>
                       <span className={`text-base font-bold ${a.score >= 70 ? "text-green-600 dark:text-green-400" : a.score >= 50 ? "text-orange-500" : "text-red-500"}`}>
-                        {Math.round(a.score)}%
+                        <AnimatedNumber value={Math.round(a.score)} format={(n) => `${n}%`} />
                       </span>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               )}
             </CardBody>
           </Card>
@@ -347,17 +381,19 @@ export default function ProgressPage() {
 
         {/* GA Convergence chart */}
         {gaLogs.length > 0 && (
-          <Card>
-            <CardHeader>
-              <h2 className="font-semibold text-foreground">Study Plan Optimization (GA Convergence)</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Fitness evolution across generations — shows how the genetic algorithm improved your study plan.
-              </p>
-            </CardHeader>
-            <CardBody>
-              <FitnessConvergenceChart data={gaLogs} />
-            </CardBody>
-          </Card>
+          <Reveal amount={0.3}>
+            <Card>
+              <CardHeader>
+                <h2 className="font-semibold text-foreground">Study Plan Optimization (GA Convergence)</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Fitness evolution across generations — shows how the genetic algorithm improved your study plan.
+                </p>
+              </CardHeader>
+              <CardBody>
+                <FitnessConvergenceChart data={gaLogs} />
+              </CardBody>
+            </Card>
+          </Reveal>
         )}
       </div>
     </MainLayout>

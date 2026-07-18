@@ -7,10 +7,17 @@ import {
   BookOpen, Plus, X, CalendarDays, Loader2, Target, Sparkles, AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import MainLayout from "@/components/layout/MainLayout";
 import Spinner from "@/components/ui/Spinner";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils/cn";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
+};
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -478,14 +485,14 @@ function StatCard({
   iconClass: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2 mb-1.5">
         <Icon className={cn("w-3.5 h-3.5", iconClass)} />
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
       </div>
       <div className="text-xl font-bold text-foreground leading-tight">{value}</div>
       {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
-    </div>
+    </motion.div>
   );
 }
 
@@ -874,9 +881,23 @@ function SessionDetailModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} aria-hidden="true" />
+      <motion.div
+        className="fixed inset-0 z-40 bg-black/30"
+        onClick={onClose}
+        aria-hidden="true"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+      />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className="pointer-events-auto w-full max-w-sm rounded-xl bg-card border border-border shadow-2xl overflow-hidden">
+        <motion.div
+          className="pointer-events-auto w-full max-w-sm rounded-xl bg-card border border-border shadow-2xl overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 8 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
           <div className={cn("border-l-4 px-5 pt-4 pb-3", colors.border)}>
             <div className="flex items-start justify-between gap-3">
               <span className={cn("inline-block text-[11px] font-medium px-1.5 py-0.5 rounded-full", colors.badge)}>
@@ -937,7 +958,7 @@ function SessionDetailModal({
               {done ? "Review Session" : "Start Study Session"}
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   );
@@ -967,12 +988,22 @@ function DayDetailPanel({
 
   return (
     <>
-      <div
+      <motion.div
         className="fixed inset-0 z-40 bg-black/30"
         onClick={onClose}
         aria-hidden="true"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
       />
-      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-105 bg-card border-l border-border shadow-2xl flex flex-col">
+      <motion.div
+        className="fixed inset-y-0 right-0 z-50 w-full sm:w-105 bg-card border-l border-border shadow-2xl flex flex-col"
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "spring", stiffness: 300, damping: 32 }}
+      >
         <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
           <div>
             <h2 className="text-lg font-bold text-foreground">{format(day, "EEEE, MMM d, yyyy")}</h2>
@@ -1044,7 +1075,7 @@ function DayDetailPanel({
             </Link>
           </div>
         )}
-      </div>
+      </motion.div>
     </>
   );
 }
@@ -1100,7 +1131,9 @@ export default function SchedulePage() {
 
   // A day selected in a previous week view shouldn't linger once the user
   // navigates away from that week.
+  const [direction, setDirection] = useState(1);
   const goToWeek = (next: Date) => {
+    setDirection(next > weekStart ? 1 : -1);
     setSelectedDay(null);
     setWeekStart(next);
   };
@@ -1211,11 +1244,16 @@ export default function SchedulePage() {
 
         {/* ── Stat cards ────────────────────────────────────────────────── */}
         {weekSessions.length > 0 && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <motion.div
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+            initial="hidden"
+            animate="visible"
+            transition={{ staggerChildren: 0.06 }}
+          >
             <StatCard
               icon={CalendarDays}
               label="Sessions"
-              value={`${weekCompleted} / ${weekSessions.length}`}
+              value={<><AnimatedNumber value={weekCompleted} /> / {weekSessions.length}</>}
               sub={relativeWeekLabel(weekDiff)}
               iconClass="text-primary"
             />
@@ -1240,11 +1278,11 @@ export default function SchedulePage() {
             <StatCard
               icon={Sparkles}
               label="AI Fitness Score"
-              value={fitnessScore !== null ? `${Math.round(fitnessScore * 100)}%` : "—"}
+              value={fitnessScore !== null ? <AnimatedNumber value={Math.round(fitnessScore * 100)} format={(n) => `${n}%`} /> : "—"}
               sub={fitnessScore !== null ? "Great progress!" : undefined}
               iconClass="text-purple-500"
             />
-          </div>
+          </motion.div>
         )}
 
         {/* ── No plan at all ───────────────────────────────────────────── */}
@@ -1265,7 +1303,14 @@ export default function SchedulePage() {
           />
         ) : (
           /* ── Week calendar grid ───────────────────────────────────────── */
-          <>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={weekStart.getTime()}
+              initial={{ opacity: 0, x: direction * 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction * -24 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
             <MobileDayCalendar
               weekDays={weekDays}
               getSessionsForDay={getSessionsForDay}
@@ -1280,23 +1325,28 @@ export default function SchedulePage() {
               onSelectDay={setSelectedDay}
               onSelectSession={setSelectedSession}
             />
-          </>
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
 
-      {selectedSession ? (
-        <SessionDetailModal
-          placed={selectedSession}
-          onClose={() => setSelectedSession(null)}
-        />
-      ) : selectedDay && (
-        <DayDetailPanel
-          day={selectedDay}
-          sessions={getSessionsForDay(selectedDay)}
-          slots={getSlotsForDay(selectedDay)}
-          onClose={() => setSelectedDay(null)}
-        />
-      )}
+      <AnimatePresence>
+        {selectedSession ? (
+          <SessionDetailModal
+            key="session-modal"
+            placed={selectedSession}
+            onClose={() => setSelectedSession(null)}
+          />
+        ) : selectedDay && (
+          <DayDetailPanel
+            key="day-panel"
+            day={selectedDay}
+            sessions={getSessionsForDay(selectedDay)}
+            slots={getSlotsForDay(selectedDay)}
+            onClose={() => setSelectedDay(null)}
+          />
+        )}
+      </AnimatePresence>
     </MainLayout>
   );
 }

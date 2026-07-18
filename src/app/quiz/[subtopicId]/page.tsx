@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, ArrowLeft } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
@@ -158,66 +159,77 @@ export default function QuizPage() {
       {/* Question */}
       <div className="flex-1 flex items-start justify-center px-6 py-10">
         <div className="w-full max-w-2xl">
-          <div className="bg-card rounded-2xl border border-border shadow-sm p-8 mb-6">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-4">
-              {quiz.subjectCode} · {quiz.subtopicName}
-            </p>
-            <p className="text-xl font-semibold text-foreground leading-relaxed">
-              {currentQuestion.text}
-            </p>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIdx}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-8 mb-6">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-4">
+                  {quiz.subjectCode} · {quiz.subtopicName}
+                </p>
+                <p className="text-xl font-semibold text-foreground leading-relaxed">
+                  {currentQuestion.text}
+                </p>
+              </div>
 
-          <div
-            role="radiogroup"
-            aria-label="Answer choices"
-            className="space-y-3 mb-8"
-          >
-            {currentQuestion.options.map((option, i) => (
-              <button
-                key={option.id}
-                role="radio"
-                aria-checked={selectedOption === option.id}
-                aria-label={`Option ${OPTION_LABELS[i]}: ${option.text}`}
-                onClick={() => handleSelect(option.id)}
-                onKeyDown={(e) => {
-                  const total = currentQuestion.options.length;
-                  if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-                    e.preventDefault();
-                    handleSelect(currentQuestion.options[(i + 1) % total].id);
-                  }
-                  if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-                    e.preventDefault();
-                    handleSelect(currentQuestion.options[(i - 1 + total) % total].id);
-                  }
-                }}
-                className={cn(
-                  "w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4",
-                  selectedOption === option.id
-                    ? "border-primary bg-primary-light shadow-sm"
-                    : "border-border bg-card hover:border-border hover:bg-background"
-                )}
+              <div
+                role="radiogroup"
+                aria-label="Answer choices"
+                className="space-y-3 mb-8"
               >
-                <span
-                  className={cn(
-                    "shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
-                    selectedOption === option.id
-                      ? "bg-primary text-white"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {OPTION_LABELS[i]}
-                </span>
-                <span
-                  className={cn(
-                    "text-sm font-medium leading-relaxed",
-                    selectedOption === option.id ? "text-primary" : "text-foreground"
-                  )}
-                >
-                  {option.text}
-                </span>
-              </button>
-            ))}
-          </div>
+                {currentQuestion.options.map((option, i) => (
+                  <motion.button
+                    key={option.id}
+                    role="radio"
+                    aria-checked={selectedOption === option.id}
+                    aria-label={`Option ${OPTION_LABELS[i]}: ${option.text}`}
+                    onClick={() => handleSelect(option.id)}
+                    whileTap={{ scale: 0.98 }}
+                    onKeyDown={(e) => {
+                      const total = currentQuestion.options.length;
+                      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                        e.preventDefault();
+                        handleSelect(currentQuestion.options[(i + 1) % total].id);
+                      }
+                      if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                        e.preventDefault();
+                        handleSelect(currentQuestion.options[(i - 1 + total) % total].id);
+                      }
+                    }}
+                    className={cn(
+                      "w-full text-left px-5 py-4 rounded-xl border-2 transition-all flex items-center gap-4",
+                      selectedOption === option.id
+                        ? "border-primary bg-primary-light shadow-sm"
+                        : "border-border bg-card hover:border-border hover:bg-background"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                        selectedOption === option.id
+                          ? "bg-primary text-white"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {OPTION_LABELS[i]}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-sm font-medium leading-relaxed",
+                        selectedOption === option.id ? "text-primary" : "text-foreground"
+                      )}
+                    >
+                      {option.text}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
 
           <div className="flex justify-end">
             <Button

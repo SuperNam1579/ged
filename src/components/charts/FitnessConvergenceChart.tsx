@@ -41,9 +41,9 @@ export default function FitnessConvergenceChart({ data }: FitnessConvergenceChar
           labelFormatter={(gen) => `Generation ${gen}`}
         />
         <Legend />
-        <Line type="monotone" dataKey="Best" stroke="var(--primary)" strokeWidth={2} dot={false} />
-        <Line type="monotone" dataKey="Average" stroke="var(--success)" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
-        <Line type="monotone" dataKey="Worst" stroke="var(--warning)" strokeWidth={1} dot={false} strokeDasharray="2 2" />
+        <Line type="monotone" dataKey="Best" stroke="var(--primary)" strokeWidth={2} dot={false} animationDuration={1000} animationEasing="ease-out" />
+        <Line type="monotone" dataKey="Average" stroke="var(--success)" strokeWidth={1.5} dot={false} strokeDasharray="4 2" animationDuration={1000} animationEasing="ease-out" animationBegin={150} />
+        <Line type="monotone" dataKey="Worst" stroke="var(--warning)" strokeWidth={1} dot={false} strokeDasharray="2 2" animationDuration={1000} animationEasing="ease-out" animationBegin={300} />
       </LineChart>
     </ResponsiveContainer>
   );

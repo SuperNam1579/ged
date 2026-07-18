@@ -4,10 +4,17 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
 import SubjectBadge from "@/components/ui/SubjectBadge";
 import Toast from "@/components/ui/Toast";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
 
 interface Option {
   id: string;
@@ -109,15 +116,23 @@ function MockSessionContent() {
 
     return (
       <div className="min-h-screen bg-background py-10 px-6">
-        <div className="max-w-2xl mx-auto">
+        <motion.div
+          className="max-w-2xl mx-auto"
+          initial={{ opacity: 0, y: 16, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
           <div className="bg-card rounded-2xl border border-border shadow-sm p-8 text-center mb-6">
-            <div
+            <motion.div
               className={`w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-white ${
                 totalScore >= 70 ? "bg-green-500" : totalScore >= 50 ? "bg-orange-500" : "bg-red-500"
               }`}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
             >
-              {Math.round(totalScore)}%
-            </div>
+              <AnimatedNumber value={Math.round(totalScore)} format={(n) => `${n}%`} />
+            </motion.div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Mock Test Complete</h1>
             <p className="text-muted-foreground">Here&apos;s how you performed across all subjects.</p>
           </div>
@@ -128,12 +143,17 @@ function MockSessionContent() {
             </div>
           )}
 
-          <div className="space-y-4 mb-8">
+          <motion.div
+            className="space-y-4 mb-8"
+            initial="hidden"
+            animate="visible"
+            transition={{ staggerChildren: 0.08, delayChildren: 0.3 }}
+          >
             {results.map((r) => {
               const gedScore = Math.round(100 + r.score);
               const isPassing = gedScore >= 145;
               return (
-                <div key={r.subjectCode} className="bg-card border border-border rounded-xl p-5">
+                <motion.div key={r.subjectCode} variants={fadeUp} className="bg-card border border-border rounded-xl p-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <SubjectBadge code={r.subjectCode} className="mb-2" />
@@ -144,23 +164,23 @@ function MockSessionContent() {
                     </div>
                     <div className="text-right">
                       <p className={`text-2xl font-bold ${isPassing ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
-                        {Math.round(r.score)}%
+                        <AnimatedNumber value={Math.round(r.score)} format={(n) => `${n}%`} />
                       </p>
                       <p className={`text-xs font-medium ${isPassing ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
                         {isPassing ? "Passing" : "Below Passing"}
                       </p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
 
           <div className="flex gap-3 justify-center">
             <Link href="/dashboard"><Button variant="secondary">Dashboard</Button></Link>
             <Link href="/progress"><Button>View Progress</Button></Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -168,9 +188,12 @@ function MockSessionContent() {
   const assessment = assessments[currentAssessmentIndex];
   const question = assessment.questions[currentQuestionIndex];
   const totalQuestions = assessments.reduce((a, ax) => a + ax.questions.length, 0);
-  const answeredSoFar =
-    Object.values(responses).reduce((a, r) => a + r.length, 0) + (currentQuestionIndex);
-  const globalProgress = Math.round((answeredSoFar / totalQuestions) * 100);
+  // `responses[assessment.id]` already includes every question answered so far
+  // in the current assessment (it's pushed to before advancing the index), so
+  // adding `currentQuestionIndex` on top double-counted the current assessment
+  // and could push progress past 100%.
+  const answeredSoFar = Object.values(responses).reduce((a, r) => a + r.length, 0);
+  const globalProgress = Math.min(100, Math.round((answeredSoFar / totalQuestions) * 100));
 
   const handleNext = async () => {
     if (!selected) return;
@@ -246,10 +269,12 @@ function MockSessionContent() {
         </div>
         {/* Global progress bar */}
         <div className="max-w-2xl mx-auto mt-3">
-          <div className="h-1.5 bg-muted rounded-full">
-            <div
-              className="h-1.5 bg-primary rounded-full transition-all duration-300"
-              style={{ width: `${globalProgress}%` }}
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <motion.div
+              className="h-1.5 bg-primary rounded-full"
+              initial={false}
+              animate={{ width: `${globalProgress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 20 }}
             />
           </div>
           <p className="text-xs text-muted-foreground mt-1 text-right">{globalProgress}% complete</p>
@@ -259,53 +284,64 @@ function MockSessionContent() {
       {/* Content */}
       <main className="flex-1 flex flex-col items-center px-6 py-10">
         <div className="w-full max-w-2xl">
-          <div className="bg-card rounded-xl border border-border shadow-sm p-8 mb-6">
-            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3">
-              {assessment.title}
-            </p>
-            <h2 className="text-lg font-semibold text-foreground leading-relaxed">{question.text}</h2>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${currentAssessmentIndex}-${currentQuestionIndex}`}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              <div className="bg-card rounded-xl border border-border shadow-sm p-8 mb-6">
+                <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3">
+                  {assessment.title}
+                </p>
+                <h2 className="text-lg font-semibold text-foreground leading-relaxed">{question.text}</h2>
+              </div>
 
-          <div
-            role="radiogroup"
-            aria-label="Answer choices"
-            className="space-y-3"
-          >
-            {question.options.map((option: Option, i: number) => (
-              <button
-                key={option.id}
-                role="radio"
-                aria-checked={selected === option.id}
-                aria-label={`Option ${option.id}: ${option.text}`}
-                onClick={() => setSelected(option.id)}
-                onKeyDown={(e) => {
-                  const total = question.options.length;
-                  if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-                    e.preventDefault();
-                    setSelected(question.options[(i + 1) % total].id);
-                  }
-                  if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-                    e.preventDefault();
-                    setSelected(question.options[(i - 1 + total) % total].id);
-                  }
-                }}
-                className={`w-full text-left p-4 rounded-xl border-2 transition-all font-medium text-sm ${
-                  selected === option.id
-                    ? "border-primary bg-primary-light text-primary"
-                    : "border-border bg-card text-foreground hover:border-primary"
-                }`}
+              <div
+                role="radiogroup"
+                aria-label="Answer choices"
+                className="space-y-3"
               >
-                <span className="inline-flex items-center gap-3">
-                  <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 ${
-                    selected === option.id ? "border-primary bg-primary text-white" : "border-border text-muted-foreground"
-                  }`}>
-                    {option.id}
-                  </span>
-                  {option.text}
-                </span>
-              </button>
-            ))}
-          </div>
+                {question.options.map((option: Option, i: number) => (
+                  <motion.button
+                    key={option.id}
+                    role="radio"
+                    aria-checked={selected === option.id}
+                    aria-label={`Option ${option.id}: ${option.text}`}
+                    onClick={() => setSelected(option.id)}
+                    whileTap={{ scale: 0.98 }}
+                    onKeyDown={(e) => {
+                      const total = question.options.length;
+                      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                        e.preventDefault();
+                        setSelected(question.options[(i + 1) % total].id);
+                      }
+                      if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                        e.preventDefault();
+                        setSelected(question.options[(i - 1 + total) % total].id);
+                      }
+                    }}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all font-medium text-sm ${
+                      selected === option.id
+                        ? "border-primary bg-primary-light text-primary"
+                        : "border-border bg-card text-foreground hover:border-primary"
+                    }`}
+                  >
+                    <span className="inline-flex items-center gap-3">
+                      <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 ${
+                        selected === option.id ? "border-primary bg-primary text-white" : "border-border text-muted-foreground"
+                      }`}>
+                        {option.id}
+                      </span>
+                      {option.text}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
 
           <div className="mt-8 flex flex-col items-end gap-3">
             {submitError && (

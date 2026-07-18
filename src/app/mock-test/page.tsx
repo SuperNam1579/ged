@@ -3,10 +3,17 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ClipboardList, CheckSquare, Square, Clock, AlertCircle } from "lucide-react";
+import { motion } from "motion/react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardBody } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { useAuth } from "@/lib/hooks/useAuth";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const SUBJECTS = [
   {
@@ -114,12 +121,12 @@ export default function MockTestPage() {
         {/* Info bar */}
         <div className="flex items-center gap-3 sm:gap-6 p-4 bg-primary-light border border-primary rounded-xl mb-8">
           <div className="text-center">
-            <p className="text-xl font-bold text-primary">{selectedSubjects.length * 10}</p>
+            <p className="text-xl font-bold text-primary"><AnimatedNumber value={selectedSubjects.length * 10} /></p>
             <p className="text-xs text-primary">Questions</p>
           </div>
           <div className="hidden sm:block w-px h-8 bg-primary-light" />
           <div className="text-center">
-            <p className="text-xl font-bold text-primary">{totalTime}</p>
+            <p className="text-xl font-bold text-primary"><AnimatedNumber value={totalTime} /></p>
             <p className="text-xs text-primary">Minutes</p>
           </div>
           <div className="hidden sm:block w-px h-8 bg-primary-light" />
@@ -135,20 +142,29 @@ export default function MockTestPage() {
 
         {/* Subject selection */}
         <h2 className="font-semibold text-foreground mb-4">Select subjects to include</h2>
-        <div className="space-y-3 mb-8">
+        <motion.div
+          className="space-y-3 mb-8"
+          initial="hidden"
+          animate="visible"
+          transition={{ staggerChildren: 0.06 }}
+        >
           {availableSubjects.map((subject) => {
             const isSelected = selectedSubjects.includes(subject.code);
             return (
-              <button
+              <motion.button
                 key={subject.code}
+                variants={fadeUp}
                 onClick={() => toggleSubject(subject.code)}
+                whileTap={{ scale: 0.98 }}
                 className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
                   isSelected ? subject.bg + " border-current" : "bg-card border-border hover:border-border"
                 }`}
               >
                 <div className="shrink-0">
                   {isSelected ? (
-                    <CheckSquare className={`w-5 h-5 ${subject.color}`} />
+                    <motion.div key="checked" initial={{ scale: 0.4 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
+                      <CheckSquare className={`w-5 h-5 ${subject.color}`} />
+                    </motion.div>
                   ) : (
                     <Square className="w-5 h-5 text-muted-foreground" />
                   )}
@@ -163,10 +179,10 @@ export default function MockTestPage() {
                   <p className="text-xs text-muted-foreground">10 questions</p>
                   <p className="text-xs text-muted-foreground">{subject.duration} min</p>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* Warning */}
         {selectedSubjects.length === 0 && (

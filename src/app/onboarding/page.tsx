@@ -7,10 +7,16 @@ import {
   BookOpen, Calculator, Globe, Atom,
   Clock, Calendar, X, Plus, Check, CheckCircle,
 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
 import { clearExistingSession } from "@/lib/auth-client";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
 
 // ─── Subject definitions ────────────────────────────────────────────────────
 // Colors & topic counts mirror the landing page's Subjects section so the
@@ -511,22 +517,31 @@ export default function OnboardingPage() {
       {/* Content */}
       <div className="flex-1 px-4 py-6 sm:px-6 sm:py-10">
         <div className="max-w-3xl mx-auto">
+          <AnimatePresence mode="wait">
 
           {/* ── Step 1: Subjects ───────────────────────────────────────── */}
           {step === 1 && (
-            <div>
+            <motion.div
+              key="step-1"
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
               <p className="text-[11px] font-bold text-primary uppercase tracking-[0.12em] mb-1.5">Step 1</p>
               <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-feather)" }}>
                 Which subjects do you want to study?
               </h1>
               <p className="text-muted-foreground mb-8">Select one or more subjects. We&apos;ll personalize your study plan.</p>
 
-              <div className="space-y-3">
+              <motion.div className="space-y-3" initial="hidden" animate="visible" transition={{ staggerChildren: 0.06 }}>
                 {SUBJECTS.map(({ code, name, description, topics, Icon, iconBg, cardSelected, checkSelected, badgeCls }) => {
                   const selected = selectedSubjects.includes(code);
                   return (
-                    <button
+                    <motion.button
                       key={code}
+                      variants={fadeUp}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() =>
                         setSelectedSubjects((prev) =>
                           prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
@@ -544,7 +559,11 @@ export default function OnboardingPage() {
                           selected ? checkSelected : "border-border bg-card"
                         )}
                       >
-                        {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                        {selected && (
+                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
+                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                          </motion.div>
+                        )}
                       </div>
 
                       {/* Icon */}
@@ -562,16 +581,22 @@ export default function OnboardingPage() {
                       <span className={cn("shrink-0 self-start text-[11px] font-bold px-2.5 py-1 rounded-full border", badgeCls)}>
                         {topics}
                       </span>
-                    </button>
+                    </motion.button>
                   );
                 })}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           )}
 
           {/* ── Step 2: Exam date + Schedule ───────────────────────────── */}
           {step === 2 && (
-            <div>
+            <motion.div
+              key="step-2"
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
               <p className="text-[11px] font-bold text-primary uppercase tracking-[0.12em] mb-1.5">Step 2</p>
               <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-feather)" }}>
                 When is your exam?
@@ -708,12 +733,18 @@ export default function OnboardingPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* ── Step 3: Review ─────────────────────────────────────────── */}
           {step === 3 && (
-            <div>
+            <motion.div
+              key="step-3"
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
               <p className="text-[11px] font-bold text-primary uppercase tracking-[0.12em] mb-1.5">Step 3</p>
               <h1 className="text-3xl font-bold text-foreground mb-1" style={{ fontFamily: "var(--font-feather)" }}>
                 Review your plan.
@@ -806,12 +837,18 @@ export default function OnboardingPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* ── Step 4: Complete ───────────────────────────────────────── */}
           {step === 4 && (
-            <div className="flex flex-col items-center text-center py-8">
+            <motion.div
+              key="step-4"
+              className="flex flex-col items-center text-center py-8"
+              initial={{ opacity: 0, y: 16, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
               {/* Mascot celebration */}
               <div className="relative mb-4">
                 <div
@@ -840,7 +877,12 @@ export default function OnboardingPage() {
               <p className="text-muted-foreground mb-10">Your personalized study plan is ready.</p>
 
               {/* Summary card */}
-              <div className="w-full max-w-md bg-card rounded-xl border border-border divide-y divide-border mb-6 text-left">
+              <motion.div
+                className="w-full max-w-md bg-card rounded-xl border border-border divide-y divide-border mb-6 text-left"
+                initial="hidden"
+                animate="visible"
+                transition={{ staggerChildren: 0.08, delayChildren: 0.2 }}
+              >
                 {[
                   { label: "Subjects", value: `${selectedSubjects.length} selected` },
                   {
@@ -853,12 +895,12 @@ export default function OnboardingPage() {
                   { label: "Total Study Time", value: `${totalHours} hours per week` },
                   { label: "Estimated Duration", value: `${weeksUntilExam} weeks` },
                 ].map(({ label, value }) => (
-                  <div key={label} className="flex items-center justify-between px-5 py-3.5">
+                  <motion.div key={label} variants={fadeUp} className="flex items-center justify-between px-5 py-3.5">
                     <span className="text-sm text-muted-foreground">{label}</span>
                     <span className="text-sm font-semibold text-foreground">{value}</span>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
               {/* Tip */}
               <div className="w-full max-w-md bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/25 rounded-xl px-5 py-4 text-left mb-8">
@@ -877,8 +919,10 @@ export default function OnboardingPage() {
                   Start My Plan
                 </Button>
               </div>
-            </div>
+            </motion.div>
           )}
+
+          </AnimatePresence>
 
           {/* ── Navigation ─────────────────────────────────────────────── */}
           {step < 3 && (

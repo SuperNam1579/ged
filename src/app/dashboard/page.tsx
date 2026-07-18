@@ -3,15 +3,22 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import {
   ClipboardList, Calendar, TrendingUp, Play,
   AlertCircle, BookOpen, Info,
 } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/ui/Button";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils/cn";
 import type { DashboardStats, StudySessionWithSubtopic, SubjectSummary } from "@/types";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
+};
 
 // ─── Subject colors ──────────────────────────────────────────────────────────
 
@@ -93,10 +100,11 @@ function DashboardSkeleton() {
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function StatCell({
-  label, value, color, border,
-}: { label: string; value: string | number; color: string; border?: boolean }) {
+  label, value, suffix, color, border,
+}: { label: string; value: number | null; suffix?: string; color: string; border?: boolean }) {
   return (
-    <div
+    <motion.div
+      variants={fadeUp}
       className="px-5 py-5 lg:px-6"
       style={{ borderRight: border ? "1px solid var(--border)" : undefined }}
     >
@@ -107,9 +115,9 @@ function StatCell({
         className="text-[28px] lg:text-[32px] font-bold leading-none"
         style={{ fontFamily: "var(--font-feather)", color }}
       >
-        {value}
+        {value === null ? "—" : <AnimatedNumber value={value} format={(n) => `${n}${suffix ?? ""}`} />}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -135,11 +143,13 @@ function SessionRow({ session, last }: { session: StudySessionWithSubtopic; last
         <div className="text-sm font-semibold text-foreground truncate">{session.subtopicName}</div>
       </div>
       <Link href={`/study/${session.id}`} style={{ flexShrink: 0 }}>
-        <button style={{
-          padding: "8px 16px", background: "var(--primary)", color: "white",
-          border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700,
-          cursor: "pointer", boxShadow: "0 2px 0 var(--primary-dark)",
-        }}>
+        <button
+          className="transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] hover:brightness-110 active:scale-[0.95]"
+          style={{
+            padding: "8px 16px", background: "var(--primary)", color: "white",
+            border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700,
+            cursor: "pointer", boxShadow: "0 2px 0 var(--primary-dark)",
+          }}>
           Start →
         </button>
       </Link>
@@ -284,18 +294,29 @@ export default function DashboardPage() {
       overallProgress={overallProgress}
     >
       {/* ── Stats band ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
-        <StatCell label="Overall Progress" value={`${Math.round(overallProgress)}%`} color="var(--primary)" border />
-        <StatCell label="Days to Exam"     value={daysUntilExam}                     color="#F97316"        border />
-        <StatCell label="Today's Sessions" value={todaySessions.length}              color="#22C55E"        border />
-        <StatCell label="Predicted Score"  value={predictedScore ?? "—"}             color="#7C3AED" />
-      </div>
+      <motion.div
+        className="grid grid-cols-2 lg:grid-cols-4 shrink-0"
+        style={{ borderBottom: "1px solid var(--border)" }}
+        initial="hidden"
+        animate="visible"
+        transition={{ staggerChildren: 0.06 }}
+      >
+        <StatCell label="Overall Progress" value={Math.round(overallProgress)} suffix="%" color="var(--primary)" border />
+        <StatCell label="Days to Exam"     value={daysUntilExam}               color="#F97316"        border />
+        <StatCell label="Today's Sessions" value={todaySessions.length}        color="#22C55E"        border />
+        <StatCell label="Predicted Score"  value={predictedScore}              color="#7C3AED" />
+      </motion.div>
 
       {/* ── Main content ───────────────────────────────────────────────────── */}
       <div className="px-4 py-5 lg:px-9 lg:py-8">
 
         {/* Greeting */}
-        <div className="mb-6">
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
           <h1
             className="font-bold text-foreground mb-1"
             style={{ fontFamily: "var(--font-feather)", fontSize: 28 }}
@@ -305,7 +326,7 @@ export default function DashboardPage() {
           <p className="text-sm text-muted-foreground">
             {dateStr} · Here&apos;s your study plan for today.
           </p>
-        </div>
+        </motion.div>
 
         {/* Plan update notice */}
         {lastUpdate && lastUpdate.reason !== "INITIAL" && (
@@ -323,12 +344,15 @@ export default function DashboardPage() {
 
         {/* ── Continue where you left off ──────────────────────────────────── */}
         {continueSession && (
-          <div
+          <motion.div
             className="mb-6 relative overflow-hidden flex items-center"
             style={{
               background: "linear-gradient(120deg,#030C1A,#1e90e8 55%,#38BDF8)",
               borderRadius: 18, padding: "22px 26px", gap: 20,
             }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.05 }}
           >
             <div style={{
               position: "absolute", right: -30, bottom: -40,
@@ -363,41 +387,51 @@ export default function DashboardPage() {
               </div>
             </div>
             <Link href={`/study/${continueSession.id}`} style={{ position: "relative", zIndex: 1, flexShrink: 0 }}>
-              <button style={{
-                padding: "12px 24px", background: "white", color: "var(--primary)",
-                border: "none", borderRadius: 12, fontSize: 14, fontWeight: 700,
-                cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,.14)",
-              }}>
+              <button
+                className="transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] active:scale-[0.95]"
+                style={{
+                  padding: "12px 24px", background: "white", color: "var(--primary)",
+                  border: "none", borderRadius: 12, fontSize: 14, fontWeight: 700,
+                  cursor: "pointer", boxShadow: "0 4px 0 rgba(0,0,0,.14)",
+                }}>
                 {continueSession.status === "IN_PROGRESS" ? "Resume →" : "Start →"}
               </button>
             </Link>
-          </div>
+          </motion.div>
         )}
 
         {/* ── Overall GED Readiness bar ─────────────────────────────────────── */}
-        <div
+        <motion.div
           className="mb-6 rounded-2xl px-5 py-4"
           style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
         >
           <div className="flex justify-between mb-2">
             <span className="text-sm font-bold text-foreground">Overall GED Readiness</span>
             <span className="text-sm font-bold" style={{ color: "var(--primary)" }}>
-              {Math.round(overallProgress)}%
+              <AnimatedNumber value={Math.round(overallProgress)} format={(n) => `${n}%`} />
             </span>
           </div>
           <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${overallProgress}%`,
-                background: "linear-gradient(90deg,var(--primary),#38BDF8)",
-              }}
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: "linear-gradient(90deg,var(--primary),#38BDF8)" }}
+              initial={{ width: 0 }}
+              animate={{ width: `${overallProgress}%` }}
+              transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.15 }}
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Sessions + Subject Progress ───────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 mb-6">
+        <motion.div
+          className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 mb-6"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+        >
 
           <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden" }}>
             <div
@@ -445,10 +479,15 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── This Week + Focus Areas ───────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-5 mb-7">
+        <motion.div
+          className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-5 mb-7"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
 
           <div
             className="rounded-[18px] px-5 py-5"
@@ -543,13 +582,15 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <Link href="/progress" style={{ flexShrink: 0 }}>
-                      <button style={{
-                        padding: "7px 14px",
-                        background: "var(--primary-light)",
-                        color: "var(--primary)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer",
-                      }}>
+                      <button
+                        className="transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] active:scale-[0.95]"
+                        style={{
+                          padding: "7px 14px",
+                          background: "var(--primary-light)",
+                          color: "var(--primary)",
+                          border: "1px solid var(--border)",
+                          borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                        }}>
                         Practice
                       </button>
                     </Link>
@@ -558,7 +599,7 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Quick Actions ──────────────────────────────────────────────────── */}
         <h2
@@ -570,7 +611,7 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <Link href="/mock-test" className="flex-1">
             <div
-              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-sm transition-all"
+              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-md hover:scale-[1.03] active:scale-[0.98] transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{ background: "var(--card)", border: "1px solid var(--border)" }}
             >
               <div style={{
@@ -588,7 +629,7 @@ export default function DashboardPage() {
           </Link>
           <Link href="/schedule" className="flex-1">
             <div
-              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-sm transition-all"
+              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-md hover:scale-[1.03] active:scale-[0.98] transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{ background: "var(--card)", border: "1px solid var(--border)" }}
             >
               <div className="flex items-center justify-center shrink-0 rounded-[9px] w-8.5 h-8.5 bg-orange-50 dark:bg-orange-500/15">
@@ -602,7 +643,7 @@ export default function DashboardPage() {
           </Link>
           <Link href="/progress" className="flex-1">
             <div
-              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-sm transition-all"
+              className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-md hover:scale-[1.03] active:scale-[0.98] transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{ background: "var(--card)", border: "1px solid var(--border)" }}
             >
               <div className="flex items-center justify-center shrink-0 rounded-[9px] w-8.5 h-8.5 bg-green-50 dark:bg-green-500/15">

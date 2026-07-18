@@ -2,12 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { CalendarDays, Plus, X, Clock, Moon, Sun, CalendarRange, Eraser } from "lucide-react";
+import { motion } from "motion/react";
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
 import Toast from "@/components/ui/Toast";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils/cn";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -227,14 +234,15 @@ export default function AvailabilityPage() {
         </div>
 
         {/* Day rows */}
-        <div className="space-y-2.5 mb-6">
+        <motion.div className="space-y-2.5 mb-6" initial="hidden" animate="visible" transition={{ staggerChildren: 0.05 }}>
           {WEEK_DAYS.map(({ label, dow }) => {
             const day = schedule[dow];
             const dayMins = day.enabled ? day.slots.reduce((a, s) => a + slotMins(s), 0) : 0;
             const dayHours = Math.round(dayMins / 6) / 10;
             return (
-              <div
+              <motion.div
                 key={dow}
+                variants={fadeUp}
                 className={cn(
                   "rounded-xl border transition-all overflow-hidden",
                   day.enabled
@@ -315,10 +323,10 @@ export default function AvailabilityPage() {
                     </button>
                   </div>
                 )}
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* Summary */}
         <div className="grid grid-cols-2 gap-3 mb-5">
@@ -336,7 +344,7 @@ export default function AvailabilityPage() {
               <CalendarDays className="w-4.5 h-4.5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground leading-tight">{activeDays}</p>
+              <p className="text-lg font-bold text-foreground leading-tight"><AnimatedNumber value={activeDays} /></p>
               <p className="text-xs text-muted-foreground">day{activeDays !== 1 ? "s" : ""} available</p>
             </div>
           </div>

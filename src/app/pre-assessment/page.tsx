@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Check, Sparkles } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
@@ -134,11 +135,20 @@ export default function PreAssessmentPage() {
   if (analyzing) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center max-w-sm px-4">
+        <motion.div
+          className="text-center max-w-sm px-4"
+          initial={{ opacity: 0, y: 12, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
           <div className="relative w-20 h-20 mx-auto mb-6">
-            <div className="absolute inset-0 rounded-full bg-primary-light flex items-center justify-center">
+            <motion.div
+              className="absolute inset-0 rounded-full bg-primary-light flex items-center justify-center"
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            >
               <Sparkles className="w-8 h-8 text-primary" />
-            </div>
+            </motion.div>
             <div className="absolute -inset-2 rounded-full border-4 border-primary/25 border-t-primary animate-spin" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-2">
@@ -148,7 +158,7 @@ export default function PreAssessmentPage() {
             Our AI is reviewing your answers and setting up your personalized
             study plan. This will just take a moment.
           </p>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -302,7 +312,11 @@ export default function PreAssessmentPage() {
                     : "bg-muted text-muted-foreground",
               )}
             >
-              {i < currentAssessmentIdx && <Check className="w-3 h-3 shrink-0" />}
+              {i < currentAssessmentIdx && (
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
+                  <Check className="w-3 h-3 shrink-0" />
+                </motion.span>
+              )}
               {a.subjectCode}
             </div>
           ))}
@@ -312,69 +326,80 @@ export default function PreAssessmentPage() {
       {/* Question */}
       <div className="flex-1 flex items-start justify-center px-4 py-6 sm:px-6 sm:py-10">
         <div className="w-full max-w-2xl">
-          <div className="bg-card rounded-2xl border border-border shadow-sm p-4 sm:p-8 mb-6">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-4">
-              Question {currentQuestionIdx + 1} of{" "}
-              {currentAssessment.questions.length}
-            </p>
-            <p className="text-lg font-medium text-foreground leading-relaxed">
-              {currentQuestion.text}
-            </p>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${currentAssessmentIdx}-${currentQuestionIdx}`}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              <div className="bg-card rounded-2xl border border-border shadow-sm p-4 sm:p-8 mb-6">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-4">
+                  Question {currentQuestionIdx + 1} of{" "}
+                  {currentAssessment.questions.length}
+                </p>
+                <p className="text-lg font-medium text-foreground leading-relaxed">
+                  {currentQuestion.text}
+                </p>
+              </div>
 
-          <div
-            role="radiogroup"
-            aria-label="Answer choices"
-            className="space-y-3 mb-8"
-          >
-            {currentQuestion.options.map((option, i) => (
-              <button
-                key={option.id}
-                role="radio"
-                aria-checked={selectedOption === option.id}
-                aria-label={`Option ${OPTION_LABELS[i]}: ${option.text}`}
-                onClick={() => handleSelectOption(option.id)}
-                onKeyDown={(e) => {
-                  const total = currentQuestion.options.length;
-                  if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-                    e.preventDefault();
-                    handleSelectOption(currentQuestion.options[(i + 1) % total].id);
-                  }
-                  if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-                    e.preventDefault();
-                    handleSelectOption(currentQuestion.options[(i - 1 + total) % total].id);
-                  }
-                }}
-                className={cn(
-                  "w-full text-left px-3 py-3 sm:px-5 sm:py-4 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4",
-                  selectedOption === option.id
-                    ? "border-primary bg-primary-light shadow-sm"
-                    : "border-border bg-card hover:border-border hover:bg-background",
-                )}
+              <div
+                role="radiogroup"
+                aria-label="Answer choices"
+                className="space-y-3 mb-8"
               >
-                <span
-                  className={cn(
-                    "shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-sm font-bold",
-                    selectedOption === option.id
-                      ? "bg-primary text-white"
-                      : "bg-muted text-muted-foreground",
-                  )}
-                >
-                  {OPTION_LABELS[i]}
-                </span>
-                <span
-                  className={cn(
-                    "text-sm font-medium",
-                    selectedOption === option.id
-                      ? "text-primary"
-                      : "text-foreground",
-                  )}
-                >
-                  {option.text}
-                </span>
-              </button>
-            ))}
-          </div>
+                {currentQuestion.options.map((option, i) => (
+                  <motion.button
+                    key={option.id}
+                    role="radio"
+                    aria-checked={selectedOption === option.id}
+                    aria-label={`Option ${OPTION_LABELS[i]}: ${option.text}`}
+                    onClick={() => handleSelectOption(option.id)}
+                    whileTap={{ scale: 0.98 }}
+                    onKeyDown={(e) => {
+                      const total = currentQuestion.options.length;
+                      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                        e.preventDefault();
+                        handleSelectOption(currentQuestion.options[(i + 1) % total].id);
+                      }
+                      if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                        e.preventDefault();
+                        handleSelectOption(currentQuestion.options[(i - 1 + total) % total].id);
+                      }
+                    }}
+                    className={cn(
+                      "w-full text-left px-3 py-3 sm:px-5 sm:py-4 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4",
+                      selectedOption === option.id
+                        ? "border-primary bg-primary-light shadow-sm"
+                        : "border-border bg-card hover:border-border hover:bg-background",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                        selectedOption === option.id
+                          ? "bg-primary text-white"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {OPTION_LABELS[i]}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-sm font-medium",
+                        selectedOption === option.id
+                          ? "text-primary"
+                          : "text-foreground",
+                      )}
+                    >
+                      {option.text}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
 
           <div className="flex justify-end">
             <Button

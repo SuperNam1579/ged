@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils/cn";
 
 interface ProgressBarProps {
@@ -53,9 +54,11 @@ export default function ProgressBar({
         </div>
       )}
       <div className={cn("w-full bg-muted rounded-full overflow-hidden", heights[size])}>
-        <div
-          className={cn("rounded-full transition-all duration-500 ease-out", colors[color], heights[size])}
-          style={{ width: `${clamped}%` }}
+        <motion.div
+          className={cn("rounded-full", colors[color], heights[size])}
+          initial={{ width: 0 }}
+          animate={{ width: `${clamped}%` }}
+          transition={{ type: "spring", stiffness: 120, damping: 20 }}
         />
       </div>
     </div>
