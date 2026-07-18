@@ -541,6 +541,7 @@ export default function OnboardingPage() {
                     <motion.button
                       key={code}
                       variants={fadeUp}
+                      whileHover={{ y: -3 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() =>
                         setSelectedSubjects((prev) =>
@@ -548,7 +549,7 @@ export default function OnboardingPage() {
                         )
                       }
                       className={cn(
-                        "w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all",
+                        "w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all hover:shadow-md",
                         selected ? cardSelected : "border-border bg-card hover:border-border"
                       )}
                     >
@@ -559,17 +560,31 @@ export default function OnboardingPage() {
                           selected ? checkSelected : "border-border bg-card"
                         )}
                       >
-                        {selected && (
-                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
-                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                          </motion.div>
-                        )}
+                        <AnimatePresence>
+                          {selected && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              exit={{ scale: 0 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                            >
+                              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
 
-                      {/* Icon */}
-                      <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", iconBg)}>
+                      {/* Icon — keyed on `selected` so the pop only plays on the actual
+                          toggle, not on every re-render caused by clicking a different card */}
+                      <motion.div
+                        key={String(selected)}
+                        className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", iconBg)}
+                        initial={{ scale: 0.85, rotate: selected ? -8 : 0 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                      >
                         <Icon className="w-6 h-6 text-white" />
-                      </div>
+                      </motion.div>
 
                       {/* Text */}
                       <div className="flex-1 min-w-0">
@@ -934,9 +949,19 @@ export default function OnboardingPage() {
               >
                 Back
               </Button>
-              <Button onClick={() => setStep((s) => s + 1)} disabled={!canProceed()}>
-                Continue
-              </Button>
+              {/* Keyed on canProceed() so the pop/glow only plays the moment it
+                  actually flips enabled, not on every unrelated re-render. */}
+              <motion.div
+                key={String(canProceed())}
+                className="rounded-full"
+                initial={{ scale: 0.92, boxShadow: "0 0 0 6px rgba(30,144,232,0.25)" }}
+                animate={{ scale: 1, boxShadow: "0 0 0 0 rgba(30,144,232,0)" }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+              >
+                <Button onClick={() => setStep((s) => s + 1)} disabled={!canProceed()}>
+                  Continue
+                </Button>
+              </motion.div>
             </div>
           )}
 
