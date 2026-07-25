@@ -4,16 +4,23 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { motion } from "motion/react";
 import { clearExistingSession } from "@/lib/auth-client";
 import { BookOpen } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import {
+  authFormVariants,
+  authItem,
+  authMascotVariants,
+  authStagger,
+} from "@/components/auth/authMotion";
 
 /* ── Error map for NextAuth query params ── */
 const NEXTAUTH_ERRORS: Record<string, string> = {
   CredentialsSignin: "Invalid email or password.",
   OAuthAccountNotLinked: "This email is already registered with a different sign-in method.",
-  EMAIL_NOT_VERIFIED: "Please verify your email before signing in. Check your inbox for the verification link.",
+  EMAIL_NOT_VERIFIED: "Please verify your email before signing in. Check your inbox for the verification code.",
   OAuthSignin: "Could not sign in with Google. Please try again.",
   OAuthCallback: "Could not sign in with Google. Please try again.",
   Default: "Something went wrong. Please try again.",
@@ -60,7 +67,6 @@ function LoginContent() {
 
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -181,41 +187,71 @@ function LoginContent() {
 
   return (
     <div className="flex min-h-screen">
-      {/* ── Left panel ── */}
+      {/* ── Left panel — same spotlight structure as register (colors are
+           placeholders, to be retuned later). Backdrop layer of the page
+           transition: deliberately holds still, and stays transform-free so it
+           never lands on a composited layer that would soften the mascot. ── */}
       <div
         className="hidden lg:flex w-[54%] min-h-screen relative flex-col overflow-hidden"
-        style={{ background: "linear-gradient(145deg,#030C1A 0%,#050E1D 50%,#071530 100%)" }}
+        style={{
+          background:
+            "radial-gradient(ellipse 75% 62% at 50% 38%, #FFFFFF 0%, #F5F9FF 28%, #DCE9FE 65%, #B9D2FA 100%)",
+        }}
       >
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: "radial-gradient(rgba(37,99,235,.2) 1.5px,transparent 1.5px)", backgroundSize: "28px 28px" }}
+          style={{
+            backgroundImage: "radial-gradient(rgba(37,99,235,.18) 1.5px,transparent 1.5px)",
+            backgroundSize: "26px 26px",
+            maskImage: "radial-gradient(ellipse 78% 70% at 50% 40%, transparent 32%, #000 76%)",
+            WebkitMaskImage: "radial-gradient(ellipse 78% 70% at 50% 40%, transparent 32%, #000 76%)",
+          }}
         />
         <div
-          className="absolute -top-24 -right-24 w-[400px] h-[400px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle,rgba(37,99,235,.12) 0%,transparent 70%)" }}
+          className="absolute -bottom-24 -left-24 w-[440px] h-[440px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(37,99,235,.30) 0%,transparent 68%)" }}
+        />
+        <div
+          className="absolute -top-16 -right-16 w-[360px] h-[360px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(56,189,248,.28) 0%,transparent 68%)" }}
+        />
+        <div
+          className="absolute bottom-8 -right-10 w-[300px] h-[300px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(34,197,94,.16) 0%,transparent 70%)" }}
         />
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-12 py-10 min-h-0 overflow-y-auto w-full">
           <div className="w-full max-w-[360px] flex flex-col items-center text-center">
-          <div className="mb-3 flex-shrink-0" style={{
-            animation: "floatB 4s ease-in-out infinite",
-            background: "radial-gradient(ellipse at 50% 55%, rgba(255,255,255,.18) 0%, rgba(56,189,248,.14) 40%, transparent 72%)"
-          }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/mascots/nick.png"
-              alt="Nick, your GED mentor"
-              style={{ width: 300, height: "auto", display: "block", filter: "brightness(1.25) drop-shadow(0 0 20px rgba(56,189,248,.4)) drop-shadow(0 14px 24px rgba(37,99,235,.28))" }}
-            />
-          </div>
-          <h2 className="text-[30px] font-bold text-white leading-[1.2] mb-2.5" style={{ fontFamily: "var(--font-feather)" }}>
+          {/* Mascot — anchored during the page transition (crossfades with a
+              short lift rather than sliding) so nick↔nam reads as one character
+              morphing. The float keyframes live on an inner div so the CSS
+              animation's transform never fights motion's. */}
+          <motion.div variants={authMascotVariants} className="mb-3 flex-shrink-0">
+            <div style={{ animation: "floatB 4s ease-in-out infinite" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/mascots/nick.png"
+                alt="Nick, your GED mentor"
+                style={{
+                  width: 300,
+                  height: "auto",
+                  display: "block",
+                  filter: "drop-shadow(0 22px 34px rgba(37,99,235,.16)) drop-shadow(0 6px 12px rgba(15,23,42,.06))",
+                }}
+              />
+            </div>
+          </motion.div>
+          <h2 className="text-[30px] font-bold text-foreground leading-[1.2] mb-2.5" style={{ fontFamily: "var(--font-feather)" }}>
             Your GED journey<br />continues here.
           </h2>
-          <p className="text-sm leading-[1.65] max-w-[300px] mb-7" style={{ color: "rgba(255,255,255,.42)" }}>
+          <p className="text-sm leading-[1.65] max-w-[300px] mb-7 text-muted-foreground">
             Pick up right where you left off — your plan is waiting.
           </p>
-          <div className="rounded-2xl p-5 w-full text-left" style={{ background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)" }}>
-            <p className="text-[11px] font-bold uppercase tracking-[.08em] mb-3" style={{ color: "rgba(255,255,255,.4)" }}>What you get</p>
+          <div
+            className="rounded-2xl p-5 w-full text-left bg-white/85"
+            style={{ border: "1px solid rgba(37,99,235,.22)", boxShadow: "0 12px 28px -12px rgba(37,99,235,.28)" }}
+          >
+            <p className="text-[11px] font-bold uppercase tracking-[.08em] mb-3 text-muted-foreground">What you get</p>
             <div className="flex flex-col gap-2.5">
               {[
                 "AI study plan that adapts to your progress",
@@ -224,12 +260,12 @@ function LoginContent() {
                 "Daily sessions that fit your schedule",
               ].map((feat) => (
                 <div key={feat} className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "rgba(34,197,94,.16)" }}>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                  <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "rgba(34,197,94,.20)" }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <span className="text-[13px] font-medium" style={{ color: "rgba(255,255,255,.72)" }}>{feat}</span>
+                  <span className="text-[13px] font-medium text-foreground/80">{feat}</span>
                 </div>
               ))}
             </div>
@@ -238,63 +274,76 @@ function LoginContent() {
         </div>
       </div>
 
-      {/* ── Right panel (form) ── */}
-      <div className="flex-1 flex items-center justify-center bg-background py-10 sm:py-[60px] px-6 lg:px-12">
-        <div className="w-full max-w-[380px]">
+      {/* ── Right panel (form) — foreground layer of the page transition:
+           travels furthest, in the navigation direction. ── */}
+      <motion.div
+        variants={authFormVariants}
+        className="flex-1 flex items-center justify-center bg-background py-10 sm:py-[60px] px-6 lg:px-12"
+      >
+        <motion.div variants={authStagger} initial="hidden" animate="visible" className="w-full max-w-[380px]">
           {/* Logo */}
-          <div className="flex items-center gap-[9px] mb-9">
+          <motion.div variants={authItem} className="flex items-center gap-[9px] mb-9">
             <div className="w-8 h-8 bg-primary rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ boxShadow: "0 3px 0 rgba(0,0,0,0.18)" }}>
               <BookOpen className="w-4 h-4 text-white" strokeWidth={2.5} />
             </div>
             <span className="text-[17px] font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>GED Prep</span>
-          </div>
+          </motion.div>
 
-          <h1 className="text-[28px] font-bold text-foreground mb-1.5" style={{ fontFamily: "var(--font-feather)" }}>Welcome back</h1>
-          <p className="text-sm text-muted-foreground mb-6">Sign in to continue your study journey.</p>
+          <motion.h1 variants={authItem} className="text-[28px] font-bold text-foreground mb-1.5" style={{ fontFamily: "var(--font-feather)" }}>Welcome back</motion.h1>
+          <motion.p variants={authItem} className="text-sm text-muted-foreground mb-6">Sign in to continue your study journey.</motion.p>
 
           {/* Session-expired notice (auto-recovery redirected here) */}
           {sessionExpired && (
-            <div className="mb-4 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/25 text-sm text-amber-700 dark:text-amber-400">
+            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/25 text-sm text-amber-700 dark:text-amber-400">
               Your session ended. Please sign in again.
-            </div>
+            </motion.div>
           )}
 
           {/* Success banners */}
           {emailVerified && (
-            <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400">
+            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400">
               Email verified! Sign in to set up your study plan.
-            </div>
+            </motion.div>
           )}
           {passwordReset && (
-            <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400">
+            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400">
               Password updated successfully. You can now sign in.
-            </div>
+            </motion.div>
           )}
 
           {/* Email-not-verified prompt — distinct from a wrong-password error,
               with an inline resend so the user isn't stuck thinking their
               password is wrong. */}
           {needsVerification && (
-            <div className="mb-4 rounded-[11px] px-3.5 py-3"
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="mb-4 rounded-[11px] px-3.5 py-3 overflow-hidden"
               style={{ background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.35)" }}>
               <p className="text-[13px] font-semibold text-amber-700 dark:text-amber-400 leading-normal">
                 Your email isn&apos;t verified yet
               </p>
               <p className="text-[12.5px] text-amber-700/90 dark:text-amber-400/90 leading-normal mt-0.5">
-                Check your inbox for the verification link — you need to confirm your email before signing in.
+                Check your inbox for the 6&#8209;digit verification code — you need to confirm your email before signing in.
               </p>
+              <Link
+                href={`/verify-email${email ? `?email=${encodeURIComponent(email)}` : ""}`}
+                className={`inline-block mt-2 text-[12.5px] font-bold text-primary hover:underline rounded ${FOCUS_RING}`}
+              >
+                Enter verification code
+              </Link>
               {resendState === "sent" ? (
                 <p className="text-[12.5px] font-semibold text-green-700 dark:text-green-400 mt-2">
-                  ✓ A new verification link has been sent.
+                  ✓ A new verification code has been sent.
                 </p>
               ) : (
                 <button
                   type="button"
                   onClick={handleResendVerification}
                   disabled={resendState === "sending"}
-                  className={`mt-2 text-[12.5px] font-bold text-primary hover:underline disabled:opacity-60 disabled:cursor-not-allowed rounded ${FOCUS_RING}`}
+                  className={`block mt-1.5 text-[12.5px] font-bold text-primary hover:underline disabled:opacity-60 disabled:cursor-not-allowed rounded ${FOCUS_RING}`}
                 >
-                  {resendState === "sending" ? "Sending…" : "Resend verification email"}
+                  {resendState === "sending" ? "Sending…" : "Resend code"}
                 </button>
               )}
               {resendState === "error" && (
@@ -302,22 +351,26 @@ function LoginContent() {
                   Couldn&apos;t send right now. Please try again in a moment.
                 </p>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Global error (OAuth errors, unexpected server errors) */}
           {topError && (
-            <div className="mb-4 flex items-start gap-2.5 rounded-[11px] px-3 py-[11px]"
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="mb-4 flex items-start gap-2.5 rounded-[11px] px-3 py-[11px] overflow-hidden"
               style={{ background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.3)" }}>
               <svg className="flex-shrink-0 mt-px" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               <span className="text-[13px] text-red-600 dark:text-red-400 font-semibold leading-[1.4]">{topError}</span>
-            </div>
+            </motion.div>
           )}
 
           {/* Google */}
-          <button
+          <motion.button
+            variants={authItem}
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
@@ -325,19 +378,19 @@ function LoginContent() {
           >
             <GoogleIcon />
             {googleLoading ? "Redirecting…" : "Continue with Google"}
-          </button>
+          </motion.button>
 
           {/* OR divider */}
-          <div className="flex items-center gap-3.5 my-5">
+          <motion.div variants={authItem} className="flex items-center gap-3.5 my-5">
             <div className="flex-1 h-px bg-border" />
             <span className="text-[11px] font-bold tracking-[0.14em] text-muted-foreground">OR</span>
             <div className="flex-1 h-px bg-border" />
-          </div>
+          </motion.div>
 
           {/* Credentials form */}
           <form onSubmit={handleSubmit} noValidate>
             {/* Email — #9 autoFocus */}
-            <div className="mb-4">
+            <motion.div variants={authItem} className="mb-4">
               <Input
                 id="email"
                 label="Email"
@@ -355,61 +408,36 @@ function LoginContent() {
                 autoFocus
                 error={fieldErrors.email}
               />
-            </div>
+            </motion.div>
 
-            {/* Password */}
-            <div className="mb-3.5">
+            {/* Password — Input's built-in show/hide toggle replaces the old
+                hand-rolled eye icon; the "Forgot password?" link sits in a
+                custom header row above it since Input owns its own <label>. */}
+            <motion.div variants={authItem} className="mb-3.5">
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="password" className={LABEL_BARE}>Password</label>
                 <Link href="/forgot-password" className={`text-[12px] text-primary font-bold hover:underline rounded ${FOCUS_RING}`}>
                   Forgot password?
                 </Link>
               </div>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: "" }));
-                  }}
-                  onBlur={handlePasswordBlur}
-                  required
-                  autoComplete="current-password"
-                  className={[
-                    "w-full px-3.5 py-2.5 pr-10 rounded-xl border text-sm transition-colors bg-card text-foreground placeholder:text-muted-foreground",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent",
-                    fieldErrors.password ? "border-danger bg-danger/10 focus:ring-danger" : "border-input hover:border-muted-foreground",
-                  ].join(" ")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className={`absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors rounded ${FOCUS_RING}`}
-                >
-                  {showPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {fieldErrors.password && (
-                <p className="mt-1.5 text-xs text-danger">{fieldErrors.password}</p>
-              )}
-            </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: "" }));
+                }}
+                onBlur={handlePasswordBlur}
+                required
+                autoComplete="current-password"
+                error={fieldErrors.password}
+              />
+            </motion.div>
 
             {/* Remember me */}
-            <label className="flex items-center gap-2.5 mb-4 cursor-pointer select-none">
+            <motion.label variants={authItem} className="flex items-center gap-2.5 mb-4 cursor-pointer select-none">
               <button
                 type="button"
                 role="checkbox"
@@ -425,27 +453,29 @@ function LoginContent() {
                 )}
               </button>
               <span className="text-sm text-foreground">Remember me for 30 days</span>
-            </label>
+            </motion.label>
 
-            <Button
-              type="submit"
-              size="lg"
-              loading={loading}
-              disabled={loading}
-              className="w-full rounded-xl"
-            >
-              Sign In
-            </Button>
+            <motion.div variants={authItem}>
+              <Button
+                type="submit"
+                size="lg"
+                loading={loading}
+                disabled={loading}
+                className="w-full rounded-xl"
+              >
+                Sign In
+              </Button>
+            </motion.div>
           </form>
 
-          <p className="mt-4 text-center text-[13px] text-muted-foreground">
+          <motion.p variants={authItem} className="mt-4 text-center text-[13px] text-muted-foreground">
             No account?{" "}
             <Link href="/register" className={`text-primary font-semibold hover:underline rounded ${FOCUS_RING}`}>
               Create one free
             </Link>
-          </p>
-        </div>
-      </div>
+          </motion.p>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

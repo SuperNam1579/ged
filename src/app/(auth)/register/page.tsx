@@ -4,10 +4,17 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { motion } from "motion/react";
 import { clearExistingSession } from "@/lib/auth-client";
 import { BookOpen } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import {
+  authFormVariants,
+  authItem,
+  authMascotVariants,
+  authStagger,
+} from "@/components/auth/authMotion";
 
 /* ── Icons ── */
 function GoogleIcon() {
@@ -23,7 +30,7 @@ function GoogleIcon() {
 
 function CheckIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
@@ -235,7 +242,6 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "", dateOfBirth: "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [globalError, setGlobalError] = useState("");
@@ -307,7 +313,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push(`/check-email?email=${encodeURIComponent(form.email)}`);
+      router.push(`/verify-email?email=${encodeURIComponent(form.email)}`);
     } catch {
       setGlobalError("Something went wrong. Please try again.");
       setLoading(false);
@@ -316,74 +322,125 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* ── Left panel ── */}
+      {/* ── Left panel — a soft "spotlight" keeps the zone behind the mascot
+           white (nam.png has a near-white backdrop baked in, so it must sit on
+           white to blend), while the edges fade to light blue so the panel
+           reads as designed instead of flat white. ── */}
       <div
         className="hidden lg:flex w-[54%] min-h-screen relative flex-col overflow-hidden"
-        style={{ background: "linear-gradient(145deg,#030C1A 0%,#050E1D 50%,#071530 100%)" }}
+        style={{
+          background:
+            "radial-gradient(ellipse 75% 62% at 50% 38%, #FFFFFF 0%, #F5F9FF 28%, #DCE9FE 65%, #B9D2FA 100%)",
+        }}
       >
+        {/* dotted texture — masked out of the centre so it only shows near the
+            edges, keeping it clear of the mascot */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: "radial-gradient(rgba(37,99,235,.2) 1.5px,transparent 1.5px)", backgroundSize: "28px 28px" }}
+          style={{
+            backgroundImage: "radial-gradient(rgba(37,99,235,.18) 1.5px,transparent 1.5px)",
+            backgroundSize: "26px 26px",
+            maskImage: "radial-gradient(ellipse 78% 70% at 50% 40%, transparent 32%, #000 76%)",
+            WebkitMaskImage: "radial-gradient(ellipse 78% 70% at 50% 40%, transparent 32%, #000 76%)",
+          }}
+        />
+        {/* soft accent orbs — give the light panel colour + depth at the edges */}
+        <div
+          className="absolute -bottom-24 -left-24 w-[440px] h-[440px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(37,99,235,.30) 0%,transparent 68%)" }}
         />
         <div
-          className="absolute -bottom-24 -left-24 w-[400px] h-[400px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle,rgba(37,99,235,.12) 0%,transparent 70%)" }}
+          className="absolute -top-16 -right-16 w-[360px] h-[360px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(56,189,248,.28) 0%,transparent 68%)" }}
+        />
+        <div
+          className="absolute bottom-8 -right-10 w-[300px] h-[300px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle,rgba(34,197,94,.16) 0%,transparent 70%)" }}
         />
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-12 py-10 min-h-0 overflow-y-auto w-full">
           <div className="w-full max-w-[360px] flex flex-col items-center text-center">
-          <div className="mb-3 flex-shrink-0" style={{
-            animation: "floatA 3.6s ease-in-out infinite",
-            background: "radial-gradient(ellipse at 50% 55%, rgba(255,255,255,.18) 0%, rgba(56,189,248,.14) 40%, transparent 72%)"
-          }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/mascots/nam.png"
-              alt="Nam, your study buddy"
-              style={{ width: 300, height: "auto", display: "block", filter: "brightness(1.25) drop-shadow(0 0 20px rgba(56,189,248,.4)) drop-shadow(0 14px 24px rgba(37,99,235,.28))" }}
-            />
-          </div>
+          {/* Mascot — anchored during the page transition (crossfades with a
+              short lift rather than sliding) so nam↔nick reads as one character
+              morphing. The float keyframes live on an inner div so the CSS
+              animation's transform never fights motion's. */}
+          <motion.div variants={authMascotVariants} className="mb-3 flex-shrink-0">
+            <div className="relative" style={{ animation: "floatA 3.6s ease-in-out infinite" }}>
+              {/* White halo — guarantees the mascot's baked-in near-white backdrop
+                  always sits on white, so its edge never shows as a box. */}
+              <div
+                className="absolute inset-0 -z-10 pointer-events-none"
+                style={{
+                  transform: "scale(1.4)",
+                  background: "radial-gradient(ellipse at 50% 48%, #FFFFFF 0%, rgba(255,255,255,.82) 46%, transparent 72%)",
+                }}
+              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/mascots/nam.png"
+                alt="Nam, your study buddy"
+                className="relative z-10"
+                style={{
+                  width: 300,
+                  height: "auto",
+                  display: "block",
+                  filter: "drop-shadow(0 22px 34px rgba(37,99,235,.16)) drop-shadow(0 6px 12px rgba(15,23,42,.06))",
+                }}
+              />
+            </div>
+          </motion.div>
           <h2
-            className="text-[30px] font-bold text-white leading-[1.2] mb-2.5"
+            className="text-[30px] font-bold text-foreground leading-[1.2] mb-2.5"
             style={{ fontFamily: "var(--font-feather)" }}
           >
             Start free.<br />Pass your GED.
           </h2>
-          <p className="text-sm leading-[1.65] max-w-[310px] mb-[26px]" style={{ color: "rgba(255,255,255,.42)" }}>
+          <p className="text-sm leading-[1.65] max-w-[310px] mb-[26px] text-muted-foreground">
             Take the diagnostic and get a personalized study plan in minutes — Nam&apos;s got your back the whole way.
           </p>
-          <div className="flex flex-col gap-3 w-full text-left">
-            {FEATURES.map((feat) => (
-              <div key={feat} className="flex items-center gap-3">
-                <div className="w-[26px] h-[26px] rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ background: "rgba(34,197,94,.16)" }}>
-                  <CheckIcon />
+          <div
+            className="rounded-2xl p-5 w-full text-left bg-white/85"
+            style={{ border: "1px solid rgba(37,99,235,.22)", boxShadow: "0 12px 28px -12px rgba(37,99,235,.28)" }}
+          >
+            <p className="text-[11px] font-bold uppercase tracking-[.08em] mb-3 text-muted-foreground">What you get</p>
+            <div className="flex flex-col gap-2.5">
+              {FEATURES.map((feat) => (
+                <div key={feat} className="flex items-center gap-2.5">
+                  <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "rgba(34,197,94,.20)" }}>
+                    <CheckIcon />
+                  </div>
+                  <span className="text-[13px] font-medium text-foreground/80">{feat}</span>
                 </div>
-                <span className="text-sm font-medium" style={{ color: "rgba(255,255,255,.72)" }}>{feat}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           </div>
         </div>
       </div>
 
-      {/* ── Right panel (form) ── */}
-      <div className="flex-1 flex items-center justify-center bg-background py-10 sm:py-[60px] px-6 lg:px-12">
-        <div className="w-full max-w-[380px]">
+      {/* ── Right panel (form) — foreground layer of the page transition:
+           travels furthest, in the navigation direction. ── */}
+      <motion.div
+        variants={authFormVariants}
+        className="flex-1 flex items-center justify-center bg-background py-10 sm:py-[60px] px-6 lg:px-12"
+      >
+        <motion.div variants={authStagger} initial="hidden" animate="visible" className="w-full max-w-[380px]">
           {/* Logo */}
-          <div className="flex items-center gap-[9px] mb-8">
+          <motion.div variants={authItem} className="flex items-center gap-[9px] mb-8">
             <div className="w-8 h-8 bg-primary rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ boxShadow: "0 3px 0 rgba(0,0,0,0.18)" }}>
               <BookOpen className="w-4 h-4 text-white" strokeWidth={2.5} />
             </div>
             <span className="text-[17px] font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>GED Prep</span>
-          </div>
+          </motion.div>
 
-          <h1 className="text-[28px] font-bold text-foreground mb-1.5" style={{ fontFamily: "var(--font-feather)" }}>
+          <motion.h1 variants={authItem} className="text-[28px] font-bold text-foreground mb-1.5" style={{ fontFamily: "var(--font-feather)" }}>
             Create your account
-          </h1>
-          <p className="text-sm text-muted-foreground mb-6">Free forever to start. Ready in 30 seconds.</p>
+          </motion.h1>
+          <motion.p variants={authItem} className="text-sm text-muted-foreground mb-6">Free forever to start. Ready in 30 seconds.</motion.p>
 
           {/* Google */}
-          <button
+          <motion.button
+            variants={authItem}
             type="button"
             onClick={handleGoogleSignUp}
             disabled={googleLoading}
@@ -391,14 +448,14 @@ export default function RegisterPage() {
           >
             <GoogleIcon />
             {googleLoading ? "Redirecting…" : "Sign up with Google"}
-          </button>
+          </motion.button>
 
           {/* OR divider */}
-          <div className="flex items-center gap-3.5 my-5">
+          <motion.div variants={authItem} className="flex items-center gap-3.5 my-5">
             <div className="flex-1 h-px bg-border" />
             <span className="text-[11px] font-bold tracking-[0.14em] text-muted-foreground">OR</span>
             <div className="flex-1 h-px bg-border" />
-          </div>
+          </motion.div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} noValidate>
@@ -414,7 +471,7 @@ export default function RegisterPage() {
             )}
 
             {/* Full name */}
-            <div className="mb-3.5">
+            <motion.div variants={authItem} className="mb-3.5">
               <Input
                 id="name"
                 label="Full name"
@@ -428,10 +485,10 @@ export default function RegisterPage() {
                 autoComplete="name"
                 error={fieldErrors.name}
               />
-            </div>
+            </motion.div>
 
             {/* Email */}
-            <div className="mb-3.5">
+            <motion.div variants={authItem} className="mb-3.5">
               <Input
                 id="email"
                 label="Email"
@@ -445,10 +502,10 @@ export default function RegisterPage() {
                 autoComplete="email"
                 error={fieldErrors.email}
               />
-            </div>
+            </motion.div>
 
             {/* Date of birth */}
-            <div className="mb-3.5">
+            <motion.div variants={authItem} className="mb-3.5">
               <label className={LABEL}>Date of birth</label>
               <DobPicker
                 value={form.dateOfBirth}
@@ -459,58 +516,33 @@ export default function RegisterPage() {
                 onBlur={() => blurValidate("dateOfBirth", form.dateOfBirth)}
                 error={fieldErrors.dateOfBirth}
               />
-            </div>
+            </motion.div>
 
-            {/* Password */}
-            <div className="mb-2">
-              <label htmlFor="password" className={LABEL}>Password</label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="At least 8 characters"
-                  value={form.password}
-                  onChange={(e) => {
-                    setForm((p) => ({ ...p, password: e.target.value }));
-                    if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: "" }));
-                  }}
-                  onBlur={() => blurValidate("password", form.password)}
-                  required
-                  autoComplete="new-password"
-                  className={[
-                    "w-full px-3.5 py-2.5 pr-10 rounded-xl border text-sm transition-colors bg-card text-foreground placeholder:text-muted-foreground",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent",
-                    fieldErrors.password ? "border-danger bg-danger/10 focus:ring-danger" : "border-input hover:border-muted-foreground",
-                  ].join(" ")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label="Toggle password visibility"
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {fieldErrors.password && (
-                <p className="mt-1.5 text-xs text-danger">{fieldErrors.password}</p>
-              )}
+            {/* Password — Input's built-in show/hide toggle replaces the old
+                hand-rolled eye icon */}
+            <motion.div variants={authItem} className="mb-2">
+              <Input
+                id="password"
+                label="Password"
+                labelClassName={LABEL}
+                type="password"
+                placeholder="At least 8 characters"
+                value={form.password}
+                onChange={(e) => {
+                  setForm((p) => ({ ...p, password: e.target.value }));
+                  if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: "" }));
+                }}
+                onBlur={() => blurValidate("password", form.password)}
+                required
+                autoComplete="new-password"
+                error={fieldErrors.password}
+              />
               {/* Strength meter — only show when typing, no field error */}
               {!fieldErrors.password && <PasswordStrengthMeter password={form.password} />}
-            </div>
+            </motion.div>
 
             {/* Terms checkbox */}
-            <label className="flex items-start gap-[9px] my-4 cursor-pointer select-none">
+            <motion.label variants={authItem} className="flex items-start gap-[9px] my-4 cursor-pointer select-none">
               <button
                 type="button"
                 role="checkbox"
@@ -531,19 +563,21 @@ export default function RegisterPage() {
                 {" "}and{" "}
                 <Link href="/privacy" className="text-primary font-semibold hover:underline">Privacy Policy</Link>
               </span>
-            </label>
+            </motion.label>
 
-            <Button type="submit" size="lg" loading={loading} disabled={loading} className="w-full rounded-xl">
-              Create Free Account
-            </Button>
+            <motion.div variants={authItem}>
+              <Button type="submit" size="lg" loading={loading} disabled={loading} className="w-full rounded-xl">
+                Create Free Account
+              </Button>
+            </motion.div>
           </form>
 
-          <p className="text-center text-[13px] text-muted-foreground mt-4">
+          <motion.p variants={authItem} className="text-center text-[13px] text-muted-foreground mt-4">
             Already have an account?{" "}
             <Link href="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
-          </p>
-        </div>
-      </div>
+          </motion.p>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
