@@ -116,6 +116,14 @@ html {
   background: var(--background);
 }
 
+/* Smooth in-page anchor jumps (landing nav). Only affects programmatic and
+   anchor scrolling, never the user's own wheel/touch scrolling. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
