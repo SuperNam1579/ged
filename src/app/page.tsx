@@ -2,81 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { BookOpen } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
-
-/* ─── Navbar ─────────────────────────────────────────────────── */
-
-function DuoNavbar() {
-  return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50"
-      style={{ background: "#060D1C", borderBottom: "1px solid rgba(255,255,255,.07)" }}
-    >
-      <div
-        className="max-w-[1200px] mx-auto px-4 md:px-10 flex items-center justify-between"
-        style={{ height: 64 }}
-      >
-        {/* Logo */}
-        <div className="flex items-center gap-[10px]">
-          <div
-            className="flex items-center justify-center flex-shrink-0"
-            style={{ width: 34, height: 34, background: "#1e90e8", borderRadius: 9, boxShadow: "0 3px 0 #1670be" }}
-          >
-            <BookOpen className="text-white" style={{ width: 18, height: 18 }} strokeWidth={2.5} />
-          </div>
-          <span style={{ fontFamily: "var(--font-feather)", fontSize: 18, fontWeight: 700, color: "white" }}>
-            GED Prep
-          </span>
-        </div>
-
-        {/* Nav links — hidden on mobile */}
-        <div
-          className="hidden md:flex items-center gap-8"
-          style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,.45)" }}
-        >
-          <a href="#features" className="hover:text-white transition-colors" style={{ color: "inherit", textDecoration: "none" }}>Features</a>
-          <a href="#subjects" className="hover:text-white transition-colors" style={{ color: "inherit", textDecoration: "none" }}>Subjects</a>
-          <a href="#how-it-works" className="hover:text-white transition-colors" style={{ color: "inherit", textDecoration: "none" }}>How it works</a>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex items-center gap-2 md:gap-[10px]">
-          <Link
-            href="/login"
-            className="inline-block transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] hover:bg-white/10 active:scale-[0.95]"
-            style={{
-              padding: "8px 14px",
-              background: "transparent",
-              color: "rgba(255,255,255,.65)",
-              border: "1.5px solid rgba(255,255,255,.18)",
-              borderRadius: 10,
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/register"
-            className="inline-block transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] hover:brightness-110 active:scale-[0.95]"
-            style={{
-              padding: "8px 16px",
-              background: "#1e90e8",
-              color: "white",
-              borderRadius: 10,
-              fontSize: 13,
-              fontWeight: 700,
-              boxShadow: "0 3px 0 #1670be",
-              textDecoration: "none",
-            }}
-          >
-            Get Started
-          </Link>
-        </div>
-      </div>
-    </nav>
-  );
-}
+import LandingNavbar from "@/components/layout/LandingNavbar";
+import { LANDING_SUBJECTS, TOTAL_TOPICS, subtopicCount } from "@/components/landing/subjects";
 
 /* ─── Hero ───────────────────────────────────────────────────── */
 
@@ -345,7 +272,7 @@ function StatsSection() {
 
 function FeaturesSection() {
   return (
-    <section id="features" className="px-4 py-16 md:px-[40px] md:py-24">
+    <section id="features" className="scroll-mt-16 px-4 py-16 md:px-[40px] md:py-24">
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
         <Reveal style={{ marginBottom: 48 }}>
@@ -554,7 +481,7 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section id="how-it-works" className="px-4 pb-16 md:px-[40px] md:pb-24" style={{ background: "#f4f8ff" }}>
+    <section id="how-it-works" className="scroll-mt-16 px-4 pb-16 md:px-[40px] md:pb-24" style={{ background: "#f4f8ff" }}>
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
         <Reveal className="pt-16 pb-10 md:pt-[72px] md:pb-[52px]">
@@ -622,74 +549,10 @@ function HowItWorksSection() {
 /* ─── Subjects ───────────────────────────────────────────────── */
 
 function SubjectsSection() {
-  const subjects = [
-    {
-      color: "#1e90e8",
-      iconBg: "#d8ecfd",
-      icon: <span style={{ color: "#1e90e8", fontWeight: 700, fontSize: 20, fontFamily: "var(--font-feather)" }}>∑</span>,
-      topics: "14 topics",
-      name: "Mathematical Reasoning",
-      desc: "Algebra, geometry, statistics, data analysis",
-      badgeBg: "#d8ecfd",
-      badgeBorder: "#a0c9f0",
-      badgeColor: "#1e90e8",
-      badge: "75% ready",
-    },
-    {
-      color: "#16A34A",
-      iconBg: "#F0FDF4",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-        </svg>
-      ),
-      topics: "18 topics",
-      name: "Reasoning Through Language Arts",
-      desc: "Reading, writing, grammar, argument analysis",
-      badgeBg: "#F0FDF4",
-      badgeBorder: "#86EFAC",
-      badgeColor: "#16A34A",
-      badge: "82% ready",
-    },
-    {
-      color: "#7C3AED",
-      iconBg: "#F5F3FF",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="3" />
-          <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
-          <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
-        </svg>
-      ),
-      topics: "15 topics",
-      name: "Science",
-      desc: "Life science, physical science, earth and space science",
-      badgeBg: "#F5F3FF",
-      badgeBorder: "#C4B5FD",
-      badgeColor: "#7C3AED",
-      badge: "58% ready",
-    },
-    {
-      color: "#D97706",
-      iconBg: "#FFFBEB",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" />
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-        </svg>
-      ),
-      topics: "10 topics",
-      name: "Social Studies",
-      desc: "US civics, American history, economics, geography",
-      badgeBg: "#FFFBEB",
-      badgeBorder: "#FCD34D",
-      badgeColor: "#D97706",
-      badge: "67% ready",
-    },
-  ];
+  const subjects = LANDING_SUBJECTS;
 
   return (
-    <section id="subjects" className="px-4 py-16 md:px-[40px] md:py-24">
+    <section id="subjects" className="scroll-mt-16 px-4 py-16 md:px-[40px] md:py-24">
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
         <Reveal className="flex items-end justify-between flex-wrap gap-4" style={{ marginBottom: 40 }}>
@@ -705,7 +568,7 @@ function SubjectsSection() {
             </h2>
           </div>
           <p className="hidden md:block" style={{ fontSize: 15, color: "#5b769a", maxWidth: 280, lineHeight: 1.6 }}>
-            57 topics. Every subtopic on exam day. Nothing left out.
+            {TOTAL_TOPICS} topics. Every subtopic on exam day. Nothing left out.
           </p>
         </Reveal>
 
@@ -715,12 +578,15 @@ function SubjectsSection() {
             <Reveal
               key={s.name}
               delay={i * 0.08}
-              className="flex items-center gap-3 sm:gap-5"
               style={{
-                padding: "20px 0",
                 borderTop: "1px solid #d8e6f7",
                 borderBottom: i === subjects.length - 1 ? "1px solid #d8e6f7" : undefined,
               }}
+            >
+            <Link
+              href={`/subjects/${s.slug}`}
+              className="group flex items-center gap-3 sm:gap-5 transition-colors hover:bg-[#f4f8ff]"
+              style={{ padding: "20px 0" }}
             >
               {/* Color bar */}
               <div style={{ width: 3, height: 44, background: s.color, borderRadius: 2, flexShrink: 0 }} />
@@ -730,31 +596,22 @@ function SubjectsSection() {
               </div>
               {/* Content */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: ".09em", color: s.color, fontWeight: 700, marginBottom: 3 }}>{s.topics}</div>
+                <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: ".09em", color: s.color, fontWeight: 700, marginBottom: 3 }}>{subtopicCount(s)} topics</div>
                 <h3 className="text-[15px] md:text-[20px]" style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "#0f2748", marginBottom: 1 }}>{s.name}</h3>
                 <p className="hidden sm:block" style={{ fontSize: 13, color: "#5b769a" }}>{s.desc}</p>
               </div>
-              {/* Badge — hidden on mobile */}
-              <div
-                className="hidden sm:block"
-                style={{
-                  flexShrink: 0,
-                  background: s.badgeBg,
-                  border: `1px solid ${s.badgeBorder}`,
-                  borderRadius: 20,
-                  padding: "4px 12px",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: s.badgeColor,
-                }}
-              >
-                {s.badge}
-              </div>
               {/* Arrow — hidden on mobile */}
-              <div className="hidden sm:block" style={{ fontSize: 13, color: s.color, fontWeight: 600, flexShrink: 0 }}>Explore →</div>
+              <div
+                className="hidden sm:block transition-transform group-hover:translate-x-0.5"
+                style={{ fontSize: 13, color: s.color, fontWeight: 600, flexShrink: 0 }}
+              >
+                Explore →
+              </div>
+            </Link>
             </Reveal>
           ))}
         </div>
+
       </div>
     </section>
   );
@@ -851,7 +708,7 @@ function Footer() {
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
-      <DuoNavbar />
+      <LandingNavbar />
       <main>
         <HeroSection />
         <StatsSection />

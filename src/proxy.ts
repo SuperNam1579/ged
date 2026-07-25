@@ -19,6 +19,11 @@ const PUBLIC_PATHS = new Set([
   "/reset-password",
 ]);
 
+// Public sections whose sub-paths are all public too. `/subjects` is marketing
+// content — the syllabus we show visitors before they sign up — so it has to be
+// reachable logged out, including its per-subject pages.
+const PUBLIC_PREFIXES = ["/subjects"];
+
 export default auth(async (req) => {
   const { pathname } = req.nextUrl;
 
@@ -48,7 +53,10 @@ export default auth(async (req) => {
   }
 
   // Public pages.
-  if (PUBLIC_PATHS.has(pathname)) {
+  if (
+    PUBLIC_PATHS.has(pathname) ||
+    PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  ) {
     return NextResponse.next();
   }
 
