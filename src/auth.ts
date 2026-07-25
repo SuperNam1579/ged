@@ -117,7 +117,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   events: {
     // Google (with allowDangerousEmailAccountLinking) verifies the email
     // itself, including when it links onto an existing credentials-registered
-    // user who never clicked our verification link. Without this, that user's
+    // user who never entered our verification code. Without this, that user's
     // emailVerified stays null forever even though they're actively signing
     // in — silently blocking them from ever using password login later, and
     // leaving the DB out of sync with reality. A no-op if already verified.

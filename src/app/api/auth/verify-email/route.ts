@@ -1,49 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { hashVerificationToken } from "@/lib/token";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { audit, extractRequestContext } from "@/lib/audit";
 import { z } from "zod";
 
 const VerifySchema = z.object({
-  // Raw token is a 64-character lowercase hex string (32 random bytes)
-  token: z.string().length(64).regex(/^[a-f0-9]+$/),
+  email: z.string().email(),
+  // 6-digit numeric OTP
+  code: z.string().length(6).regex(/^[0-9]+$/),
 });
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit by IP: a 6-digit code has only 1,000,000 possibilities, so
+    // capping attempts is what makes brute force infeasible within the short
+    // OTP window. Without this, an attacker could exhaust the space quickly.
+    const limited = await checkRateLimit("verify-email", req);
+    if (limited) return limited;
+
     const body = await req.json();
     const parsed = VerifySchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid verification token format." },
+        { error: "Invalid verification code format." },
         { status: 400 }
       );
     }
 
-    const hashed = hashVerificationToken(parsed.data.token);
-
-    const user = await db.user.findFirst({
-      where: { emailVerificationToken: hashed },
-      select: { id: true, email: true, emailVerified: true, emailVerificationExpires: true },
-    });
+    const { email, code } = parsed.data;
+    const hashed = hashVerificationToken(code);
 
     const ctx = extractRequestContext(req);
 
-    if (!user) {
-      // Covers two cases without distinguishing them:
-      //   1. Token was already used (cleared from DB after successful verification)
-      //   2. Token never existed / was tampered with
-      // Not distinguishing prevents confirming whether a token ever existed.
+    const user = await db.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        emailVerified: true,
+        emailVerificationToken: true,
+        emailVerificationExpires: true,
+      },
+    });
+
+    // Wrong email or wrong code both return the same 404 so an attacker can't
+    // learn whether an email is registered, nor whether a guessed code was close.
+    if (!user || !user.emailVerificationToken || user.emailVerificationToken !== hashed) {
       audit({
         action: "AUTH_EMAIL_VERIFY_FAILED",
+        userId: user?.id,
         ipAddress: ctx.ipAddress,
         userAgent: ctx.userAgent,
-        metadata: { reason: "INVALID_TOKEN" },
+        metadata: { reason: "INVALID_CODE" },
         success: false,
       });
       return NextResponse.json(
-        { error: "This verification link is invalid or has already been used." },
+        { error: "That code is incorrect or has already been used." },
         { status: 404 }
       );
     }
@@ -63,16 +77,16 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         ipAddress: ctx.ipAddress,
         userAgent: ctx.userAgent,
-        metadata: { reason: "TOKEN_EXPIRED" },
+        metadata: { reason: "CODE_EXPIRED" },
         success: false,
       });
       return NextResponse.json(
-        { error: "This verification link has expired. Please request a new one." },
+        { error: "This verification code has expired. Please request a new one." },
         { status: 410 }
       );
     }
 
-    // Atomically mark verified and clear the token so it cannot be replayed.
+    // Atomically mark verified and clear the code so it cannot be replayed.
     await db.user.update({
       where: { id: user.id },
       data: {

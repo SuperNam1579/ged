@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   if (!email) return NextResponse.json({ error: "email required" }, { status: 400 });
 
   try {
-    await sendVerificationEmail(email, "Test User", "a".repeat(64));
+    await sendVerificationEmail(email, "Test User", "123456");
     return NextResponse.json({ ok: true, message: `Email sent to ${email}` });
   } catch (err) {
     return NextResponse.json(

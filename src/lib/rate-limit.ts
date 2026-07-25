@@ -104,6 +104,19 @@ const RATE_LIMIT_CONFIGS = {
     requests: 3,
     window: "1 h" as Duration,
   },
+  // OTP is only 6 digits — a sliding window caps guesses per IP so the code
+  // space can't be brute-forced inside the 10-minute validity window.
+  "verify-email": {
+    algorithm: "sliding" as Algorithm,
+    requests: 10,
+    window: "10 m" as Duration,
+  },
+  // Same reasoning as verify-email: the reset code is 6 digits, so cap guesses.
+  "reset-password": {
+    algorithm: "sliding" as Algorithm,
+    requests: 10,
+    window: "10 m" as Duration,
+  },
   "forgot-password": {
     algorithm: "fixed" as Algorithm,
     requests: 3,

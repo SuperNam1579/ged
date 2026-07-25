@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { hashPassword } from "@/lib/auth";
-import { generateVerificationToken, verificationTokenExpiry } from "@/lib/token";
+import { generateOtp, otpExpiry } from "@/lib/token";
 import { sendVerificationEmail } from "@/lib/email";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { audit, extractRequestContext } from "@/lib/audit";
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
-    const { raw, hashed } = generateVerificationToken();
+    const { code, hashed } = generateOtp();
 
     const ctx = extractRequestContext(req);
 
@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
         passwordHash,
         dateOfBirth: new Date(dateOfBirth),
         emailVerificationToken: hashed,
-        emailVerificationExpires: verificationTokenExpiry(),
-        // emailVerified defaults to false — user cannot log in until they click the link
+        emailVerificationExpires: otpExpiry(),
+        // emailVerified defaults to false — user cannot log in until they enter the code
       },
     });
 
@@ -75,13 +75,13 @@ export async function POST(req: NextRequest) {
     // Schedule email after response is sent so Vercel keeps the function alive
     // until delivery completes — avoids silent drops on serverless cold-start teardown.
     after(() =>
-      sendVerificationEmail(email, name, raw).catch((err) =>
+      sendVerificationEmail(email, name, code).catch((err) =>
         console.error("[register] Failed to send verification email:", err)
       )
     );
 
     return NextResponse.json(
-      { message: "Account created. Please check your email to verify your account." },
+      { message: "Account created. Please check your email for a verification code." },
       { status: 201 }
     );
   } catch (err) {

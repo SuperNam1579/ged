@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { db } from "@/lib/db";
 import {
-  generateVerificationToken,
-  verificationTokenExpiry,
+  generateOtp,
+  otpExpiry,
   canResendVerification,
 } from "@/lib/token";
 import { sendVerificationEmail } from "@/lib/email";
@@ -17,7 +17,7 @@ const ResendSchema = z.object({
 // callers cannot determine whether a given email address is registered.
 const GENERIC_OK = {
   message:
-    "If that email is registered and unverified, a new verification link has been sent.",
+    "If that email is registered and unverified, a new verification code has been sent.",
 };
 
 export async function POST(req: NextRequest) {
@@ -59,18 +59,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { raw, hashed } = generateVerificationToken();
+    const { code, hashed } = generateOtp();
 
     await db.user.update({
       where: { id: user.id },
       data: {
         emailVerificationToken: hashed,
-        emailVerificationExpires: verificationTokenExpiry(),
+        emailVerificationExpires: otpExpiry(),
       },
     });
 
     after(() =>
-      sendVerificationEmail(email, user.name ?? "", raw).catch((err) =>
+      sendVerificationEmail(email, user.name ?? "", code).catch((err) =>
         console.error("[resend-verification] Failed to send email:", err)
       )
     );

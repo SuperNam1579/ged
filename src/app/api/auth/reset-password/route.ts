@@ -3,15 +3,14 @@ import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { hashVerificationToken } from "@/lib/token";
 import { checkCsrf } from "@/lib/csrf";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { audit, extractRequestContext } from "@/lib/audit";
 import { z } from "zod";
 
-// No rate limiting on this route — the 256-bit token itself is the credential.
-// Brute-forcing a 64-character hex token at 1 billion guesses/second would take
-// longer than the age of the universe. Expiry (1 h) provides the time bound.
-
 const ResetPasswordSchema = z.object({
-  token: z.string().length(64).regex(/^[a-f0-9]+$/),
+  email: z.string().email(),
+  // 6-digit numeric OTP
+  code: z.string().length(6).regex(/^[0-9]+$/),
   password: z.string().min(8),
 });
 
@@ -19,6 +18,12 @@ export async function POST(req: NextRequest) {
   try {
     const csrfError = checkCsrf(req);
     if (csrfError) return csrfError;
+
+    // A 6-digit code is guessable without a cap, so rate-limit reset attempts by
+    // IP. (The old flow relied on a 256-bit token being unguessable and skipped
+    // this — that assumption no longer holds.)
+    const limited = await checkRateLimit("reset-password", req);
+    if (limited) return limited;
 
     const body = await req.json();
     const parsed = ResetPasswordSchema.safeParse(body);
@@ -30,19 +35,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { token, password } = parsed.data;
-    const hashed = hashVerificationToken(token);
-
-    const user = await db.user.findFirst({
-      where: { passwordResetToken: hashed },
-      select: { id: true, passwordResetExpires: true },
-    });
+    const { email, code, password } = parsed.data;
+    const hashed = hashVerificationToken(code);
 
     const ctx = extractRequestContext(req);
 
-    if (!user) {
+    const user = await db.user.findUnique({
+      where: { email },
+      select: { id: true, passwordResetToken: true, passwordResetExpires: true },
+    });
+
+    // Wrong email or wrong code both return the same 404 — no enumeration, and
+    // no signal about how close a guessed code was.
+    if (!user || !user.passwordResetToken || user.passwordResetToken !== hashed) {
+      audit({
+        action: "AUTH_PASSWORD_RESET_FAILED",
+        userId: user?.id,
+        ipAddress: ctx.ipAddress,
+        userAgent: ctx.userAgent,
+        metadata: { reason: "INVALID_CODE" },
+        success: false,
+      });
       return NextResponse.json(
-        { error: "This reset link is invalid or has already been used." },
+        { error: "That code is incorrect or has already been used." },
         { status: 404 }
       );
     }
@@ -53,20 +68,20 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         ipAddress: ctx.ipAddress,
         userAgent: ctx.userAgent,
-        metadata: { reason: "TOKEN_EXPIRED" },
+        metadata: { reason: "CODE_EXPIRED" },
         success: false,
       });
       return NextResponse.json(
-        { error: "This reset link has expired. Please request a new one." },
+        { error: "This reset code has expired. Please request a new one." },
         { status: 410 }
       );
     }
 
     const passwordHash = await hashPassword(password);
 
-    // updateMany with the token in WHERE makes this atomic — if two concurrent
+    // updateMany with the code hash in WHERE makes this atomic — if two concurrent
     // requests race, only the first writer matches the row (the second finds the
-    // token already nulled) and gets count=1; the second gets count=0 → 404.
+    // code already nulled) and gets count=1; the second gets count=0 → 404.
     const result = await db.user.updateMany({
       where: { id: user.id, passwordResetToken: hashed },
       data: {
@@ -78,7 +93,7 @@ export async function POST(req: NextRequest) {
 
     if (result.count === 0) {
       return NextResponse.json(
-        { error: "This reset link is invalid or has already been used." },
+        { error: "That code is incorrect or has already been used." },
         { status: 404 }
       );
     }

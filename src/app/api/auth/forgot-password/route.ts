@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { db } from "@/lib/db";
-import { generateVerificationToken, passwordResetTokenExpiry } from "@/lib/token";
+import { generateOtp, passwordResetTokenExpiry } from "@/lib/token";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { audit, extractRequestContext } from "@/lib/audit";
@@ -14,7 +14,7 @@ const ForgotPasswordSchema = z.object({
 // This prevents email enumeration — an attacker cannot determine whether
 // a given address is registered by observing different responses.
 const GENERIC_OK = {
-  message: "If that email is registered, a password reset link has been sent.",
+  message: "If that email is registered, a password reset code has been sent.",
 };
 
 export async function POST(req: NextRequest) {
@@ -48,13 +48,13 @@ export async function POST(req: NextRequest) {
     }
 
     const ctx = extractRequestContext(req);
-    const { raw, hashed } = generateVerificationToken();
+    const { code, hashed } = generateOtp();
 
     await db.user.update({
       where: { id: user.id },
       data: {
         passwordResetToken: hashed,
-        passwordResetExpires: passwordResetTokenExpiry(), // 1 hour
+        passwordResetExpires: passwordResetTokenExpiry(), // 15 minutes
       },
     });
 
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     });
 
     after(() =>
-      sendPasswordResetEmail(email, user.name ?? "", raw).catch((err) =>
+      sendPasswordResetEmail(email, user.name ?? "", code).catch((err) =>
         console.error("[forgot-password] Failed to send reset email:", err)
       )
     );
