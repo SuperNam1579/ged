@@ -6,6 +6,7 @@ import Image from "next/image";
 import {
   BookOpen, Calculator, Globe, Atom,
   Clock, Calendar, X, Plus, Check, CheckCircle,
+  Moon, Sun, CalendarRange, Eraser,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
@@ -94,15 +95,37 @@ const WEEK_DAYS = [
   { label: "Sun", dow: 0 },
 ];
 
-const DEFAULT_SCHEDULE: Schedule = {
-  1: { enabled: false, slots: [] },
-  2: { enabled: false, slots: [] },
-  3: { enabled: false, slots: [] },
-  4: { enabled: false, slots: [] },
-  5: { enabled: false, slots: [] },
-  6: { enabled: false, slots: [] },
-  0: { enabled: false, slots: [] },
-};
+function emptySchedule(): Schedule {
+  return {
+    1: { enabled: false, slots: [] },
+    2: { enabled: false, slots: [] },
+    3: { enabled: false, slots: [] },
+    4: { enabled: false, slots: [] },
+    5: { enabled: false, slots: [] },
+    6: { enabled: false, slots: [] },
+    0: { enabled: false, slots: [] },
+  };
+}
+
+const DEFAULT_SCHEDULE: Schedule = emptySchedule();
+
+// ─── Quick-fill presets ─────────────────────────────────────────────────────
+// Mirror the standalone Availability page so first-time setup doesn't require
+// toggling every day by hand. Each preset replaces the whole schedule.
+
+function buildPreset(dows: number[], start: string, end: string): Schedule {
+  const sched = emptySchedule();
+  for (const dow of dows) {
+    sched[dow] = { enabled: true, slots: [{ id: `${dow}-${Date.now()}-${Math.random()}`, start, end }] };
+  }
+  return sched;
+}
+
+const PRESETS = [
+  { label: "Weekday evenings", Icon: Moon,         dows: [1, 2, 3, 4, 5],       start: "18:00", end: "20:00" },
+  { label: "Weekends",         Icon: Sun,          dows: [6, 0],                start: "09:00", end: "12:00" },
+  { label: "Every day",        Icon: CalendarRange, dows: [0, 1, 2, 3, 4, 5, 6], start: "09:00", end: "11:00" },
+];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -646,7 +669,30 @@ export default function OnboardingPage() {
               {/* Schedule builder */}
               <div>
                 <p className="text-sm font-semibold text-foreground mb-0.5">Set your study schedule</p>
-                <p className="text-sm text-muted-foreground mb-4">Add the days and times you&apos;re available to study.</p>
+                <p className="text-sm text-muted-foreground mb-3">Add the days and times you&apos;re available to study.</p>
+
+                {/* Quick-fill presets */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {PRESETS.map(({ label, Icon, dows, start, end }) => (
+                    <button
+                      key={label}
+                      onClick={() => setSchedule(buildPreset(dows, start, end))}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-sm font-medium text-foreground hover:border-primary hover:bg-primary-light transition-colors"
+                    >
+                      <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+                      {label}
+                    </button>
+                  ))}
+                  {activeDays > 0 && (
+                    <button
+                      onClick={() => setSchedule(emptySchedule())}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-sm font-medium text-muted-foreground hover:border-red-300 hover:text-red-500 transition-colors"
+                    >
+                      <Eraser className="w-3.5 h-3.5" />
+                      Clear all
+                    </button>
+                  )}
+                </div>
 
                 <div className="bg-card rounded-xl border border-border divide-y divide-border">
                   {WEEK_DAYS.map(({ label, dow }) => {
@@ -747,6 +793,10 @@ export default function OnboardingPage() {
                     </p>
                   </div>
                 </div>
+
+                <p className="mt-3 text-xs text-muted-foreground text-center">
+                  This is your usual weekly availability — you can change it anytime from the Availability page.
+                </p>
               </div>
             </motion.div>
           )}

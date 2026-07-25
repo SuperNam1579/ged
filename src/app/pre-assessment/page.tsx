@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Check, Sparkles } from "lucide-react";
+import { BookOpen, Check, Sparkles, ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { cn } from "@/lib/utils/cn";
 import type { QuestionData } from "@/types";
 
@@ -16,6 +17,14 @@ interface Assessment {
   questions: QuestionData[];
 }
 
+interface SubjectResult {
+  subjectCode: string;
+  subjectName: string;
+  rawScore: number;
+  maxScore: number;
+  score: number;
+}
+
 const SUBJECT_COLORS: Record<string, string> = {
   MATH: "bg-primary-light text-primary",
   RLA: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",
@@ -23,7 +32,19 @@ const SUBJECT_COLORS: Record<string, string> = {
   SCI: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400",
 };
 
+const SUBJECT_BAR_COLOR: Record<string, string> = {
+  MATH: "var(--primary)",
+  RLA: "#16A34A",
+  SCI: "#7C3AED",
+  SS: "#D97706",
+};
+
 const OPTION_LABELS = ["A", "B", "C", "D"];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
 
 export default function PreAssessmentPage() {
   const router = useRouter();
@@ -43,6 +64,8 @@ export default function PreAssessmentPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [results, setResults] = useState<SubjectResult[]>([]);
+  const [showResults, setShowResults] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
 
   useEffect(() => {
@@ -163,6 +186,91 @@ export default function PreAssessmentPage() {
     );
   }
 
+  if (showResults) {
+    const overallRaw = results.reduce((a, r) => a + r.rawScore, 0);
+    const overallMax = results.reduce((a, r) => a + r.maxScore, 0);
+    const overallPct = overallMax > 0 ? Math.round((overallRaw / overallMax) * 100) : 0;
+
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
+        <motion.div
+          className="w-full max-w-lg"
+          initial={{ opacity: 0, y: 16, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="px-8 pt-10 pb-6 text-center bg-primary-light">
+              <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-7 h-7 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-primary mb-1">Your Starting Point</p>
+              <p className="text-4xl font-extrabold text-foreground">
+                <AnimatedNumber value={overallPct} format={(n) => `${n}%`} />
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {overallRaw} of {overallMax} correct across all subjects
+              </p>
+            </div>
+
+            {/* Per-subject breakdown */}
+            <div className="px-8 py-6">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Subject Breakdown</h3>
+              <motion.div
+                className="space-y-4 mb-6"
+                initial="hidden"
+                animate="visible"
+                transition={{ staggerChildren: 0.08, delayChildren: 0.2 }}
+              >
+                {results.map((r) => {
+                  const pct = r.maxScore > 0 ? Math.round((r.rawScore / r.maxScore) * 100) : 0;
+                  return (
+                    <motion.div key={r.subjectCode} variants={fadeUp}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className={cn("px-2 py-0.5 text-xs font-semibold rounded", SUBJECT_COLORS[r.subjectCode] ?? "bg-muted text-foreground")}>
+                          {r.subjectName}
+                        </span>
+                        <span className="text-xs font-bold text-foreground">
+                          <AnimatedNumber value={pct} format={(n) => `${n}%`} /> · {r.rawScore}/{r.maxScore}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ background: SUBJECT_BAR_COLOR[r.subjectCode] ?? "var(--primary)" }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.25 }}
+                        />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+
+              <div className="mb-6 bg-background rounded-xl px-4 py-3">
+                <p className="text-sm text-muted-foreground">
+                  This is just your starting point — your AI study plan is built to close these gaps.
+                  Every quiz you take from here sharpens it further.
+                </p>
+              </div>
+
+              <Button
+                size="lg"
+                onClick={() => router.push("/dashboard")}
+                className="w-full flex items-center justify-center gap-2"
+              >
+                Continue to Dashboard
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   const totalQuestions = assessments.reduce(
     (sum, a) => sum + a.questions.length,
     0,
@@ -214,7 +322,7 @@ export default function PreAssessmentPage() {
 
       setSubmitting(true);
       try {
-        await fetch(`/api/assessment/${currentAssessment.id}/submit`, {
+        const res = await fetch(`/api/assessment/${currentAssessment.id}/submit`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
           body: JSON.stringify({
@@ -226,6 +334,19 @@ export default function PreAssessmentPage() {
             ),
           }),
         });
+        const data = await res.json().catch(() => null);
+        if (data && typeof data.rawScore === "number") {
+          setResults((prev) => [
+            ...prev,
+            {
+              subjectCode: currentAssessment.subjectCode,
+              subjectName: currentAssessment.subjectName,
+              rawScore: data.rawScore,
+              maxScore: data.maxScore,
+              score: data.score,
+            },
+          ]);
+        }
       } catch {
         // Continue regardless
       }
@@ -236,8 +357,9 @@ export default function PreAssessmentPage() {
         localStorage.removeItem(STORAGE_KEY);
         setAnalyzing(true);
         setTimeout(() => {
-          router.push("/dashboard");
-        }, 2500);
+          setAnalyzing(false);
+          setShowResults(true);
+        }, 2200);
       } else {
         // Move to next assessment
         setCurrentAssessmentIdx((i) => i + 1);
