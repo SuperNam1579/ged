@@ -12,9 +12,12 @@ function HeroSection() {
   const mathLessonCount = mathSubject ? subtopicCount(mathSubject) : 0;
   // A real lesson from the curriculum, so the mock-up card can't quote a topic
   // the product doesn't teach.
-  const sampleLesson = mathSubject?.categories[0].topics[0].subtopics[1] ?? {
-    name: "Fractions, Decimals & Percents",
-    minutes: 60,
+  // subtopics[0] rather than [1]: "Integer Operations" fits on one line, where
+  // "Fractions, Decimals & Percents" wrapped and made the card tall enough to
+  // collide with the illustration.
+  const sampleLesson = mathSubject?.categories[0].topics[0].subtopics[0] ?? {
+    name: "Integer Operations",
+    minutes: 45,
   };
 
   return (
@@ -193,14 +196,14 @@ function HeroSection() {
           <div
             className="absolute"
             style={{
-              top: "44%", left: 0, zIndex: 20,
+              top: "40%", left: -18, zIndex: 20,
               animation: "floatB 3.6s .8s ease-in-out infinite",
               background: "#ffffff",
               border: "1px solid #d8e6f7",
               borderRadius: 12,
               padding: "10px 14px",
               boxShadow: "0 6px 24px rgba(37,99,235,.13)",
-              maxWidth: 190,
+              maxWidth: 172,
             }}
           >
             <div style={{ fontSize: 9, fontWeight: 700, color: "#5b769a", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 4 }}>
@@ -346,7 +349,7 @@ function FeaturesSection() {
             <div style={{ background: "white", borderRadius: 14, padding: 16, border: "1px solid #d8e6f7", marginBottom: "auto", position: "relative", zIndex: 1 }}>
               <div className="flex items-center gap-2" style={{ marginBottom: 10 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#17a673", flexShrink: 0 }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#5b769a", flex: 1 }}>Math · Question 3 of 40</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#5b769a", flex: 1 }}>Math · Question 3 of 10</span>
                 <div style={{ width: 80, height: 4, background: "#d8e6f7", borderRadius: 2, overflow: "hidden" }}>
                   <div style={{ width: "7%", height: "100%", background: "#1e90e8", borderRadius: 2 }} />
                 </div>
@@ -380,7 +383,7 @@ function FeaturesSection() {
                 </svg>
               </div>
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 22, fontWeight: 700, color: "#0f2748", marginBottom: 8 }}>Diagnostic Assessment</h3>
-              <p style={{ fontSize: 14, color: "#5b769a", lineHeight: 1.6 }}>40 targeted questions map every knowledge gap — your plan targets only what you actually need.</p>
+              <p style={{ fontSize: 14, color: "#5b769a", lineHeight: 1.6 }}>Ten questions for each subject you pick. Every question belongs to one lesson, so your results come back lesson by lesson — not one score per subject.</p>
             </div>
           </Reveal>
 
@@ -409,7 +412,7 @@ function FeaturesSection() {
                   </div>
                 </div>
               ))}
-              <div style={{ marginTop: 2, fontSize: 10, color: "rgba(255,255,255,.35)" }}>↑ Plan updated after last quiz</div>
+              <div style={{ marginTop: 2, fontSize: 10, color: "rgba(255,255,255,.35)" }}>6 goals balanced at once</div>
             </div>
             <div style={{ position: "relative", zIndex: 1 }}>
               <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
@@ -418,7 +421,7 @@ function FeaturesSection() {
                 </svg>
               </div>
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "white", marginBottom: 6 }}>Adaptive AI Planning</h3>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,.6)", lineHeight: 1.5 }}>Your plan reshapes in real time — harder topics get more time, mastered ones get skipped.</p>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,.6)", lineHeight: 1.5 }}>Weak spots get more time, finished lessons get skipped, and the basics come first — all inside the hours you are free.</p>
             </div>
           </Reveal>
 
@@ -468,7 +471,7 @@ function FeaturesSection() {
                 </svg>
               </div>
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 6 }}>Progress Tracking</h3>
-              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Subject scores, predicted GED result, and weak-area spotlights — always up to date.</p>
+              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Lesson-by-lesson scores, your study streak, and a nudge when something is not sticking.</p>
             </div>
           </Reveal>
         </div>
@@ -568,6 +571,30 @@ function HowItWorksSection() {
             </Reveal>
           ))}
         </div>
+
+        {/* The three steps here are the summary; the full walkthrough — the
+            diagnostic, the planner, the rebuild loop — lives on its own page. */}
+        <Reveal className="mt-10">
+          <Link
+            href="/how-it-works"
+            className="inline-flex items-center gap-2 transition-transform hover:scale-[1.03] active:scale-[0.97]"
+            style={{
+              padding: "12px 22px",
+              background: "white",
+              color: "#1e90e8",
+              border: "2px solid #1e90e8",
+              borderRadius: 12,
+              fontSize: 14.5,
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            See the whole process
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </Reveal>
       </div>
     </section>
   );
