@@ -13,6 +13,7 @@ import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
 import { clearExistingSession } from "@/lib/auth-client";
+import { lessonCountByCode } from "@/components/landing/subjects";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
@@ -24,12 +25,15 @@ const fadeUp = {
 // two experiences read as one system.
 
 // Order follows standard GED test sequence: RLA → Math → Science → Social Studies
+//
+// Lesson counts are looked up from the shared curriculum rather than written
+// here: the strings this replaced said 18/14/15/10 against an actual
+// 14/15/14/14, the same drift the landing page had.
 const SUBJECTS = [
   {
     code: "RLA",
     name: "Reasoning Through Language Arts",
     description: "Reading informational & literary texts, writing argument essays, grammar and language usage.",
-    topics: "18 topics",
     Icon: BookOpen,
     iconBg: "bg-green-500",
     cardSelected: "border-green-400 bg-green-50 dark:bg-green-500/10",
@@ -40,7 +44,6 @@ const SUBJECTS = [
     code: "MATH",
     name: "Mathematical Reasoning",
     description: "Number sense, algebraic reasoning, geometry, data analysis, and graphing functions.",
-    topics: "14 topics",
     Icon: Calculator,
     iconBg: "bg-primary",
     cardSelected: "border-primary bg-primary-light",
@@ -51,7 +54,6 @@ const SUBJECTS = [
     code: "SCI",
     name: "Science",
     description: "Life science (biology, genetics, ecology), physical science (chemistry, physics), and earth & space science.",
-    topics: "15 topics",
     Icon: Atom,
     iconBg: "bg-purple-500",
     cardSelected: "border-purple-400 bg-purple-50 dark:bg-purple-500/10",
@@ -62,7 +64,6 @@ const SUBJECTS = [
     code: "SS",
     name: "Social Studies",
     description: "US civics & government, American history, economics, and world geography.",
-    topics: "10 topics",
     Icon: Globe,
     iconBg: "bg-amber-500",
     cardSelected: "border-amber-400 bg-amber-50 dark:bg-amber-500/10",
@@ -407,11 +408,17 @@ export default function OnboardingPage() {
     }));
   };
 
+  // One timestamp for the life of the page. Calling Date.now() during render
+  // returns a different value each time React re-renders, so anything derived
+  // from it — days remaining, the earliest selectable date — could change with
+  // no state having changed. The lazy initialiser runs once, on mount.
+  const [now] = useState(() => Date.now());
+
   // ── Validation ──────────────────────────────────────────────────────────
 
   const dobValid = () => {
     if (!dateOfBirth) return false;
-    const age = (Date.now() - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    const age = (now - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
     return age >= 16 && age <= 120;
   };
 
@@ -494,11 +501,11 @@ export default function OnboardingPage() {
 
   const { totalHours, activeDays } = weeklyStats(schedule);
   const daysUntilExam = examDate
-    ? Math.ceil((new Date(examDate).getTime() - Date.now()) / 86400000)
+    ? Math.ceil((new Date(examDate).getTime() - now) / 86400000)
     : 0;
   const weeksUntilExam = Math.ceil(daysUntilExam / 7);
 
-  const minDate = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+  const minDate = new Date(now + 7 * 86400000).toISOString().split("T")[0];
 
   // ── Render ──────────────────────────────────────────────────────────────
 
@@ -558,7 +565,7 @@ export default function OnboardingPage() {
               <p className="text-muted-foreground mb-8">Select one or more subjects. We&apos;ll personalize your study plan.</p>
 
               <motion.div className="space-y-3" initial="hidden" animate="visible" transition={{ staggerChildren: 0.06 }}>
-                {SUBJECTS.map(({ code, name, description, topics, Icon, iconBg, cardSelected, checkSelected, badgeCls }) => {
+                {SUBJECTS.map(({ code, name, description, Icon, iconBg, cardSelected, checkSelected, badgeCls }) => {
                   const selected = selectedSubjects.includes(code);
                   return (
                     <motion.button
@@ -617,7 +624,7 @@ export default function OnboardingPage() {
 
                       {/* Topic count badge */}
                       <span className={cn("shrink-0 self-start text-[11px] font-bold px-2.5 py-1 rounded-full border", badgeCls)}>
-                        {topics}
+                        {lessonCountByCode(code)} topics
                       </span>
                     </motion.button>
                   );

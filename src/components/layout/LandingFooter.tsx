@@ -46,9 +46,6 @@ export default function LandingFooter() {
         </p>
 
         <div className="flex gap-[18px]" style={{ fontSize: 13, fontWeight: 600 }}>
-          <Link href="/subjects" style={{ color: "#1e90e8", textDecoration: "none" }}>
-            Syllabus
-          </Link>
           <Link href="/login" style={{ color: "#1e90e8", textDecoration: "none" }}>
             Sign In
           </Link>

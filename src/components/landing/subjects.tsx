@@ -42,6 +42,8 @@ export interface LandingCategory {
 export interface LandingSubject {
   /** Stable key, also used for the dropdown's anchor. */
   slug: string;
+  /** Matches Subject.code in the database (MATH | RLA | SCI | SS). */
+  code: string;
   name: string;
   /** Short name for tight spaces like the navbar dropdown. */
   shortName: string;
@@ -57,6 +59,7 @@ export interface LandingSubject {
 export const LANDING_SUBJECTS: LandingSubject[] = [
   {
     slug: "math",
+    code: "MATH",
     name: "Mathematical Reasoning",
     shortName: "Math Reasoning",
     desc: "Algebra, geometry, statistics, data analysis",
@@ -204,6 +207,7 @@ export const LANDING_SUBJECTS: LandingSubject[] = [
   },
   {
     slug: "rla",
+    code: "RLA",
     name: "Reasoning Through Language Arts",
     shortName: "Language Arts",
     desc: "Reading, writing, grammar, argument analysis",
@@ -342,6 +346,7 @@ export const LANDING_SUBJECTS: LandingSubject[] = [
   },
   {
     slug: "science",
+    code: "SCI",
     name: "Science",
     shortName: "Science",
     desc: "Life science, physical science, earth and space science",
@@ -484,6 +489,7 @@ export const LANDING_SUBJECTS: LandingSubject[] = [
   },
   {
     slug: "social",
+    code: "SS",
     name: "Social Studies",
     shortName: "Social Studies",
     desc: "US civics, American history, economics, geography",
@@ -646,6 +652,12 @@ export function topicCount(subject: LandingSubject): number {
 
 export function findSubject(slug: string): LandingSubject | undefined {
   return LANDING_SUBJECTS.find((s) => s.slug === slug);
+}
+
+/** Lesson count for a subject by its database code — for the in-app screens. */
+export function lessonCountByCode(code: string): number {
+  const subject = LANDING_SUBJECTS.find((s) => s.code === code);
+  return subject ? subtopicCount(subject) : 0;
 }
 
 /** Totals quoted across the marketing pages, all derived from the list above. */
