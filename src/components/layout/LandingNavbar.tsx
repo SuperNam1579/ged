@@ -16,7 +16,7 @@ import { LANDING_SUBJECTS, TOTAL_TOPICS, subtopicCount } from "@/components/land
 // the user is actually on the landing page.
 const NAV_LINKS = [
   { href: "/#features", label: "Features", id: "features" },
-  { href: "/#how-it-works", label: "How it works", id: "how-it-works" },
+  { href: "/how-it-works", label: "How it works", id: "how-it-works" },
   { href: "/subjects", label: "Subjects", id: "subjects", hasMenu: true },
 ];
 
