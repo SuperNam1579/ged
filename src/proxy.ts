@@ -17,12 +17,14 @@ const PUBLIC_PATHS = new Set([
   "/verify-email",
   "/forgot-password",
   "/reset-password",
+  "/terms",
+  "/privacy",
 ]);
 
-// Public sections whose sub-paths are all public too. `/subjects` is marketing
-// content — the syllabus we show visitors before they sign up — so it has to be
-// reachable logged out, including its per-subject pages.
-const PUBLIC_PREFIXES = ["/subjects"];
+// Public sections whose sub-paths are all public too. These are marketing
+// content — the syllabus and the process explainer we show visitors before they
+// sign up — so they have to be reachable logged out.
+const PUBLIC_PREFIXES = ["/subjects", "/how-it-works"];
 
 export default auth(async (req) => {
   const { pathname } = req.nextUrl;
