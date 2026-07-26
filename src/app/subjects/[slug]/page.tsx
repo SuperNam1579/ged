@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import LandingNavbar from "@/components/layout/LandingNavbar";
+import LandingFooter from "@/components/layout/LandingFooter";
 import Reveal from "@/components/ui/Reveal";
 import {
   LANDING_SUBJECTS,
@@ -31,17 +32,9 @@ export async function generateMetadata({
   };
 }
 
-const LEVEL_LABELS = ["", "Foundation", "Core", "Advanced", "Challenge"];
-
-/** Two-digit chapter marker, e.g. 1 → "01". */
-function chapterNumber(i: number) {
-  return String(i + 1).padStart(2, "0");
-}
-
 const INK = "#0f2748";
 const MUTED = "#5b769a";
-const RULE = "#dbe6f5";
-
+const LEVEL_LABELS = ["", "Foundation", "Core", "Advanced", "Challenge"];
 
 export default async function SubjectDetailPage({
   params,
@@ -52,345 +45,384 @@ export default async function SubjectDetailPage({
   const subject = findSubject(slug);
   if (!subject) notFound();
 
-  const others = LANDING_SUBJECTS.filter((s) => s.slug !== subject.slug);
+  const others = LANDING_SUBJECTS.filter((x) => x.slug !== subject.slug);
+
+  // Number every lesson up front rather than counting during render — the path
+  // reads as one journey across the whole subject, not a count that restarts at
+  // each category.
+  const lessonNumbers = new Map<string, number>();
+  subject.categories.forEach((c) =>
+    c.topics.forEach((t) =>
+      t.subtopics.forEach((st) => lessonNumbers.set(st.name, lessonNumbers.size + 1))
+    )
+  );
 
   return (
     <>
       <LandingNavbar />
 
-      {/* ── Masthead ── */}
+      {/* ── Header ── */}
       <header
-        className="px-5 md:px-10"
-        style={{ background: "white", paddingTop: 64 + 48, paddingBottom: 48 }}
+        className="relative overflow-hidden px-5 md:px-10"
+        style={{
+          background: `linear-gradient(160deg, ${subject.iconBg} 0%, #f4f8ff 70%)`,
+          paddingTop: 64 + 44,
+          paddingBottom: 44,
+        }}
       >
-        <div className="max-w-[1080px] mx-auto">
+        <div className="max-w-[880px] mx-auto">
           <Link
             href="/subjects"
-            className="inline-flex items-center gap-1.5 mb-10 transition-colors hover:opacity-70"
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: ".14em",
-              textTransform: "uppercase",
-              color: MUTED,
-            }}
+            className="inline-flex items-center gap-1.5 mb-7 transition-opacity hover:opacity-70"
+            style={{ fontSize: 13, fontWeight: 700, color: MUTED }}
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-4 h-4" />
             All subjects
           </Link>
 
-          {/* Eyebrow rule — the magazine's section marker */}
-          <div className="flex items-center gap-4 mb-6">
-            <span style={{ width: 34, height: 4, background: subject.color, borderRadius: 2 }} />
+          <div className="flex items-center gap-4">
             <span
+              className="flex items-center justify-center shrink-0"
               style={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: ".18em",
-                textTransform: "uppercase",
-                color: subject.color,
+                width: 62,
+                height: 62,
+                borderRadius: 18,
+                background: "white",
+                boxShadow: `0 4px 0 ${subject.color}33`,
               }}
             >
-              GED Subject
+              {subject.icon}
             </span>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
-            <div>
+            <div className="min-w-0">
               <h1
-                className="text-[40px] md:text-[68px]"
+                className="text-[28px] md:text-[38px]"
                 style={{
                   fontFamily: "var(--font-feather)",
                   fontWeight: 700,
                   color: INK,
-                  lineHeight: 1.02,
-                  letterSpacing: "-0.015em",
-                  maxWidth: 720,
+                  lineHeight: 1.1,
                 }}
               >
                 {subject.name}
               </h1>
-              <p
-                className="text-[16px] md:text-[19px]"
-                style={{ color: MUTED, marginTop: 18, maxWidth: 560, lineHeight: 1.6 }}
-              >
-                {subject.desc}.
+              <p style={{ fontSize: 14, color: MUTED, marginTop: 4 }}>
+                {topicCount(subject)} topics · {subtopicCount(subject)} lessons
               </p>
             </div>
-
-            {/* Figures set as a small masthead column */}
-            <dl className="flex gap-8 md:gap-10 md:pb-2">
-              {[
-                { value: subject.categories.length, label: "Parts" },
-                { value: topicCount(subject), label: "Topics" },
-                { value: subtopicCount(subject), label: "Lessons" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <dt
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      letterSpacing: ".14em",
-                      textTransform: "uppercase",
-                      color: MUTED,
-                      marginBottom: 6,
-                    }}
-                  >
-                    {stat.label}
-                  </dt>
-                  <dd
-                    className="text-[30px] md:text-[38px] tabular-nums"
-                    style={{
-                      fontFamily: "var(--font-feather)",
-                      fontWeight: 700,
-                      color: INK,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {stat.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
           </div>
+
+          {/* Switcher, so all four subjects stay one click apart */}
+          <nav aria-label="Subjects" className="flex flex-wrap gap-2 mt-7">
+            {LANDING_SUBJECTS.map((other) => {
+              const isActive = other.slug === subject.slug;
+              return (
+                <Link
+                  key={other.slug}
+                  href={`/subjects/${other.slug}`}
+                  aria-current={isActive ? "page" : undefined}
+                  className="transition-transform hover:scale-[1.04] active:scale-[0.97]"
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: 999,
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    background: isActive ? other.color : "white",
+                    color: isActive ? "white" : MUTED,
+                    boxShadow: isActive ? `0 3px 0 ${other.color}66` : "0 2px 0 #d8e6f7",
+                    textDecoration: "none",
+                  }}
+                >
+                  {other.shortName}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </header>
 
-      {/* ── Chapters ── */}
-      <main className="px-5 md:px-10 pb-4" style={{ background: "white" }}>
-        <div className="max-w-[1080px] mx-auto">
+      {/* ── The path ── */}
+      <main className="px-5 md:px-10 py-12" style={{ background: "#f4f8ff" }}>
+        <div className="max-w-[880px] mx-auto">
           {subject.categories.map((category, ci) => (
-            <Reveal key={category.name} delay={ci * 0.04}>
-              <section
-                className="grid gap-6 md:grid-cols-[220px_1fr] md:gap-12 py-12 md:py-16"
-                style={{ borderTop: `2px solid ${INK}` }}
-              >
-                {/* Chapter marker — sticks alongside its lessons while reading */}
-                <div className="md:sticky md:top-24 md:self-start">
-                  <div className="flex items-baseline gap-3 mb-4">
-                    <span
-                      className="text-[34px] md:text-[42px] tabular-nums"
+            <section key={category.name} className="mb-4">
+              {/* Part banner */}
+              <Reveal>
+                <div
+                  className="flex items-center justify-between gap-4 rounded-2xl px-5 py-4 mb-2"
+                  style={{
+                    background: subject.color,
+                    boxShadow: `0 4px 0 ${subject.color}55`,
+                  }}
+                >
+                  <div className="min-w-0">
+                    <p
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 700,
+                        letterSpacing: ".14em",
+                        textTransform: "uppercase",
+                        color: "rgba(255,255,255,.7)",
+                      }}
+                    >
+                      Part {ci + 1} of {subject.categories.length}
+                    </p>
+                    <h2
+                      className="text-[18px] md:text-[22px]"
                       style={{
                         fontFamily: "var(--font-feather)",
                         fontWeight: 700,
-                        color: subject.color,
-                        lineHeight: 1,
+                        color: "white",
+                        lineHeight: 1.2,
+                        marginTop: 2,
                       }}
                     >
-                      {chapterNumber(ci)}
-                    </span>
-                    <span
-                      className="tabular-nums"
-                      style={{ fontSize: 13, fontWeight: 700, color: MUTED }}
-                    >
-                      {category.weight}% of exam
-                    </span>
+                      {category.name}
+                    </h2>
                   </div>
-
-                  <h2
-                    className="text-[21px] md:text-[25px]"
+                  <span
+                    className="shrink-0 rounded-full px-3 py-1.5 tabular-nums"
                     style={{
-                      fontFamily: "var(--font-feather)",
+                      background: "rgba(255,255,255,.2)",
+                      color: "white",
+                      fontSize: 12.5,
                       fontWeight: 700,
-                      color: INK,
-                      lineHeight: 1.15,
-                      marginBottom: 14,
                     }}
                   >
-                    {category.name}
-                  </h2>
-
-                  <div
-                    className="h-[3px] rounded-full overflow-hidden"
-                    style={{ background: "#eaf1fa", maxWidth: 160 }}
-                  >
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${category.weight}%`, background: subject.color }}
-                    />
-                  </div>
+                    {category.weight}%
+                  </span>
                 </div>
+              </Reveal>
 
-                {/* Lessons, set as a running list rather than a grid of boxes */}
-                <div>
-                  {category.topics.map((topic, ti) => (
-                    <div key={topic.name} className={ti > 0 ? "mt-11" : undefined}>
-                      <div className="flex items-baseline justify-between gap-4 mb-1">
-                        <h3
-                          className="text-[15px] md:text-[17px]"
-                          style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: INK }}
-                        >
-                          {topic.name}
-                        </h3>
-                        <span
-                          className="shrink-0 tabular-nums"
-                          style={{
-                            fontSize: 10.5,
-                            fontWeight: 700,
-                            letterSpacing: ".12em",
-                            textTransform: "uppercase",
-                            color: MUTED,
-                          }}
-                        >
-                          {topic.subtopics.length} lessons
-                        </span>
-                      </div>
+              {category.topics.map((topic) => (
+                <div key={topic.name}>
+                  {/* Topic marker */}
+                  <Reveal>
+                    <div className="flex items-center gap-3 py-5">
+                      <span
+                        className="shrink-0 rounded-full"
+                        style={{ width: 10, height: 10, background: subject.color }}
+                      />
+                      <h3
+                        className="text-[15px] md:text-[17px]"
+                        style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: INK }}
+                      >
+                        {topic.name}
+                      </h3>
+                      <span
+                        className="h-px flex-1"
+                        style={{ background: "#d8e6f7" }}
+                        aria-hidden="true"
+                      />
+                      <span style={{ fontSize: 12, color: MUTED, fontWeight: 600 }}>
+                        {topic.subtopics.length}
+                      </span>
+                    </div>
+                  </Reveal>
 
-                      <ol>
-                        {topic.subtopics.map((subtopic, si) => (
-                          <li
-                            key={subtopic.name}
-                            className="group grid grid-cols-[30px_1fr] gap-x-3 py-4"
-                            style={{ borderTop: `1px solid ${RULE}` }}
-                          >
+                  {/* Lesson nodes down a single trail. An earlier version
+                      staggered them left and right, but the connector is drawn
+                      per row, so alternating the offset broke the line into
+                      disconnected stubs instead of reading as a winding path. */}
+                  {topic.subtopics.map((subtopic, si) => {
+                    const lessonNo = lessonNumbers.get(subtopic.name);
+                    const isLast = si === topic.subtopics.length - 1;
+                    return (
+                      <Reveal key={subtopic.name} delay={si * 0.04}>
+                        <div className="relative flex gap-4 pb-4">
+                          {/* Trail line behind the node — stops at the last
+                              node so the path doesn't dangle into the gap. */}
+                          {!isLast && (
                             <span
-                              className="tabular-nums pt-0.5"
-                              style={{ fontSize: 12.5, fontWeight: 700, color: subject.color }}
+                              aria-hidden="true"
+                              className="absolute"
+                              style={{
+                                left: 27,
+                                top: 56,
+                                bottom: 0,
+                                width: 3,
+                                background: "#dceaf9",
+                                borderRadius: 2,
+                              }}
+                            />
+                          )}
+
+                          {/* Node */}
+                          <span
+                            className="relative shrink-0 flex items-center justify-center tabular-nums"
+                            style={{
+                              width: 56,
+                              height: 56,
+                              borderRadius: "50%",
+                              background: "white",
+                              border: `3px solid ${subject.color}`,
+                              boxShadow: `0 4px 0 ${subject.color}44`,
+                              color: subject.color,
+                              fontFamily: "var(--font-feather)",
+                              fontWeight: 700,
+                              fontSize: 18,
+                            }}
+                          >
+                            {lessonNo}
+                          </span>
+
+                          {/* Lesson card */}
+                          <div
+                            className="flex-1 min-w-0 rounded-2xl px-4 py-3.5"
+                            style={{
+                              background: "white",
+                              boxShadow: "0 3px 0 #dceaf9",
+                            }}
+                          >
+                            <h4
+                              className="text-[14.5px]"
+                              style={{ fontWeight: 700, color: INK, lineHeight: 1.3 }}
                             >
-                              {chapterNumber(si)}
-                            </span>
-
-                            <div className="min-w-0">
-                              <h4
-                                className="text-[15px] md:text-[16px]"
-                                style={{ fontWeight: 700, color: INK, lineHeight: 1.35 }}
-                              >
-                                {subtopic.name}
-                              </h4>
-                              <p
-                                className="text-[13.5px] md:text-[14px]"
+                              {subtopic.name}
+                            </h4>
+                            <p
+                              style={{
+                                fontSize: 12.5,
+                                color: MUTED,
+                                lineHeight: 1.5,
+                                marginTop: 3,
+                              }}
+                            >
+                              {subtopic.description}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2.5">
+                              <span
+                                className="rounded-full px-2 py-0.5"
                                 style={{
-                                  color: MUTED,
-                                  lineHeight: 1.6,
-                                  marginTop: 4,
-                                  maxWidth: 560,
-                                }}
-                              >
-                                {subtopic.description}
-                              </p>
-
-                              {/* Meta line — small caps, no pills, so the type
-                                  stays the loudest thing on the page. */}
-                              <p
-                                className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-2.5"
-                                style={{
+                                  background: subject.iconBg,
+                                  color: subject.color,
                                   fontSize: 10.5,
                                   fontWeight: 700,
-                                  letterSpacing: ".12em",
-                                  textTransform: "uppercase",
-                                  color: MUTED,
                                 }}
                               >
-                                <span style={{ color: subject.color }}>
-                                  {LEVEL_LABELS[subtopic.level] ?? `Level ${subtopic.level}`}
-                                </span>
-                                <span aria-hidden="true" style={{ opacity: 0.4 }}>
-                                  ·
-                                </span>
-                                <span className="tabular-nums">{subtopic.minutes} min</span>
-                              </p>
+                                {LEVEL_LABELS[subtopic.level] ?? `Level ${subtopic.level}`}
+                              </span>
+                              <span style={{ fontSize: 11.5, color: MUTED, fontWeight: 600 }}>
+                                {subtopic.minutes} min
+                              </span>
                             </div>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
+                          </div>
+                        </div>
+                      </Reveal>
+                    );
+                  })}
+                </div>
+              ))}
+            </section>
+          ))}
+
+          {/* Every remaining subject, not just the sequential next one — the
+              reader has finished this leg and may want any of the others, and
+              the switcher at the top is a long scroll away by this point. */}
+          {others.length > 0 && (
+            <Reveal>
+              <div className="mt-10">
+                <p
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    letterSpacing: ".16em",
+                    textTransform: "uppercase",
+                    color: MUTED,
+                    marginBottom: 12,
+                  }}
+                >
+                  Other subjects
+                </p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {others.map((other) => (
+                    <Link
+                      key={other.slug}
+                      href={`/subjects/${other.slug}`}
+                      className="group flex items-center gap-3 rounded-2xl px-4 py-3.5 transition-transform hover:-translate-y-0.5"
+                      style={{ background: "white", boxShadow: "0 4px 0 #dceaf9" }}
+                    >
+                      <span
+                        className="shrink-0 flex items-center justify-center"
+                        style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: 11,
+                          background: other.iconBg,
+                        }}
+                      >
+                        <span className="flex scale-[.78]">{other.icon}</span>
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className="block text-[14px]"
+                          style={{
+                            fontFamily: "var(--font-feather)",
+                            fontWeight: 700,
+                            color: INK,
+                            lineHeight: 1.25,
+                          }}
+                        >
+                          {other.shortName}
+                        </span>
+                        <span
+                          className="block tabular-nums"
+                          style={{ fontSize: 11.5, color: MUTED, fontWeight: 600, marginTop: 2 }}
+                        >
+                          {subtopicCount(other)} lessons
+                        </span>
+                      </span>
+                      <ArrowRight
+                        className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+                        style={{ color: other.color }}
+                      />
+                    </Link>
                   ))}
                 </div>
-              </section>
+              </div>
             </Reveal>
-          ))}
+          )}
+          {/* Closing CTA. It sits after "Other subjects" so the page ends on
+              the action rather than on links leading away. */}
+          <Reveal>
+            <div
+              className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 rounded-2xl px-6 py-6 mt-6"
+              style={{ background: "white", boxShadow: "0 4px 0 #dceaf9" }}
+            >
+              <p
+                className="text-[19px] md:text-[24px]"
+                style={{
+                  fontFamily: "var(--font-feather)",
+                  fontWeight: 700,
+                  color: INK,
+                  lineHeight: 1.25,
+                  maxWidth: 460,
+                }}
+              >
+                Which of these {subtopicCount(subject)} lessons do you actually need?
+              </p>
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 shrink-0 self-start md:self-auto transition-transform hover:scale-[1.04] active:scale-[0.97]"
+                style={{
+                  padding: "13px 26px",
+                  background: "#1e90e8",
+                  color: "white",
+                  borderRadius: 14,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  boxShadow: "0 4px 0 #1670be",
+                  textDecoration: "none",
+                }}
+              >
+                Take the free diagnostic
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </main>
 
-      {/* ── Colophon: other subjects + CTA ── */}
-      <footer className="px-5 md:px-10 py-14 md:py-20" style={{ background: "#f4f8ff" }}>
-        <div className="max-w-[1080px] mx-auto">
-          <p
-            style={{
-              fontSize: 10.5,
-              fontWeight: 700,
-              letterSpacing: ".16em",
-              textTransform: "uppercase",
-              color: MUTED,
-              marginBottom: 18,
-            }}
-          >
-            Continue reading
-          </p>
-
-          <div className="grid gap-px sm:grid-cols-3" style={{ background: RULE }}>
-            {others.map((other) => (
-              <Link
-                key={other.slug}
-                href={`/subjects/${other.slug}`}
-                className="group flex items-center justify-between gap-3 px-5 py-6 transition-colors hover:bg-white"
-                style={{ background: "#f4f8ff" }}
-              >
-                <span className="min-w-0">
-                  <span
-                    className="block text-[16px] md:text-[18px]"
-                    style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: INK, lineHeight: 1.2 }}
-                  >
-                    {other.shortName}
-                  </span>
-                  <span
-                    className="block tabular-nums"
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 700,
-                      letterSpacing: ".12em",
-                      textTransform: "uppercase",
-                      color: MUTED,
-                      marginTop: 6,
-                    }}
-                  >
-                    {subtopicCount(other)} lessons
-                  </span>
-                </span>
-                <ArrowRight
-                  className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1"
-                  style={{ color: other.color }}
-                />
-              </Link>
-            ))}
-          </div>
-
-          <div
-            className="mt-14 pt-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6"
-            style={{ borderTop: `2px solid ${INK}` }}
-          >
-            <p
-              className="text-[22px] md:text-[30px]"
-              style={{
-                fontFamily: "var(--font-feather)",
-                fontWeight: 700,
-                color: INK,
-                lineHeight: 1.2,
-                maxWidth: 520,
-              }}
-            >
-              Which of these {subtopicCount(subject)} lessons do you actually need?
-            </p>
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 shrink-0 transition-transform duration-150 hover:scale-[1.04] active:scale-[0.97]"
-              style={{
-                padding: "13px 26px",
-                background: "#1e90e8",
-                color: "white",
-                borderRadius: 12,
-                fontSize: 15,
-                fontWeight: 700,
-                boxShadow: "0 4px 0 #1670be",
-                textDecoration: "none",
-              }}
-            >
-              Take the free diagnostic
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </>
   );
 }

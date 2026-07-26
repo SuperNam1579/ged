@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { BookOpen } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 import LandingNavbar from "@/components/layout/LandingNavbar";
+import LandingFooter from "@/components/layout/LandingFooter";
 import { LANDING_SUBJECTS, TOTAL_TOPICS, subtopicCount } from "@/components/landing/subjects";
 
 /* ─── Hero ───────────────────────────────────────────────────── */
@@ -678,31 +678,6 @@ function CtaSection() {
 
 /* ─── Footer ─────────────────────────────────────────────────── */
 
-function Footer() {
-  return (
-    <footer className="px-4 py-6 md:px-[40px]" style={{ borderTop: "1px solid #d8e6f7", background: "var(--card)" }}>
-      <div className="max-w-[1200px] mx-auto flex items-center justify-between flex-wrap gap-3">
-        {/* Logo */}
-        <div className="flex items-center gap-[9px]">
-          <div style={{ width: 28, height: 28, background: "#1e90e8", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 0 #1670be" }}>
-            <BookOpen className="text-white" style={{ width: 14, height: 14 }} strokeWidth={2.5} />
-          </div>
-          <span style={{ fontFamily: "var(--font-feather)", fontSize: 15, fontWeight: 700, color: "#0f2748" }}>GED Prep</span>
-        </div>
-
-        <p style={{ fontSize: 12, color: "#5b769a" }}>
-          &copy; {new Date().getFullYear()} GED Prep · AI-powered adaptive learning
-        </p>
-
-        <div className="flex gap-[18px]" style={{ fontSize: 13, fontWeight: 600 }}>
-          <Link href="/login" style={{ color: "#1e90e8", textDecoration: "none" }}>Sign In</Link>
-          <Link href="/register" style={{ color: "#1e90e8", textDecoration: "none" }}>Get Started</Link>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 /* ─── Page ───────────────────────────────────────────────────── */
 
 export default function LandingPage() {
@@ -717,7 +692,7 @@ export default function LandingPage() {
         <SubjectsSection />
         <CtaSection />
       </main>
-      <Footer />
+      <LandingFooter />
     </div>
   );
 }
