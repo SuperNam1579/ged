@@ -13,7 +13,7 @@ import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
 import { clearExistingSession } from "@/lib/auth-client";
-import { lessonCountByCode } from "@/components/landing/subjects";
+import { lessonCountByCode, subjectOrderByCode } from "@/components/landing/subjects";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
@@ -24,12 +24,11 @@ const fadeUp = {
 // Colors & topic counts mirror the landing page's Subjects section so the
 // two experiences read as one system.
 
-// Order follows standard GED test sequence: RLA → Math → Science → Social Studies
-//
-// Lesson counts are looked up from the shared curriculum rather than written
-// here: the strings this replaced said 18/14/15/10 against an actual
-// 14/15/14/14, the same drift the landing page had.
-const SUBJECTS = [
+// Lesson counts and ordering both come from the shared curriculum rather than
+// being written here. The counts this replaced said 18/14/15/10 against an
+// actual 14/15/14/14, and the order disagreed with the public pages — deriving
+// both means neither can drift again.
+const SUBJECT_CARDS = [
   {
     code: "RLA",
     name: "Reasoning Through Language Arts",
@@ -71,6 +70,11 @@ const SUBJECTS = [
     badgeCls: "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/25 text-amber-700 dark:text-amber-400",
   },
 ];
+
+// Sorted to match the order the public syllabus pages present the subjects in.
+const SUBJECTS = [...SUBJECT_CARDS].sort(
+  (a, b) => subjectOrderByCode(a.code) - subjectOrderByCode(b.code)
+);
 
 // ─── Schedule types ─────────────────────────────────────────────────────────
 

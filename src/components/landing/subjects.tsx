@@ -654,6 +654,16 @@ export function findSubject(slug: string): LandingSubject | undefined {
   return LANDING_SUBJECTS.find((s) => s.slug === slug);
 }
 
+/**
+ * Position of a subject in the canonical order, by database code. Unknown codes
+ * sort last rather than to the front, so an unrecognised subject can't silently
+ * jump the queue.
+ */
+export function subjectOrderByCode(code: string): number {
+  const i = LANDING_SUBJECTS.findIndex((s) => s.code === code);
+  return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+}
+
 /** Lesson count for a subject by its database code — for the in-app screens. */
 export function lessonCountByCode(code: string): number {
   const subject = LANDING_SUBJECTS.find((s) => s.code === code);
