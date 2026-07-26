@@ -13,7 +13,7 @@ import { WEAKNESS_THRESHOLD, isHeavy } from "./constants";
 //  เดิม: Coverage .30 | Weakness .25 | Time .20 | Prereq .15 | Balance .10
 //  ใหม่: Coverage .25 | Weakness .20 | Time .15 | Prereq .15 | Variety .15 | Balance .10
 // ============================================================================
-const WEIGHTS = {
+export const WEIGHTS = {
   coverage: 0.25,
   weaknessFocus: 0.2,
   timeFeasibility: 0.15,

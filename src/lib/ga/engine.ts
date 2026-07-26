@@ -2,22 +2,13 @@ import type {
   GAConfig,
   GAInput,
   Individual,
-  Chromosome,
   FitnessBreakdown,
 } from "@/types";
 import { computeFitness } from "./fitness";
 import { tournamentSelect, orderCrossover, mutate, selectElites } from "./operators";
 import { initPopulation, buildAvailableDates } from "./population";
+import { DEFAULT_CONFIG } from "./constants";
 import { db } from "@/lib/db";
-
-const DEFAULT_CONFIG: GAConfig = {
-  populationSize: 50,
-  generations: 100,
-  crossoverRate: 0.85,
-  mutationRate: 0.15,
-  elitismCount: 2,
-  tournamentSize: 5,
-};
 
 interface GAResult {
   studyPlanId: string;
