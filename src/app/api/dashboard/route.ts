@@ -164,28 +164,35 @@ export async function GET(req: NextRequest) {
     streakCursor.setDate(streakCursor.getDate() - 1);
   }
 
-  // ── Has studied work fallen behind? ──────────────────────────────────────
-  // Quiz and mock results update proficiency immediately, but the schedule is
-  // only rebuilt when the learner asks for it.
+  // ── Has attempted work fallen behind? ────────────────────────────────────
+  // Quiz and mock results update proficiency on submit, but the schedule is only
+  // rebuilt when the learner asks for it. This counts topics they have actually
+  // attempted a quiz on that still sit below the weakness threshold, with no
+  // further pass queued — "tried it, still not sticking".
   //
-  // What matters is a topic the learner has already worked through that is still
-  // below the threshold — studied, but it didn't stick, so the plan should come
-  // back to it. Topics that were never scheduled are excluded on purpose: the
-  // plan only covers as many weeks as there is availability for, so counting
-  // those would flag dozens of topics from day one and read as noise rather
-  // than a signal.
+  // Keyed on quiz attempts rather than completed sessions on purpose. The study
+  // screen offers "Take Quiz" alongside "Mark as Complete", so a learner can
+  // work through a topic and fail it repeatedly without ever completing the
+  // session; keying on completion would miss exactly the case worth flagging.
   //
-  // Deliberately derived rather than stored: a flag on the user would have to be
-  // set on every submission and cleared on every regeneration, and would drift
-  // out of sync the moment either path missed it. Comparing completed work
-  // against current proficiency can't go stale.
+  // Topics never attempted are excluded: the plan only spans the weeks
+  // availability exists for, so counting those would flag dozens from day one
+  // and read as noise rather than a signal.
+  //
+  // Deliberately derived rather than stored: a flag would have to be set on
+  // every submission and cleared on every regeneration, and would drift the
+  // moment either path missed it. Comparing attempts against current
+  // proficiency cannot go stale.
   let staleWeakSubtopics = 0;
   if (activePlan) {
-    const [completed, queued] = await Promise.all([
-      db.studySession.findMany({
-        where: { studyPlan: { userId: authUser.id }, status: "COMPLETED" },
-        select: { subtopicId: true },
-        distinct: ["subtopicId"],
+    const [attempts, queued] = await Promise.all([
+      db.userAssessmentAttempt.findMany({
+        where: {
+          userId: authUser.id,
+          completedAt: { not: null },
+          assessment: { type: "QUIZ", subtopicId: { not: null } },
+        },
+        select: { assessment: { select: { subtopicId: true } } },
       }),
       // Already lined up for another pass — no need to prompt for those.
       db.studySession.findMany({
@@ -194,15 +201,19 @@ export async function GET(req: NextRequest) {
         distinct: ["subtopicId"],
       }),
     ]);
+
     const queuedIds = new Set<string>(queued.map((s: { subtopicId: string }) => s.subtopicId));
-    const needsAnotherPass = new Set<string>(
-      completed
-        .map((s: { subtopicId: string }) => s.subtopicId)
-        .filter((id: string) => !queuedIds.has(id))
+    const attemptedIds = new Set<string>(
+      attempts
+        .map((a: { assessment: { subtopicId: string | null } }) => a.assessment.subtopicId)
+        .filter((id: string | null): id is string => id !== null)
     );
+
     staleWeakSubtopics = proficiencies.filter(
       (p: { subtopicId: string; score: number }) =>
-        p.score < WEAKNESS_THRESHOLD && needsAnotherPass.has(p.subtopicId)
+        p.score < WEAKNESS_THRESHOLD &&
+        attemptedIds.has(p.subtopicId) &&
+        !queuedIds.has(p.subtopicId)
     ).length;
   }
 

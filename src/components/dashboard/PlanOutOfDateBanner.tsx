@@ -4,7 +4,7 @@ import { useState } from "react";
 import { RefreshCw, TrendingDown } from "lucide-react";
 
 /**
- * Prompts a rebuild when topics the learner has already studied are still
+ * Prompts a rebuild when topics the learner has already quizzed on are still
  * testing below the weakness threshold, and nothing is queued for another pass.
  *
  * The plan is not rebuilt automatically after a bad result, by design. The
@@ -18,7 +18,7 @@ export default function PlanOutOfDateBanner({
   count,
   onUpdated,
 }: {
-  /** Topics already studied that are still below the weakness threshold. */
+  /** Topics quizzed on that are still below the weakness threshold. */
   count: number;
   /** Called after a successful rebuild so the dashboard can refetch. */
   onUpdated: () => void;
@@ -69,9 +69,9 @@ export default function PlanOutOfDateBanner({
           {count} {count === 1 ? "topic hasn't" : "topics haven't"} stuck yet
         </p>
         <p className="text-xs text-primary mt-0.5">
-          You&apos;ve worked through {count === 1 ? "it" : "them"}, but your quiz results still put{" "}
-          {count === 1 ? "it" : "them"} below where you want to be — and nothing is queued for
-          another pass. Rebuilding works {count === 1 ? "it" : "them"} back into your schedule.
+          Your quiz results still put {count === 1 ? "it" : "them"} below where you want to be, and
+          nothing is queued for another pass. Rebuilding works {count === 1 ? "it" : "them"} back
+          into your schedule.
         </p>
         {status === "error" && <p className="text-xs text-danger mt-1.5">{error}</p>}
       </div>
