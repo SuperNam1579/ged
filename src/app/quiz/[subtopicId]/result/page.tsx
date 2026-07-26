@@ -135,12 +135,22 @@ function QuizResultContent() {
           {/* Body */}
           <div className="px-8 py-6">
             {/* GA banner */}
+            {/* The plan is NOT rebuilt here — nothing on this page runs the
+                genetic algorithm. This used to claim it had been updated, which
+                was simply false. It now reports the signal and points at the
+                dashboard, where the update can actually be applied. */}
             {gaRerun && (
               <div className="mb-5 flex items-start gap-3 bg-primary-light border border-primary rounded-xl px-4 py-3">
                 <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <p className="text-sm text-primary">
-                  <strong>Your study plan has been updated</strong> based on your performance on this quiz.
-                </p>
+                <div className="text-sm text-primary">
+                  <p>
+                    <strong>This topic needs more time.</strong> We&apos;ve noted it, and your
+                    dashboard can rebuild your schedule around it.
+                  </p>
+                  <Link href="/dashboard" className="inline-block mt-1 font-bold hover:underline">
+                    Go to dashboard →
+                  </Link>
+                </div>
               </div>
             )}
 

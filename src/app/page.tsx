@@ -3,11 +3,20 @@ import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
 import LandingNavbar from "@/components/layout/LandingNavbar";
 import LandingFooter from "@/components/layout/LandingFooter";
-import { LANDING_SUBJECTS, TOTAL_TOPICS, subtopicCount } from "@/components/landing/subjects";
+import { LANDING_SUBJECTS, TOTAL_TOPICS, findSubject, subtopicCount } from "@/components/landing/subjects";
 
 /* ─── Hero ───────────────────────────────────────────────────── */
 
 function HeroSection() {
+  const mathSubject = findSubject("math");
+  const mathLessonCount = mathSubject ? subtopicCount(mathSubject) : 0;
+  // A real lesson from the curriculum, so the mock-up card can't quote a topic
+  // the product doesn't teach.
+  const sampleLesson = mathSubject?.categories[0].topics[0].subtopics[1] ?? {
+    name: "Fractions, Decimals & Percents",
+    minutes: 60,
+  };
+
   return (
     <section
       className="relative overflow-hidden"
@@ -174,7 +183,13 @@ function HeroSection() {
             <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>Keep it up!</div>
           </div>
 
-          {/* Floating badge: Predicted Score (left-mid) */}
+          {/* Floating badge: today's session (left-mid).
+              Replaces a "Predicted Score 158 ✓ Pass" badge. The app has no score
+              prediction — grep for "predicted" across the API, lib and schema
+              returns nothing — so it advertised a feature that doesn't exist.
+              Showing the next session instead demonstrates what the plan
+              actually does, uses a real lesson from the curriculum, and states a
+              task rather than a verdict on the learner. */}
           <div
             className="absolute"
             style={{
@@ -185,11 +200,17 @@ function HeroSection() {
               borderRadius: 12,
               padding: "10px 14px",
               boxShadow: "0 6px 24px rgba(37,99,235,.13)",
+              maxWidth: 190,
             }}
           >
-            <div style={{ fontSize: 9, fontWeight: 700, color: "#5b769a", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 3 }}>Predicted Score</div>
-            <div style={{ fontFamily: "var(--font-feather)", fontSize: 22, fontWeight: 700, color: "#1e90e8", lineHeight: 1 }}>
-              158 <span style={{ fontSize: 10, color: "#22c55e", fontWeight: 600 }}>✓ Pass</span>
+            <div style={{ fontSize: 9, fontWeight: 700, color: "#5b769a", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 4 }}>
+              Today&apos;s session
+            </div>
+            <div style={{ fontFamily: "var(--font-feather)", fontSize: 14, fontWeight: 700, color: "#0f2748", lineHeight: 1.25 }}>
+              {sampleLesson.name}
+            </div>
+            <div style={{ fontSize: 10, color: "#5b769a", marginTop: 3 }}>
+              {sampleLesson.minutes} min · picked for you
             </div>
           </div>
 
@@ -211,7 +232,13 @@ function HeroSection() {
             <div style={{ height: 5, background: "#e9f2fd", borderRadius: 3, overflow: "hidden", marginBottom: 4 }}>
               <div style={{ width: "75%", height: "100%", background: "#1e90e8", borderRadius: 3 }} />
             </div>
-            <div style={{ fontSize: 10, color: "#5b769a" }}>75% · 14 topics</div>
+            {/* Lesson count comes from the shared curriculum so it can't drift
+                from the real figure the way the hardcoded 14 had. The 75% is
+                illustrative — this card is a mock-up of the dashboard, like the
+                streak and predicted-score badges beside it. */}
+            <div style={{ fontSize: 10, color: "#5b769a" }}>
+              75% · {mathLessonCount} topics
+            </div>
           </div>
 
           {/* Duo hero image */}
@@ -460,7 +487,7 @@ function HowItWorksSection() {
       color: "#1e90e8",
       opacity: 0.1,
       title: "Take the Assessment",
-      body: "40 quick questions across Math, Science, Social Studies, and Language Arts pinpoint exactly where you are and where you need to go.",
+      body: "Ten questions in each subject you pick pinpoint exactly where you are and where you need to go — down to the individual lesson.",
     },
     {
       num: "02",
@@ -476,7 +503,7 @@ function HowItWorksSection() {
       color: "#D97706",
       opacity: 0.12,
       title: "Study, Quiz, Repeat",
-      body: "Follow daily sessions, complete quizzes, and watch your plan adapt automatically. Each result makes your next session smarter.",
+      body: "Follow daily sessions and take quizzes. Every result sharpens the picture of your gaps, and your plan rebuilds around them whenever you want it to.",
     },
   ];
 

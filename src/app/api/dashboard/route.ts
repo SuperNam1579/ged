@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
+import { WEAKNESS_THRESHOLD } from "@/lib/ga/constants";
 import { differenceInDays } from "date-fns";
 
 export async function GET(req: NextRequest) {
@@ -163,6 +164,48 @@ export async function GET(req: NextRequest) {
     streakCursor.setDate(streakCursor.getDate() - 1);
   }
 
+  // ── Has studied work fallen behind? ──────────────────────────────────────
+  // Quiz and mock results update proficiency immediately, but the schedule is
+  // only rebuilt when the learner asks for it.
+  //
+  // What matters is a topic the learner has already worked through that is still
+  // below the threshold — studied, but it didn't stick, so the plan should come
+  // back to it. Topics that were never scheduled are excluded on purpose: the
+  // plan only covers as many weeks as there is availability for, so counting
+  // those would flag dozens of topics from day one and read as noise rather
+  // than a signal.
+  //
+  // Deliberately derived rather than stored: a flag on the user would have to be
+  // set on every submission and cleared on every regeneration, and would drift
+  // out of sync the moment either path missed it. Comparing completed work
+  // against current proficiency can't go stale.
+  let staleWeakSubtopics = 0;
+  if (activePlan) {
+    const [completed, queued] = await Promise.all([
+      db.studySession.findMany({
+        where: { studyPlan: { userId: authUser.id }, status: "COMPLETED" },
+        select: { subtopicId: true },
+        distinct: ["subtopicId"],
+      }),
+      // Already lined up for another pass — no need to prompt for those.
+      db.studySession.findMany({
+        where: { studyPlanId: activePlan.id, status: { not: "COMPLETED" } },
+        select: { subtopicId: true },
+        distinct: ["subtopicId"],
+      }),
+    ]);
+    const queuedIds = new Set<string>(queued.map((s: { subtopicId: string }) => s.subtopicId));
+    const needsAnotherPass = new Set<string>(
+      completed
+        .map((s: { subtopicId: string }) => s.subtopicId)
+        .filter((id: string) => !queuedIds.has(id))
+    );
+    staleWeakSubtopics = proficiencies.filter(
+      (p: { subtopicId: string; score: number }) =>
+        p.score < WEAKNESS_THRESHOLD && needsAnotherPass.has(p.subtopicId)
+    ).length;
+  }
+
   return NextResponse.json({
     overallProgress,
     todaySessions,
@@ -170,6 +213,7 @@ export async function GET(req: NextRequest) {
     currentPlanVersion: activePlan?.version ?? 0,
     daysUntilExam,
     streakDays,
+    staleWeakSubtopics,
     lastPlanUpdate: activePlan
       ? {
           reason: activePlan.triggerReason,

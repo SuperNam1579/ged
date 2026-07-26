@@ -14,6 +14,7 @@ import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils/cn";
 import type { DashboardStats, StudySessionWithSubtopic, SubjectSummary } from "@/types";
+import PlanOutOfDateBanner from "@/components/dashboard/PlanOutOfDateBanner";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -226,6 +227,17 @@ export default function DashboardPage() {
     return () => { cancelled = true; };
   }, [authLoading, router]);
 
+  const refetchStats = () => {
+    fetch("/api/dashboard")
+      .then((r) => r.json())
+      .then((statsData) => {
+        if (!statsData.error) setStats(statsData);
+      })
+      .catch(() => {
+        setError("Failed to refresh dashboard. Please reload.");
+      });
+  };
+
   // ── Derived values ──────────────────────────────────────────────────────────
 
   const overallProgress  = stats?.overallProgress  ?? 0;
@@ -234,6 +246,7 @@ export default function DashboardPage() {
   const subjectSummaries = stats?.subjectSummaries ?? [];
   const streakDays       = stats?.streakDays       ?? 0;
   const lastUpdate       = stats?.lastPlanUpdate;
+  const staleWeak        = stats?.staleWeakSubtopics ?? 0;
 
   const predictedScore = useMemo(
     () => overallProgress > 0 ? Math.round(145 + (overallProgress / 100) * 20) : null,
@@ -327,6 +340,8 @@ export default function DashboardPage() {
             {dateStr} · Here&apos;s your study plan for today.
           </p>
         </motion.div>
+
+        <PlanOutOfDateBanner count={staleWeak} onUpdated={refetchStats} />
 
         {/* Plan update notice */}
         {lastUpdate && lastUpdate.reason !== "INITIAL" && (

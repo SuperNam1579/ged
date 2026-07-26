@@ -62,6 +62,11 @@ export interface DashboardStats {
   currentPlanVersion: number;
   streakDays: number;
   daysUntilExam: number;
+  /**
+   * Topics that have dropped below the weakness threshold but have nothing
+   * queued for them in the active plan — i.e. how out of date the schedule is.
+   */
+  staleWeakSubtopics: number;
   lastPlanUpdate?: {
     reason: string;
     generatedAt: string;

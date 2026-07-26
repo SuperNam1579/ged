@@ -5,10 +5,10 @@ import type { ReactNode } from "react";
  *
  * Mirrors the hierarchy in `prisma/seed.ts` — subject → category → topic →
  * subtopic — and the figures here were extracted from it, so the public pages
- * quote the same 12 categories, 18 topics and 57 subtopics the product teaches.
- * Everything countable is derived from this list rather than written by hand;
- * the per-subject numbers previously hardcoded on the landing page had drifted
- * from the seed (14/18/15/10 against an actual 15/14/14/14).
+ * quote the same curriculum the product teaches. Everything countable is derived
+ * from this list rather than written by hand; the per-subject numbers previously
+ * hardcoded on the landing page had drifted from the seed (14/18/15/10 against
+ * an actual 15/14/14/14).
  *
  * This stays presentation data, not a runtime source of truth. Onboarding,
  * mock-test and the seed each still carry their own subject lists; unifying all
@@ -629,8 +629,8 @@ export const LANDING_SUBJECTS: LandingSubject[] = [
   },
 ];
 
-/** Every subtopic in a subject, flattened. */
-export function allSubtopics(subject: LandingSubject): LandingSubtopic[] {
+/** Every subtopic in a subject, flattened. Internal helper. */
+function allSubtopics(subject: LandingSubject): LandingSubtopic[] {
   return subject.categories.flatMap((c) => c.topics.flatMap((t) => t.subtopics));
 }
 
@@ -644,18 +644,6 @@ export function topicCount(subject: LandingSubject): number {
   return subject.categories.reduce((sum, c) => sum + c.topics.length, 0);
 }
 
-/** Estimated study time for a whole subject, in minutes. */
-export function studyMinutes(subject: LandingSubject): number {
-  return allSubtopics(subject).reduce((sum, st) => sum + st.minutes, 0);
-}
-
-/** Round minutes to a friendly "12h" / "45m" label. */
-export function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes}m`;
-  const hours = minutes / 60;
-  return `${hours % 1 === 0 ? hours : hours.toFixed(1)}h`;
-}
-
 export function findSubject(slug: string): LandingSubject | undefined {
   return LANDING_SUBJECTS.find((s) => s.slug === slug);
 }
@@ -663,5 +651,3 @@ export function findSubject(slug: string): LandingSubject | undefined {
 /** Totals quoted across the marketing pages, all derived from the list above. */
 export const TOTAL_TOPICS = LANDING_SUBJECTS.reduce((sum, s) => sum + subtopicCount(s), 0);
 export const TOTAL_MID_TOPICS = LANDING_SUBJECTS.reduce((sum, s) => sum + topicCount(s), 0);
-export const TOTAL_CATEGORIES = LANDING_SUBJECTS.reduce((sum, s) => sum + s.categories.length, 0);
-export const TOTAL_STUDY_MINUTES = LANDING_SUBJECTS.reduce((sum, s) => sum + studyMinutes(s), 0);
