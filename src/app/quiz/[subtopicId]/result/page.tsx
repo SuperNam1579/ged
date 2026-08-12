@@ -8,6 +8,7 @@ import { motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { cn } from "@/lib/utils/cn";
+import { returnLabel, safeReturnTo, withReturnTo } from "@/lib/utils/return-to";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
@@ -97,6 +98,10 @@ function QuizResultContent() {
   const score = parseInt(searchParams.get("score") ?? "0", 10);
   const max = parseInt(searchParams.get("max") ?? "5", 10);
   const gaRerun = searchParams.get("gaRerun") === "1";
+
+  // Forwarded from the quiz, which got it from whichever page started this.
+  const returnTo = safeReturnTo(searchParams.get("from"), "/dashboard");
+  const backLabel = returnLabel(returnTo);
 
   const pct = max > 0 ? Math.round((score / max) * 100) : 0;
   const { label, color } = getLabel(pct);
@@ -227,12 +232,12 @@ function QuizResultContent() {
 
             {/* Actions */}
             <div className="flex gap-3">
-              <Link href="/dashboard" className="flex-1">
+              <Link href={returnTo} className="flex-1">
                 <Button variant="secondary" className="w-full">
-                  Continue Studying
+                  Back to {backLabel}
                 </Button>
               </Link>
-              <Link href={`/quiz/${subtopicId}`} className="flex-1">
+              <Link href={withReturnTo(`/quiz/${subtopicId}`, returnTo)} className="flex-1">
                 <Button className="w-full">
                   Try Again
                 </Button>

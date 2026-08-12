@@ -3,6 +3,7 @@ import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
 import LandingNavbar from "@/components/layout/LandingNavbar";
 import LandingFooter from "@/components/layout/LandingFooter";
+import LiveGaDemo from "@/components/method/LiveGaDemo";
 import { LANDING_SUBJECTS, TOTAL_TOPICS, findSubject, subtopicCount } from "@/components/landing/subjects";
 
 /* ─── Hero ───────────────────────────────────────────────────── */
@@ -317,36 +318,25 @@ function FeaturesSection() {
           </h2>
         </Reveal>
 
-        {/* Bento grid: single column on mobile, 2-col bento on desktop */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-[3fr_2fr] md:gap-[18px] md:[grid-template-rows:240px_240px]">
+        {/* Bento grid: single column on mobile, full 2x2 on desktop */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-[18px]">
 
-          {/* Card 1: Assessment — spans 2 rows on desktop */}
+          {/* Card 1: Assessment */}
           <Reveal
-            className="md:row-span-2"
             style={{
               background: "#f4f8ff",
               borderRadius: 24,
-              padding: 36,
+              padding: 28,
               position: "relative",
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
+              justifyContent: "flex-end",
+              minHeight: 260,
             }}
           >
-            {/* Faded number */}
-            <div
-              style={{
-                position: "absolute", right: -20, bottom: -44,
-                fontFamily: "var(--font-feather)", fontSize: 190, fontWeight: 700,
-                color: "#1e90e8", opacity: 0.055, lineHeight: 1,
-                pointerEvents: "none", userSelect: "none",
-              }}
-            >
-              01
-            </div>
-
             {/* Mini quiz mockup */}
-            <div style={{ background: "white", borderRadius: 14, padding: 16, border: "1px solid #d8e6f7", marginBottom: "auto", position: "relative", zIndex: 1 }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 16, border: "1px solid #d8e6f7", marginBottom: 16, position: "relative", zIndex: 1 }}>
               <div className="flex items-center gap-2" style={{ marginBottom: 10 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#17a673", flexShrink: 0 }} />
                 <span style={{ fontSize: 11, fontWeight: 600, color: "#5b769a", flex: 1 }}>Math · Question 3 of 10</span>
@@ -366,24 +356,20 @@ function FeaturesSection() {
                   <div style={{ width: 18, height: 18, borderRadius: "50%", border: "1.5px solid #d8e6f7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#5b769a", flexShrink: 0 }}>B</div>
                   −5
                 </div>
-                <div className="flex items-center gap-2" style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #d8e6f7", fontSize: 12, color: "#5b769a" }}>
-                  <div style={{ width: 18, height: 18, borderRadius: "50%", border: "1.5px solid #d8e6f7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#5b769a", flexShrink: 0 }}>C</div>
-                  5
-                </div>
               </div>
             </div>
 
             {/* Bottom text */}
-            <div style={{ position: "relative", zIndex: 1, marginTop: 20 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 13, background: "#1e90e8", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 11, background: "#1e90e8", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
                   <rect x="9" y="3" width="6" height="4" rx="2" />
                   <path d="M9 12h6M9 16h4" />
                 </svg>
               </div>
-              <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 22, fontWeight: 700, color: "#0f2748", marginBottom: 8 }}>Diagnostic Assessment</h3>
-              <p style={{ fontSize: 14, color: "#5b769a", lineHeight: 1.6 }}>Ten questions for each subject you pick. Every question belongs to one lesson, so your results come back lesson by lesson — not one score per subject.</p>
+              <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 6 }}>Diagnostic Assessment</h3>
+              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Ten questions for each subject you pick. Every question belongs to one lesson, so your results come back lesson by lesson — not one score per subject.</p>
             </div>
           </Reveal>
 
@@ -399,10 +385,9 @@ function FeaturesSection() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-end",
-              minHeight: 220,
+              minHeight: 260,
             }}
           >
-            <div style={{ position: "absolute", right: -14, top: -28, fontFamily: "var(--font-feather)", fontSize: 110, fontWeight: 700, color: "rgba(255,255,255,.08)", lineHeight: 1, pointerEvents: "none" }}>02</div>
             <div style={{ marginBottom: 16, display: "flex", flexDirection: "column", gap: 6, position: "relative", zIndex: 1 }}>
               {[{ label: "MATH", w: "80%", c: "rgba(255,255,255,.7)" }, { label: "SCI", w: "52%", c: "rgba(255,255,255,.5)" }, { label: "RLA", w: "68%", c: "#FBBF24" }].map((b) => (
                 <div key={b.label} className="flex items-center gap-2">
@@ -437,10 +422,9 @@ function FeaturesSection() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-end",
-              minHeight: 220,
+              minHeight: 260,
             }}
           >
-            <div style={{ position: "absolute", right: -14, top: -28, fontFamily: "var(--font-feather)", fontSize: 110, fontWeight: 700, color: "#1e90e8", opacity: 0.055, lineHeight: 1, pointerEvents: "none" }}>03</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16, position: "relative", zIndex: 1 }}>
               {[
                 { pct: 75, color: "#2563EB", label: "Math" },
@@ -474,127 +458,52 @@ function FeaturesSection() {
               <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Lesson-by-lesson scores, your study streak, and a nudge when something is not sticking.</p>
             </div>
           </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}
 
-/* ─── How It Works ───────────────────────────────────────────── */
-
-function HowItWorksSection() {
-  const steps = [
-    {
-      num: "01",
-      eyebrow: "Assessment",
-      color: "#1e90e8",
-      opacity: 0.1,
-      title: "Take the Assessment",
-      body: "Ten questions in each subject you pick pinpoint exactly where you are and where you need to go — down to the individual lesson.",
-    },
-    {
-      num: "02",
-      eyebrow: "Planning",
-      color: "#1cb0f6",
-      opacity: 0.13,
-      title: "Get Your AI Plan",
-      body: "Our genetic algorithm builds an optimal, personalized schedule based on your gaps, your exam date, and your weekly availability.",
-    },
-    {
-      num: "03",
-      eyebrow: "Study",
-      color: "#D97706",
-      opacity: 0.12,
-      title: "Study, Quiz, Repeat",
-      body: "Follow daily sessions and take quizzes. Every result sharpens the picture of your gaps, and your plan rebuilds around them whenever you want it to.",
-    },
-  ];
-
-  return (
-    <section id="how-it-works" className="scroll-mt-16 px-4 pb-16 md:px-[40px] md:pb-24" style={{ background: "#f4f8ff" }}>
-      <div className="max-w-[1200px] mx-auto">
-        {/* Header */}
-        <Reveal className="pt-16 pb-10 md:pt-[72px] md:pb-[52px]">
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#1e90e8", textTransform: "uppercase", letterSpacing: ".12em", marginBottom: 12 }}>
-            The process
-          </p>
-          <h2
-            className="text-[32px] md:text-[48px]"
-            style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "#0f2748", lineHeight: 1.1 }}
-          >
-            Three steps.<br />One diploma.
-          </h2>
-        </Reveal>
-
-        {/* Numbered rows */}
-        <div style={{ borderTop: "1px solid #d8e6f7" }}>
-          {steps.map((s, i) => (
-            <Reveal
-              key={s.num}
-              delay={i * 0.1}
-              className="grid grid-cols-1 md:grid-cols-[180px_1fr] relative py-8 md:py-[48px]"
-              style={{ borderBottom: "1px solid #d8e6f7" }}
-            >
-              {/* Left color bar */}
-              <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: s.color, borderRadius: 2 }} />
-              {/* Big number — hidden on mobile */}
-              <div
-                className="hidden md:block"
-                style={{
-                  fontFamily: "var(--font-feather)",
-                  fontSize: 110,
-                  fontWeight: 700,
-                  color: s.color,
-                  opacity: s.opacity,
-                  lineHeight: 1,
-                  textAlign: "right",
-                  paddingRight: 40,
-                }}
-              >
-                {s.num}
-              </div>
-              {/* Content */}
-              <div className="pl-5 md:pl-0 md:pt-2">
-                <p style={{ fontSize: 11, fontWeight: 700, color: s.color, textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 10 }}>
-                  {s.eyebrow}
-                </p>
-                <h3
-                  className="text-[22px] md:text-[28px]"
-                  style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "#0f2748", marginBottom: 12 }}
-                >
-                  {s.title}
-                </h3>
-                <p style={{ fontSize: 15, color: "#5b769a", lineHeight: 1.7, maxWidth: 520 }}>
-                  {s.body}
-                </p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-
-        {/* The three steps here are the summary; the full walkthrough — the
-            diagnostic, the planner, the rebuild loop — lives on its own page. */}
-        <Reveal className="mt-10">
-          <Link
-            href="/how-it-works"
-            className="inline-flex items-center gap-2 transition-transform hover:scale-[1.03] active:scale-[0.97]"
+          {/* Card 4: Full-length mock test — timed, multi-subject */}
+          <Reveal
+            delay={0.3}
             style={{
-              padding: "12px 22px",
-              background: "white",
-              color: "#1e90e8",
-              border: "2px solid #1e90e8",
-              borderRadius: 12,
-              fontSize: 14.5,
-              fontWeight: 700,
-              textDecoration: "none",
+              background: "#f4f8ff",
+              borderRadius: 24,
+              padding: 28,
+              position: "relative",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+              minHeight: 260,
             }}
           >
-            See the whole process
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </Reveal>
+            {/* Subject + timer mockup */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16, position: "relative", zIndex: 1 }}>
+              {[
+                { label: "Mathematical Reasoning", color: "#2563EB", bg: "#e4edfd" },
+                { label: "Reasoning Through Language Arts", color: "#16A34A", bg: "#e3f6ec" },
+                { label: "Social Studies", color: "#D97706", bg: "#fdf1e3" },
+                { label: "Science", color: "#7C3AED", bg: "#efe6fb" },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="flex items-center justify-between"
+                  style={{ padding: "8px 12px", borderRadius: 10, background: s.bg, fontSize: 12, fontWeight: 600, color: s.color }}
+                >
+                  <span>{s.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.7 }}>30:00</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 11, background: "#d8ecfd", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 3" />
+                </svg>
+              </div>
+              <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 6 }}>Full-Length Mock Test</h3>
+              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>A timed, full-length practice exam for each subject — 30 minutes a piece, the same structure as test day.</p>
+            </div>
+          </Reveal>
+        </div>
       </div>
     </section>
   );
@@ -659,13 +568,88 @@ function SubjectsSection() {
                 className="hidden sm:block transition-transform group-hover:translate-x-0.5"
                 style={{ fontSize: 13, color: s.color, fontWeight: 600, flexShrink: 0 }}
               >
-                Explore →
+                View topics →
               </div>
             </Link>
             </Reveal>
           ))}
         </div>
 
+        {/* Close-out: the full syllabus, for anyone who wants the whole picture
+            before committing to one subject. */}
+        <Reveal className="flex justify-end" style={{ marginTop: 28 }}>
+          <Link
+            href="/subjects"
+            className="inline-flex items-center gap-2 transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.04] active:scale-[0.97]"
+            style={{
+              padding: "12px 22px",
+              background: "#1e90e8",
+              color: "white",
+              borderRadius: 12,
+              fontSize: 14.5,
+              fontWeight: 700,
+              boxShadow: "0 3px 0 #1670be",
+              textDecoration: "none",
+            }}
+          >
+            View the full syllabus →
+          </Link>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Live algorithm demo ────────────────────────────────────── */
+
+function LiveGaSection() {
+  return (
+    <section className="px-4 py-16 md:px-[40px] md:py-24" style={{ background: "#f4f8ff" }}>
+      <div className="max-w-[1060px] mx-auto">
+        <Reveal style={{ marginBottom: 32 }}>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#1e90e8",
+              textTransform: "uppercase",
+              letterSpacing: ".12em",
+              marginBottom: 12,
+            }}
+          >
+            See it run
+          </p>
+          <h2
+            className="text-[32px] md:text-[44px]"
+            style={{
+              fontFamily: "var(--font-feather)",
+              fontWeight: 700,
+              color: "#0f2748",
+              lineHeight: 1.1,
+            }}
+          >
+            Build a week, live.
+          </h2>
+          <p
+            className="text-[15px] md:text-[16.5px]"
+            style={{ color: "#5b769a", lineHeight: 1.7, marginTop: 14, maxWidth: 620 }}
+          >
+            This isn&apos;t a recording. Press the button and the planner runs in your browser on
+            real lessons from the syllabus, scored by the same function that builds a real study
+            plan.
+          </p>
+        </Reveal>
+
+        <Reveal>
+          <LiveGaDemo />
+        </Reveal>
+
+        <Reveal>
+          <p style={{ fontSize: 12, color: "#5b769a", lineHeight: 1.6, marginTop: 12 }}>
+            Real lessons and real scoring, for one example learner — a public page has no signed-in
+            student to plan for.
+          </p>
+        </Reveal>
       </div>
     </section>
   );
@@ -742,8 +726,8 @@ export default function LandingPage() {
         <HeroSection />
         <StatsSection />
         <FeaturesSection />
-        <HowItWorksSection />
         <SubjectsSection />
+        <LiveGaSection />
         <CtaSection />
       </main>
       <LandingFooter />

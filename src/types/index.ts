@@ -49,6 +49,11 @@ export interface StudySessionWithSubtopic {
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED";
   learningUrl: string;
   difficultyLevel: number;
+  /** Only returned by GET /api/sessions/[id]; list endpoints omit these. */
+  subtopicDescription?: string;
+  estimatedMinutes?: number;
+  /** Names of the subtopics this one builds on. Empty when there are none. */
+  prerequisites?: string[];
 }
 
 export interface ProficiencyMap {

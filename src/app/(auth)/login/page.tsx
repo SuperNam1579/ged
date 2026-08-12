@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "motion/react";
 import { clearExistingSession } from "@/lib/auth-client";
-import { BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import {
@@ -281,12 +281,28 @@ function LoginContent() {
         className="flex-1 flex items-center justify-center bg-background py-10 sm:py-[60px] px-6 lg:px-12"
       >
         <motion.div variants={authStagger} initial="hidden" animate="visible" className="w-full max-w-[380px]">
-          {/* Logo */}
-          <motion.div variants={authItem} className="flex items-center gap-[9px] mb-9">
-            <div className="w-8 h-8 bg-primary rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ boxShadow: "0 3px 0 rgba(0,0,0,0.18)" }}>
-              <BookOpen className="w-4 h-4 text-white" strokeWidth={2.5} />
-            </div>
-            <span className="text-[17px] font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>GED Prep</span>
+          {/* Logo stays the topmost brand anchor; the way out sits on the same
+              row, right-aligned. A clickable logo alone isn't an affordance
+              everyone recognizes, so the exit is spelled out in words. */}
+          <motion.div variants={authItem} className="flex items-center justify-between gap-4 mb-9">
+            <Link
+              href="/"
+              className={`inline-flex items-center gap-[9px] rounded-lg ${FOCUS_RING}`}
+              aria-label="GED Prep — back to home"
+            >
+              <div className="w-8 h-8 bg-primary rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ boxShadow: "0 3px 0 rgba(0,0,0,0.18)" }}>
+                <BookOpen className="w-4 h-4 text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[17px] font-bold text-foreground" style={{ fontFamily: "var(--font-feather)" }}>GED Prep</span>
+            </Link>
+
+            <Link
+              href="/"
+              className={`inline-flex items-center gap-1.5 shrink-0 text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-colors rounded ${FOCUS_RING}`}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back to home
+            </Link>
           </motion.div>
 
           <motion.h1 variants={authItem} className="text-[28px] font-bold text-foreground mb-1.5" style={{ fontFamily: "var(--font-feather)" }}>Welcome back</motion.h1>

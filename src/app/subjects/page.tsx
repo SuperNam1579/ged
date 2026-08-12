@@ -74,7 +74,7 @@ export default function SubjectsPage() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-5">
             {[
               { value: LANDING_SUBJECTS.length, label: "subjects" },
-              { value: TOTAL_MID_TOPICS, label: "topics" },
+              { value: 15, label: "topics" },
               { value: totalLessons, label: "lessons" },
             ].map((stat) => (
               <span key={stat.label} className="flex items-baseline gap-1.5">
@@ -242,7 +242,7 @@ export default function SubjectsPage() {
                     className="inline-flex items-center gap-1.5 mt-4"
                     style={{ fontSize: 13, fontWeight: 700, color: subject.color }}
                   >
-                    See the path
+                    View topics
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </Link>

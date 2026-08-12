@@ -75,7 +75,15 @@
       "WebFetch(domain:claude.ai)",
       "Bash(python3)",
       "Bash(dir /B \"C:\\\\ged\\\\public\")",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(xargs grep -ln \"Add time slot\")",
+      "Bash(node -e ' *)",
+      "Bash(xargs grep -l \"getToken\\\\|GetTokenParams\")",
+      "Bash(git restore *)",
+      "Bash(rm -f /tmp/sim-dates.mjs)",
+      "Bash(cat > *)",
+      "Bash(npx tsx *)",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "\\tmp",

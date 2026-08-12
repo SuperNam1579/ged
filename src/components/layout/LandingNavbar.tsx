@@ -2,22 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { BookOpen, ChevronDown, Menu, X } from "lucide-react";
 import { LANDING_SUBJECTS, TOTAL_TOPICS, subtopicCount } from "@/components/landing/subjects";
 
 // Order matters: it must match the order the sections appear on the page
-// (features → how-it-works → subjects). The active pill slides between links by
-// position, so a nav order that disagrees with the page order makes it jump
-// forward past a link and then double back as the user scrolls straight down.
-// hrefs are root-relative (`/#features`, not `#features`) because this navbar
-// also renders on /subjects — a bare hash there would just sit on the current
-// page doing nothing. `id` is separate: it's what the scroll spy matches while
-// the user is actually on the landing page.
+// (subjects → how-it-works), since the scroll spy compares vertical position.
+// `id` is what the scroll spy matches while the user is on the landing page —
+// GA has no section of its own there, so its id simply never matches.
 const NAV_LINKS = [
-  { href: "/#features", label: "Features", id: "features" },
-  { href: "/how-it-works", label: "How it works", id: "how-it-works" },
   { href: "/subjects", label: "Subjects", id: "subjects", hasMenu: true },
+  { href: "/how-it-works", label: "How it works", id: "how-it-works" },
+  // "GA" is the algorithm page (route /ga); "How it works" is the seven
+  // user-facing steps. Deliberately different labels — different pages.
+  { href: "/ga", label: "GA", id: "ga" },
 ];
 
 const NAV_HEIGHT = 64;
@@ -188,33 +186,17 @@ export default function LandingNavbar() {
           </span>
         </Link>
 
-        {/* ── Desktop links, with a pill that slides to the current section ── */}
+        {/* ── Desktop links, with a pill that highlights the current section ── */}
         <div className="hidden md:flex items-center gap-1">
-          {/* LayoutGroup keeps the shared-layout pill measuring against these
-              links specifically, so it interpolates between them rather than
-              re-appearing at each new position. */}
-          <LayoutGroup id="landing-nav">
-            {NAV_LINKS.map((link) => {
-              const isActive = activeId === link.id;
+          {NAV_LINKS.map((link) => {
               const linkEl = (
                 <Link
                   href={link.href}
-                  aria-current={isActive ? "true" : undefined}
                   aria-expanded={link.hasMenu ? subjectsOpen : undefined}
                   aria-haspopup={link.hasMenu ? "true" : undefined}
-                  className="relative flex items-center gap-1 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-                  style={{ color: isActive ? "white" : "rgba(255,255,255,.45)" }}
+                  className="relative flex items-center gap-1 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                  style={{ color: "rgba(255,255,255,.45)" }}
                 >
-                  {isActive && (
-                    // Shared layoutId makes the highlight travel between links
-                    // instead of blinking out and in.
-                    <motion.span
-                      layoutId="nav-active-pill"
-                      className="absolute inset-0 -z-10 rounded-lg"
-                      style={{ background: "rgba(255,255,255,.10)" }}
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
                   <span className="relative hover:text-white transition-colors">{link.label}</span>
                   {link.hasMenu && (
                     <motion.span
@@ -327,8 +309,7 @@ export default function LandingNavbar() {
                   </AnimatePresence>
                 </div>
               );
-            })}
-          </LayoutGroup>
+          })}
         </div>
 
         {/* ── Actions ── */}

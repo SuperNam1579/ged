@@ -24,6 +24,11 @@ export async function GET(
               },
             },
           },
+          // Shown in the session meta bar. Named "prerequisites" on the
+          // dependent side: these are the subtopics this one builds on.
+          prerequisites: {
+            select: { prerequisite: { select: { id: true, name: true } } },
+          },
         },
       },
     },
@@ -49,6 +54,7 @@ export async function GET(
       learningUrl: session.subtopic.learningUrl,
       difficultyLevel: session.subtopic.difficultyLevel,
       estimatedMinutes: session.subtopic.estimatedMinutes,
+      prerequisites: session.subtopic.prerequisites.map((p) => p.prerequisite.name),
     },
   });
 }

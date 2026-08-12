@@ -122,6 +122,17 @@ const RATE_LIMIT_CONFIGS = {
     requests: 3,
     window: "1 h" as Duration,
   },
+  // Video progress heartbeats. The player posts every 10 s, so normal use is
+  // 6 requests/minute; 30 leaves room for several tabs, a page reload, and the
+  // extra beacon fired on pagehide, while still capping a scripted flood.
+  //
+  // Pass an identifier of `${userId}:${resourceId}` at the call site — bucketing
+  // by IP alone would make one household on a shared NAT throttle each other.
+  "resource-progress": {
+    algorithm: "sliding" as Algorithm,
+    requests: 30,
+    window: "1 m" as Duration,
+  },
 } as const;
 
 export type RateLimitKey = keyof typeof RATE_LIMIT_CONFIGS;
@@ -185,10 +196,15 @@ export function getClientIp(req: NextRequest): string {
 //
 // That's it. The function returns null when the request is allowed, or a
 // ready-made 429 NextResponse (with correct headers) when it's blocked.
+//
+// `identifier` overrides the default IP bucket. Use it on authenticated routes
+// where the natural unit is the account rather than the network — bucketing by
+// IP there punishes everyone behind one NAT for a single user's traffic.
 
 export async function checkRateLimit(
   key: RateLimitKey,
-  req: NextRequest
+  req: NextRequest,
+  identifier?: string
 ): Promise<NextResponse | null> {
   // Escape hatch for local dev / tests — set RATE_LIMIT_ENABLED=false in .env
   if (process.env.RATE_LIMIT_ENABLED === "false") return null;
@@ -206,11 +222,11 @@ export async function checkRateLimit(
     return null;
   }
 
-  const ip = getClientIp(req);
+  const bucket = identifier ?? getClientIp(req);
 
   let result: Awaited<ReturnType<Ratelimit["limit"]>>;
   try {
-    result = await limiter.limit(ip);
+    result = await limiter.limit(bucket);
   } catch (err) {
     // Redis is reachable but returned an error (network blip, timeout, etc.)
     // Fail-open: allow the request rather than taking auth offline.

@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, ArrowLeft } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
+import { returnLabel, safeReturnTo, withReturnTo } from "@/lib/utils/return-to";
 import type { QuestionData } from "@/types";
 
 const OPTION_LABELS = ["A", "B", "C", "D"];
@@ -21,8 +22,31 @@ interface QuizData {
 }
 
 export default function QuizPage() {
+  // useSearchParams needs a Suspense boundary during static generation.
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <QuizPageInner />
+    </Suspense>
+  );
+}
+
+function QuizPageInner() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // A quiz can be started from the schedule, from a study session, or from the
+  // progress page. Whichever it was travels with the learner to the result
+  // screen so that finishing lands them back in the list they were working
+  // through, rather than on a fixed page.
+  const returnTo = safeReturnTo(searchParams.get("from"), "/dashboard");
+  const backLabel = returnLabel(returnTo);
   const subtopicId = params.subtopicId as string;
 
   const [quiz, setQuiz] = useState<QuizData | null>(null);
@@ -72,8 +96,8 @@ export default function QuizPage() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <p className="text-red-600 dark:text-red-400 font-medium mb-4">{error || "Quiz not found."}</p>
-          <Link href="/dashboard">
-            <Button variant="secondary">Back to Dashboard</Button>
+          <Link href={returnTo}>
+            <Button variant="secondary">Back to {backLabel}</Button>
           </Link>
         </div>
       </div>
@@ -119,11 +143,21 @@ export default function QuizPage() {
       const score = data.correctCount ?? 0;
       const max = data.maxScore ?? totalQuestions;
 
-      router.push(`/quiz/${subtopicId}/result?score=${score}&max=${max}&attemptId=${data.attemptId ?? ""}&gaRerun=${data.triggered?.gaRerun ? "1" : "0"}`);
+      router.push(
+        withReturnTo(
+          `/quiz/${subtopicId}/result?score=${score}&max=${max}&attemptId=${data.attemptId ?? ""}&gaRerun=${data.triggered?.gaRerun ? "1" : "0"}`,
+          returnTo
+        )
+      );
     } catch {
       // Even on error, navigate to result page with available data
       const score = Object.values(updatedAnswers).length;
-      router.push(`/quiz/${subtopicId}/result?score=${score}&max=${totalQuestions}&attemptId=&gaRerun=0`);
+      router.push(
+        withReturnTo(
+          `/quiz/${subtopicId}/result?score=${score}&max=${totalQuestions}&attemptId=&gaRerun=0`,
+          returnTo
+        )
+      );
     }
   };
 
@@ -133,7 +167,11 @@ export default function QuizPage() {
       <header className="bg-card border-b border-border px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-muted-foreground hover:text-muted-foreground transition-colors">
+            <Link
+              href={returnTo}
+              aria-label={`Back to ${backLabel}`}
+              className="text-muted-foreground hover:text-muted-foreground transition-colors"
+            >
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="flex items-center gap-2">

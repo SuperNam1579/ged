@@ -43,6 +43,7 @@ model User {
   availabilityTemplate WeeklyAvailabilityTemplate?
   auditLogs            AuditLog[]
   Session              Session[]
+  resourceProgress     UserResourceProgress[]
 
   @@index([email])
   @@index([emailVerificationToken])
@@ -349,6 +350,40 @@ model StudySession {
   subtopic  Subtopic  @relation(fields: [subtopicId], references: [id])
 
   @@index([studyPlanId, scheduledDate, status])
+}
+
+// Per-user watch progress against a learning resource.
+//
+// `resourceId` is intentionally a plain String with no foreign key: resources
+// still live in a fixture file (src/lib/resources/), not in this database.
+// Progress, by contrast, is real user data and has to survive a page reload, so
+// it lands here from day one. When the Resource table arrives, this becomes a
+// relation and the column type does not change.
+model UserResourceProgress {
+  id         String @id @default(cuid())
+  userId     String
+  resourceId String
+
+  // Cumulative seconds watched. Monotonic by construction — the route clamps
+  // both the direction and the rate at which this may grow, so it cannot be
+  // driven forward faster than wall-clock time actually passed.
+  watchedSec Int @default(0)
+
+  // Resume point. Unlike watchedSec this may move backwards, because seeking
+  // backwards is a legitimate thing for a learner to do.
+  lastPosSec Int @default(0)
+
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  // The clamp in the progress route reads this to work out how much wall-clock
+  // time elapsed since the previous heartbeat.
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+  @@index([userId])
 }
 
 model GaExecutionLog {

@@ -13,6 +13,7 @@ import Button from "@/components/ui/Button";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils/cn";
+import { withReturnTo } from "@/lib/utils/return-to";
 import type { DashboardStats, StudySessionWithSubtopic, SubjectSummary } from "@/types";
 import PlanOutOfDateBanner from "@/components/dashboard/PlanOutOfDateBanner";
 
@@ -143,7 +144,7 @@ function SessionRow({ session, last }: { session: StudySessionWithSubtopic; last
         </div>
         <div className="text-sm font-semibold text-foreground truncate">{session.subtopicName}</div>
       </div>
-      <Link href={`/study/${session.id}`} style={{ flexShrink: 0 }}>
+      <Link href={withReturnTo(`/study/${session.id}`, "/dashboard")} style={{ flexShrink: 0 }}>
         <button
           className="transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] hover:brightness-110 active:scale-[0.95]"
           style={{
@@ -401,7 +402,7 @@ export default function DashboardPage() {
                 {continueSession.durationMins} min session
               </div>
             </div>
-            <Link href={`/study/${continueSession.id}`} style={{ position: "relative", zIndex: 1, flexShrink: 0 }}>
+            <Link href={withReturnTo(`/study/${continueSession.id}`, "/dashboard")} style={{ position: "relative", zIndex: 1, flexShrink: 0 }}>
               <button
                 className="transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.08] active:scale-[0.95]"
                 style={{

@@ -12,6 +12,7 @@ import SubjectBadge from "@/components/ui/SubjectBadge";
 import Spinner from "@/components/ui/Spinner";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import Reveal from "@/components/ui/Reveal";
+import { withReturnTo } from "@/lib/utils/return-to";
 import dynamic from "next/dynamic";
 
 const fadeUp = {
@@ -328,7 +329,7 @@ export default function ProgressPage() {
                           <span className="text-xs text-red-600 dark:text-red-400 font-medium shrink-0">{Math.round(st.score)}%</span>
                         </div>
                       </div>
-                      <Link href={`/quiz/${st.subtopicId}`}>
+                      <Link href={withReturnTo(`/quiz/${st.subtopicId}`, "/progress")}>
                         <Button size="sm" variant="secondary">Practice</Button>
                       </Link>
                     </motion.div>

@@ -13,6 +13,7 @@ import Spinner from "@/components/ui/Spinner";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils/cn";
+import { withReturnTo } from "@/lib/utils/return-to";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -952,7 +953,7 @@ function SessionDetailModal({
 
           <div className="px-5 pb-5">
             <Link
-              href={`/study/${session.id}`}
+              href={withReturnTo(`/study/${session.id}`, "/schedule")}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors"
             >
               {done ? "Review Session" : "Start Study Session"}
@@ -1034,7 +1035,7 @@ function DayDetailPanel({
             return (
               <Link
                 key={session.id}
-                href={`/study/${session.id}`}
+                href={withReturnTo(`/study/${session.id}`, "/schedule")}
                 className={cn(
                   "block rounded-lg border border-border border-l-4 pl-3 pr-4 py-3 hover:bg-background transition-colors",
                   colors.border,
@@ -1068,7 +1069,7 @@ function DayDetailPanel({
         {nextSession && (
           <div className="p-5 border-t border-border shrink-0">
             <Link
-              href={`/study/${nextSession.id}`}
+              href={withReturnTo(`/study/${nextSession.id}`, "/schedule")}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors"
             >
               Start Study Session
