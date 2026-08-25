@@ -150,7 +150,7 @@ function StudySessionPageInner() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="max-w-sm text-center">
-          <p className="mb-4 font-medium text-red-600 dark:text-red-400">
+          <p className="mb-4 font-medium text-red-600">
             {error || "Session not found."}
           </p>
           <Link href={returnTo}>

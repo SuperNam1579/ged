@@ -204,7 +204,7 @@ export default function AvailabilityPage() {
         </div>
 
         {error && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
+          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -246,7 +246,7 @@ export default function AvailabilityPage() {
                 className={cn(
                   "rounded-xl border transition-all overflow-hidden",
                   day.enabled
-                    ? "border-primary/40 bg-primary-light/20 shadow-sm shadow-blue-100/50 dark:shadow-none"
+                    ? "border-primary/40 bg-primary-light/20 shadow-sm shadow-blue-100/50"
                     : "border-border bg-card"
                 )}
               >
@@ -291,7 +291,7 @@ export default function AvailabilityPage() {
                       const hrs = Math.round(mins / 6) / 10;
                       const selCls = cn(
                         "px-2.5 py-1.5 rounded-lg border bg-card text-sm font-medium focus:outline-none focus:ring-2 cursor-pointer transition-colors",
-                        invalid ? "border-red-400 focus:ring-red-300 text-red-600 dark:text-red-400" : "border-border focus:ring-ring hover:border-primary/50"
+                        invalid ? "border-red-400 focus:ring-red-300 text-red-600" : "border-border focus:ring-ring hover:border-primary/50"
                       );
                       return (
                         <div key={slot.id} className="flex flex-col gap-0.5">
@@ -309,7 +309,7 @@ export default function AvailabilityPage() {
                             <button
                               onClick={() => removeSlot(dow, slot.id)}
                               aria-label="Remove time slot"
-                              className="ml-auto p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                              className="ml-auto p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -340,8 +340,8 @@ export default function AvailabilityPage() {
             </div>
           </div>
           <div className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
-            <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-500/15 flex items-center justify-center shrink-0">
-              <CalendarDays className="w-4.5 h-4.5 text-green-600 dark:text-green-400" />
+            <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+              <CalendarDays className="w-4.5 h-4.5 text-green-600" />
             </div>
             <div>
               <p className="text-lg font-bold text-foreground leading-tight"><AnimatedNumber value={activeDays} /></p>

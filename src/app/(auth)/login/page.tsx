@@ -179,7 +179,7 @@ function LoginContent() {
     //  - the NextAuth session (so Google is a fresh login, not "link to whoever
     //    is currently signed in").
     await clearExistingSession();
-    await signIn("google", { callbackUrl: callbackUrl || "/dashboard" });
+    await signIn("google", { callbackUrl: callbackUrl || "/welcome" });
   };
 
   /* Combine NextAuth param error with any local global error */
@@ -241,17 +241,17 @@ function LoginContent() {
               />
             </div>
           </motion.div>
-          <h2 className="text-[30px] font-bold text-foreground leading-[1.2] mb-2.5" style={{ fontFamily: "var(--font-feather)" }}>
+          <h2 className="text-[30px] font-bold text-[#0f2748] leading-[1.2] mb-2.5" style={{ fontFamily: "var(--font-feather)" }}>
             Your GED journey<br />continues here.
           </h2>
-          <p className="text-sm leading-[1.65] max-w-[300px] mb-7 text-muted-foreground">
+          <p className="text-sm leading-[1.65] max-w-[300px] mb-7 text-[#5b769a]">
             Pick up right where you left off — your plan is waiting.
           </p>
           <div
             className="rounded-2xl p-5 w-full text-left bg-white/85"
             style={{ border: "1px solid rgba(37,99,235,.22)", boxShadow: "0 12px 28px -12px rgba(37,99,235,.28)" }}
           >
-            <p className="text-[11px] font-bold uppercase tracking-[.08em] mb-3 text-muted-foreground">What you get</p>
+            <p className="text-[11px] font-bold uppercase tracking-[.08em] mb-3 text-[#5b769a]">What you get</p>
             <div className="flex flex-col gap-2.5">
               {[
                 "AI study plan that adapts to your progress",
@@ -265,7 +265,7 @@ function LoginContent() {
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <span className="text-[13px] font-medium text-foreground/80">{feat}</span>
+                  <span className="text-[13px] font-medium text-[#0f2748]/80">{feat}</span>
                 </div>
               ))}
             </div>
@@ -310,19 +310,19 @@ function LoginContent() {
 
           {/* Session-expired notice (auto-recovery redirected here) */}
           {sessionExpired && (
-            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/25 text-sm text-amber-700 dark:text-amber-400">
+            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-amber-50 border border-amber-100 text-sm text-amber-700">
               Your session ended. Please sign in again.
             </motion.div>
           )}
 
           {/* Success banners */}
           {emailVerified && (
-            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400">
+            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
               Email verified! Sign in to set up your study plan.
             </motion.div>
           )}
           {passwordReset && (
-            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/25 text-sm text-green-700 dark:text-green-400">
+            <motion.div variants={authItem} className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-100 text-sm text-green-700">
               Password updated successfully. You can now sign in.
             </motion.div>
           )}
@@ -336,10 +336,10 @@ function LoginContent() {
               animate={{ opacity: 1, height: "auto" }}
               className="mb-4 rounded-[11px] px-3.5 py-3 overflow-hidden"
               style={{ background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.35)" }}>
-              <p className="text-[13px] font-semibold text-amber-700 dark:text-amber-400 leading-normal">
+              <p className="text-[13px] font-semibold text-amber-700 leading-normal">
                 Your email isn&apos;t verified yet
               </p>
-              <p className="text-[12.5px] text-amber-700/90 dark:text-amber-400/90 leading-normal mt-0.5">
+              <p className="text-[12.5px] text-amber-700/90 leading-normal mt-0.5">
                 Check your inbox for the 6&#8209;digit verification code — you need to confirm your email before signing in.
               </p>
               <Link
@@ -349,7 +349,7 @@ function LoginContent() {
                 Enter verification code
               </Link>
               {resendState === "sent" ? (
-                <p className="text-[12.5px] font-semibold text-green-700 dark:text-green-400 mt-2">
+                <p className="text-[12.5px] font-semibold text-green-700 mt-2">
                   ✓ A new verification code has been sent.
                 </p>
               ) : (
@@ -363,7 +363,7 @@ function LoginContent() {
                 </button>
               )}
               {resendState === "error" && (
-                <p className="text-[12px] text-red-600 dark:text-red-400 mt-1.5">
+                <p className="text-[12px] text-red-600 mt-1.5">
                   Couldn&apos;t send right now. Please try again in a moment.
                 </p>
               )}
@@ -380,7 +380,7 @@ function LoginContent() {
               <svg className="flex-shrink-0 mt-px" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              <span className="text-[13px] text-red-600 dark:text-red-400 font-semibold leading-[1.4]">{topError}</span>
+              <span className="text-[13px] text-red-600 font-semibold leading-[1.4]">{topError}</span>
             </motion.div>
           )}
 

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { subjectOrder } from "@/lib/subject-order";
 
 /**
  * The GED curriculum as presented on the marketing pages.
@@ -655,13 +656,17 @@ export function findSubject(slug: string): LandingSubject | undefined {
 }
 
 /**
- * Position of a subject in the canonical order, by database code. Unknown codes
- * sort last rather than to the front, so an unrecognised subject can't silently
- * jump the queue.
+ * Position of a subject in the canonical order, by database code.
+ *
+ * Delegates to `@/lib/subject-order` so the in-app screens and the server
+ * routes sort by the same list. Previously this derived the order from
+ * `LANDING_SUBJECTS` itself, which made the marketing page's display order and
+ * the app's ordering the same thing by coincidence rather than by intent —
+ * reordering the array below to change how the landing page reads would have
+ * silently reordered the pre-assessment's sections too.
  */
 export function subjectOrderByCode(code: string): number {
-  const i = LANDING_SUBJECTS.findIndex((s) => s.code === code);
-  return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+  return subjectOrder(code);
 }
 
 /** Lesson count for a subject by its database code — for the in-app screens. */

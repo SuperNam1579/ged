@@ -26,7 +26,7 @@ function FormError({ message }: { message: string }) {
           animate={{ opacity: 1, y: 0, height: "auto" }}
           exit={{ opacity: 0, y: -6, height: 0 }}
           transition={{ duration: 0.2 }}
-          className="text-red-600 dark:text-red-400 text-sm overflow-hidden"
+          className="text-red-600 text-sm overflow-hidden"
         >
           {message}
         </motion.p>
@@ -244,8 +244,8 @@ export default function SettingsPage() {
 
           {/* Study Plan regeneration */}
           <motion.div variants={fadeUp}>
-            <Card className="border-orange-200 dark:border-orange-500/30">
-              <CardHeader className="border-orange-100 dark:border-orange-500/25">
+            <Card className="border-orange-200">
+              <CardHeader className="border-orange-100">
                 <div className="flex items-center gap-2">
                   <RefreshCw className="w-4 h-4 text-orange-500" />
                   <h2 className="font-semibold text-foreground">Study Plan</h2>

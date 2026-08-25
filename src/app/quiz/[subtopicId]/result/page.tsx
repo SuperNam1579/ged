@@ -84,10 +84,10 @@ function ScoreRing({ score, max }: { score: number; max: number }) {
 }
 
 function getLabel(pct: number): { label: string; color: string } {
-  if (pct >= 80) return { label: "Strong", color: "text-green-600 dark:text-green-400" };
+  if (pct >= 80) return { label: "Strong", color: "text-green-600" };
   if (pct >= 60) return { label: "Developing", color: "text-primary" };
-  if (pct >= 40) return { label: "Needs Work", color: "text-orange-600 dark:text-orange-400" };
-  return { label: "Weak", color: "text-red-600 dark:text-red-400" };
+  if (pct >= 40) return { label: "Needs Work", color: "text-orange-600" };
+  return { label: "Weak", color: "text-red-600" };
 }
 
 function QuizResultContent() {
@@ -120,7 +120,7 @@ function QuizResultContent() {
           <div
             className={cn(
               "px-8 pt-10 pb-6 text-center",
-              pct >= 80 ? "bg-green-50 dark:bg-green-500/10" : pct >= 60 ? "bg-primary-light" : "bg-orange-50 dark:bg-orange-500/10"
+              pct >= 80 ? "bg-green-50" : pct >= 60 ? "bg-primary-light" : "bg-orange-50"
             )}
           >
             <ScoreRing score={score} max={max} />
@@ -168,12 +168,12 @@ function QuizResultContent() {
                 animate="visible"
                 transition={{ staggerChildren: 0.08, delayChildren: 0.2 }}
               >
-                <motion.div variants={fadeUp} className="text-center bg-green-50 dark:bg-green-500/10 rounded-xl py-3">
+                <motion.div variants={fadeUp} className="text-center bg-green-50 rounded-xl py-3">
                   <p className="text-2xl font-bold text-green-700"><AnimatedNumber value={score} /></p>
-                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">Correct</p>
+                  <p className="text-xs text-green-600 font-medium mt-0.5">Correct</p>
                 </motion.div>
-                <motion.div variants={fadeUp} className="text-center bg-red-50 dark:bg-red-500/10 rounded-xl py-3">
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400"><AnimatedNumber value={max - score} /></p>
+                <motion.div variants={fadeUp} className="text-center bg-red-50 rounded-xl py-3">
+                  <p className="text-2xl font-bold text-red-600"><AnimatedNumber value={max - score} /></p>
                   <p className="text-xs text-red-500 font-medium mt-0.5">Incorrect</p>
                 </motion.div>
                 <motion.div variants={fadeUp} className="text-center bg-background rounded-xl py-3">
@@ -202,8 +202,8 @@ function QuizResultContent() {
                       className={cn(
                         "flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold",
                         correct
-                          ? "bg-green-100 dark:bg-green-500/15 text-green-700"
-                          : "bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-400"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"
                       )}
                     >
                       {correct ? (

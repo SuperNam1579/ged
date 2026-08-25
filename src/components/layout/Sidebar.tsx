@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 import {
   LayoutDashboard, TrendingUp, Calendar, CalendarClock, ClipboardList, Settings,
   BookOpen, LogOut, X, ChevronLeft, ChevronRight,
@@ -178,7 +177,7 @@ export default function Sidebar({
         })}
       </nav>
 
-      {/* ── Bottom: user + ring + theme + logout ── */}
+      {/* ── Bottom: user + ring + logout ── */}
       <div className="shrink-0 px-4 pt-4 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,.07)" }}>
 
         {/* User row */}
@@ -230,17 +229,6 @@ export default function Sidebar({
             </div>
           </div>
         )}
-
-        {/* ThemeToggle */}
-        <div className={cn("mb-1", collapsed ? "flex justify-center" : "")}>
-          <ThemeToggle
-            showLabel={!collapsed}
-            className={cn(
-              "border-white/10 bg-transparent hover:bg-white/5",
-              collapsed ? "px-2" : "w-full justify-start",
-            )}
-          />
-        </div>
 
         {/* Logout */}
         <div className="relative group/item">

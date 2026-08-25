@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
+import { bySubjectOrder } from "@/lib/subject-order";
 
 export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req);
@@ -44,9 +45,29 @@ export async function GET(req: NextRequest) {
     bySubject.set(a.subjectId, list);
   }
 
-  const assessments = Array.from(bySubject.values()).map((list) =>
-    list[Math.floor(Math.random() * list.length)]
-  );
+  // Flatten `subject: { code, name }` into the `subjectCode` / `subjectName`
+  // pair the client's Assessment interface declares — the same shape the quiz
+  // route returns. Handing back the raw Prisma row instead left both fields
+  // undefined on the client, which silently blanked every subject label and
+  // made `key={r.subjectCode}` a missing key on the results breakdown.
+  //
+  // Sorted into the canonical subject order rather than left in the order the
+  // rows arrived: `bySubject` preserves the insertion order of the `createdAt`
+  // query, so which subject a learner met first depended on the order the seed
+  // inserted assessments in. It also has to hold for any subset — someone who
+  // picked only Science and Math should still get Math first, not whichever of
+  // the two happens to be older.
+  const assessments = Array.from(bySubject.values())
+    .map((list) => {
+      const picked = list[Math.floor(Math.random() * list.length)];
+      return {
+        id: picked.id,
+        subjectCode: picked.subject?.code ?? "",
+        subjectName: picked.subject?.name ?? "",
+        questions: picked.questions,
+      };
+    })
+    .sort(bySubjectOrder);
 
   return NextResponse.json({ assessments });
 }

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Menu, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import Sidebar from "./Sidebar";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -79,7 +78,6 @@ export default function MainLayout({ children, userName, daysUntilExam, overallP
             </div>
             <span className="font-bold text-foreground text-sm tracking-normal">GED Prep</span>
           </div>
-          <ThemeToggle className="border-0 bg-transparent px-2 hover:bg-muted" />
         </header>
 
         {/* Page content — sole scrolling region */}

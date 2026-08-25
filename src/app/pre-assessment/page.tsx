@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Check, Sparkles, ArrowRight } from "lucide-react";
+import {
+  BookOpen, Check, Sparkles, ArrowRight,
+  Calculator, BookText, FlaskConical, Landmark,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
-import ProgressBar from "@/components/ui/ProgressBar";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { cn } from "@/lib/utils/cn";
 import type { QuestionData } from "@/types";
@@ -27,9 +29,9 @@ interface SubjectResult {
 
 const SUBJECT_COLORS: Record<string, string> = {
   MATH: "bg-primary-light text-primary",
-  RLA: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400",
-  SS: "bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400",
-  SCI: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400",
+  RLA: "bg-green-100 text-green-700",
+  SS: "bg-orange-100 text-orange-700",
+  SCI: "bg-purple-100 text-purple-700",
 };
 
 const SUBJECT_BAR_COLOR: Record<string, string> = {
@@ -39,12 +41,158 @@ const SUBJECT_BAR_COLOR: Record<string, string> = {
   SS: "#D97706",
 };
 
+// Paired with SUBJECT_BAR_COLOR for the one primary Button that gets themed
+// (the section-intro "Start" button). Button's own classes read the raw
+// `--primary`/`--primary-dark` variables for both its fill and its drop
+// shadow, so overriding only `background` inline leaves a blue-tinted shadow
+// under a green or purple button. Setting both variables together keeps the
+// shadow in the same family as the fill. Values are the Tailwind 600/700 step
+// of each hue, matching the base colors above.
+const SUBJECT_BUTTON_VARS: Record<string, React.CSSProperties> = {
+  MATH: {} as React.CSSProperties, // default --primary/--primary-dark already match
+  RLA: { "--primary": "#16A34A", "--primary-dark": "#15803D" } as React.CSSProperties,
+  SCI: { "--primary": "#7C3AED", "--primary-dark": "#6D28D9" } as React.CSSProperties,
+  SS: { "--primary": "#D97706", "--primary-dark": "#B45309" } as React.CSSProperties,
+};
+
+// One glyph per subject so a learner can recognise the section at a glance
+// without reading the label — the shape becomes the memory hook over a 4-part
+// assessment the same way it does on the dashboard's subject cards.
+const SUBJECT_ICONS: Record<string, typeof BookOpen> = {
+  MATH: Calculator,
+  RLA: BookText,
+  SCI: FlaskConical,
+  SS: Landmark,
+};
+
 const OPTION_LABELS = ["A", "B", "C", "D"];
+const STORAGE_KEY = "ged-pre-assessment-v1";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0 },
 };
+
+interface SavedProgress {
+  answers: Record<string, Record<string, string>>;
+  currentAssessmentIdx: number;
+  currentQuestionIdx: number;
+}
+
+/**
+ * Reads whatever progress was saved from a previous visit, once, before the
+ * first paint — the initial state a `useState` lazy initializer computes
+ * rather than something an effect corrects after the fact.
+ *
+ * `window` is absent during the server render Next.js still performs for a
+ * "use client" page, so the guard isn't optional: without it this throws
+ * during that pass instead of just returning null.
+ */
+function loadSavedProgress(): SavedProgress | null {
+  if (typeof window === "undefined") return null;
+  const saved = window.localStorage.getItem(STORAGE_KEY);
+  if (!saved) return null;
+  try {
+    return JSON.parse(saved) as SavedProgress;
+  } catch {
+    window.localStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+}
+
+/**
+ * Icon-and-line stepper across the top of the assessment: one node per
+ * subject, connected by a track that fills in as sections are finished.
+ *
+ * Shown on both the section-intro screen and the question screen so the
+ * learner's position — which subject, how many are left — reads the same way
+ * in both places rather than only existing on one of them.
+ */
+function SubjectStepper({
+  assessments,
+  currentIdx,
+  size = "compact",
+}: {
+  assessments: Assessment[];
+  currentIdx: number;
+  /**
+   * "compact" for the question screen, where the stepper is orientation the
+   * learner glances at between questions; "full" for the section-intro screen,
+   * where it is the main thing on the page and can afford the room.
+   */
+  size?: "compact" | "full";
+}) {
+  const full = size === "full";
+
+  return (
+    <div className="flex items-center">
+      {assessments.map((a, i) => {
+        const Icon = SUBJECT_ICONS[a.subjectCode] ?? BookOpen;
+        const isDone = i < currentIdx;
+        const isCurrent = i === currentIdx;
+        const color = SUBJECT_BAR_COLOR[a.subjectCode] ?? "var(--primary)";
+
+        return (
+          <div key={a.id} className="flex flex-1 items-center last:flex-none">
+            <div className="flex items-center gap-2">
+              <motion.div
+                animate={{ scale: isCurrent ? 1.1 : 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className={cn(
+                  "flex shrink-0 items-center justify-center rounded-full transition-colors",
+                  full ? "h-10 w-10" : "h-7 w-7",
+                  !isDone && !isCurrent && "bg-muted text-muted-foreground"
+                )}
+                style={
+                  isDone
+                    ? { background: "#16A34A", color: "white" }
+                    : isCurrent
+                      ? { background: color, color: "white", boxShadow: `0 0 0 3px var(--card), 0 0 0 5px ${color}` }
+                      : undefined
+                }
+              >
+                {isDone ? (
+                  <Check className={full ? "h-4 w-4" : "h-3.5 w-3.5"} />
+                ) : (
+                  <Icon className={full ? "h-4 w-4" : "h-3.5 w-3.5"} />
+                )}
+              </motion.div>
+
+              {/* The label sits beside the icon rather than under it: stacked,
+                  it forced the whole band taller and left the code floating
+                  under a circle it wasn't visually attached to. Only the
+                  current subject is labelled on the compact stepper — the rest
+                  are identifiable by their icon and would otherwise crowd the
+                  row on a four-subject assessment at phone width. */}
+              {(full || isCurrent) && (
+                <span
+                  className={cn(
+                    "text-[11px] font-bold uppercase tracking-wide whitespace-nowrap",
+                    isCurrent ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {a.subjectCode}
+                </span>
+              )}
+            </div>
+
+            {i < assessments.length - 1 && (
+              <div className="mx-2 h-0.5 flex-1 overflow-hidden rounded-full bg-border">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: "#16A34A" }}
+                  initial={false}
+                  animate={{ width: isDone ? "100%" : "0%" }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function PreAssessmentPage() {
   const router = useRouter();
@@ -52,14 +200,21 @@ export default function PreAssessmentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Read once, lazily, before first paint — see loadSavedProgress().
+  const [savedProgress] = useState(loadSavedProgress);
+
   // Flat list of all questions: { assessmentIndex, questionIndex }
-  const [currentAssessmentIdx, setCurrentAssessmentIdx] = useState(0);
-  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+  const [currentAssessmentIdx, setCurrentAssessmentIdx] = useState(
+    savedProgress?.currentAssessmentIdx ?? 0
+  );
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(
+    savedProgress?.currentQuestionIdx ?? 0
+  );
 
   // Answers: assessmentId -> { questionId -> optionId }
-  const [answers, setAnswers] = useState<
-    Record<string, Record<string, string>>
-  >({});
+  const [answers, setAnswers] = useState<Record<string, Record<string, string>>>(
+    savedProgress?.answers ?? {}
+  );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
@@ -68,30 +223,18 @@ export default function PreAssessmentPage() {
   const [showResults, setShowResults] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
 
+  // Indexes of assessments whose section-intro card has been dismissed. Not
+  // persisted: reappearing after a reload mid-transition is a mild reminder,
+  // not a bug — the alternative is silently skipping the one screen that
+  // states which subject is starting.
+  const [dismissedIntroFor, setDismissedIntroFor] = useState<Set<number>>(new Set());
+
   useEffect(() => {
     fetch("/api/csrf")
       .then((r) => r.json())
       .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
       .catch(() => {});
   }, []);
-
-  const STORAGE_KEY = "ged-pre-assessment-v1";
-
-  // Restore saved progress on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed.answers) setAnswers(parsed.answers);
-      if (typeof parsed.currentAssessmentIdx === "number")
-        setCurrentAssessmentIdx(parsed.currentAssessmentIdx);
-      if (typeof parsed.currentQuestionIdx === "number")
-        setCurrentQuestionIdx(parsed.currentQuestionIdx);
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist progress on each answer change
   useEffect(() => {
@@ -148,7 +291,7 @@ export default function PreAssessmentPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <p className="text-red-600 dark:text-red-400 font-medium mb-4">{error}</p>
+          <p className="text-red-600 font-medium mb-4">{error}</p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
@@ -275,10 +418,6 @@ export default function PreAssessmentPage() {
     (sum, a) => sum + a.questions.length,
     0,
   );
-  const answeredCount = Object.values(answers).reduce(
-    (sum, q) => sum + Object.keys(q).length,
-    0,
-  );
 
   const currentAssessment = assessments[currentAssessmentIdx];
   if (!currentAssessment) return null;
@@ -286,12 +425,23 @@ export default function PreAssessmentPage() {
   const currentQuestion = currentAssessment.questions[currentQuestionIdx];
   if (!currentQuestion) return null;
 
-  const globalQuestionNumber =
-    assessments
-      .slice(0, currentAssessmentIdx)
-      .reduce((sum, a) => sum + a.questions.length, 0) +
-    currentQuestionIdx +
-    1;
+  // Progress is measured against the section, not the whole assessment. A
+  // single "Question 11 of 20" bar reads as one twenty-question exam, so a
+  // learner eleven questions into Math has no way to see they are two
+  // questions from finishing it — the number that decides whether to keep
+  // going or take a break.
+  const sectionTotal = currentAssessment.questions.length;
+  const sectionNumber = currentQuestionIdx + 1;
+
+  const subjectColor = SUBJECT_BAR_COLOR[currentAssessment.subjectCode] ?? "var(--primary)";
+  const SubjectIcon = SUBJECT_ICONS[currentAssessment.subjectCode] ?? BookOpen;
+
+  // Gate the very first question of a subject behind an explicit "Start"
+  // screen — the boundary between subjects is the one place a learner most
+  // needs telling apart, and a card that fades in like every other question
+  // doesn't announce that anything changed.
+  const showingIntro =
+    currentQuestionIdx === 0 && !dismissedIntroFor.has(currentAssessmentIdx);
 
   const handleSelectOption = (optionId: string) => {
     setSelectedOption(optionId);
@@ -372,76 +522,121 @@ export default function PreAssessmentPage() {
     }
   };
 
+  if (showingIntro) {
+    const isFirstSection = currentAssessmentIdx === 0;
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="bg-card border-b border-border px-4 sm:px-6 py-4">
+          <div className="max-w-2xl mx-auto flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-lg font-bold text-foreground">Pre-Assessment</span>
+          </div>
+        </header>
+
+        <div className="bg-card border-b border-border px-4 sm:px-6 py-4">
+          <div className="max-w-2xl mx-auto">
+            <SubjectStepper assessments={assessments} currentIdx={currentAssessmentIdx} size="full" />
+          </div>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center px-4 py-10">
+          <motion.div
+            key={currentAssessmentIdx}
+            initial={{ opacity: 0, y: 16, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="w-full max-w-md text-center"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-5">
+              Section {currentAssessmentIdx + 1} of {assessments.length}
+            </p>
+
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-5"
+              style={{ background: subjectColor }}
+            >
+              <SubjectIcon className="w-9 h-9 text-white" />
+            </div>
+
+            <h1 className="text-2xl font-bold text-foreground mb-2">
+              {currentAssessment.subjectName}
+            </h1>
+            <p className="text-muted-foreground text-sm mb-8">
+              {currentAssessment.questions.length} question
+              {currentAssessment.questions.length === 1 ? "" : "s"} in this section
+            </p>
+
+            <Button
+              size="lg"
+              onClick={() => setDismissedIntroFor((prev) => new Set(prev).add(currentAssessmentIdx))}
+              className="px-8 flex items-center justify-center gap-2 mx-auto"
+              style={SUBJECT_BUTTON_VARS[currentAssessment.subjectCode]}
+            >
+              {isFirstSection ? "Start Assessment" : `Start ${currentAssessment.subjectName}`}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+
+            {!isFirstSection && (
+              <p className="text-xs text-muted-foreground mt-5">
+                {currentAssessmentIdx} of {assessments.length} sections complete
+              </p>
+            )}
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="bg-card border-b border-border px-4 sm:px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
               <BookOpen className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-bold text-foreground">
+            <span className="text-lg font-bold text-foreground hidden sm:block">
               Pre-Assessment
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span
-              className={cn(
-                "px-2.5 py-1 rounded-full text-xs font-semibold",
-                SUBJECT_COLORS[currentAssessment.subjectCode] ??
-                  "bg-muted text-foreground",
-              )}
-            >
-              {currentAssessment.subjectName}
-            </span>
-          </div>
+          <span
+            className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white"
+            style={{ background: subjectColor }}
+          >
+            <SubjectIcon className="w-3.5 h-3.5" />
+            {currentAssessment.subjectName}
+          </span>
         </div>
       </header>
 
-      {/* Progress */}
+      {/* Stepper and section progress share one band. They were separate rows
+          with their own rules, which stacked four horizontal dividers above the
+          question — and both were saying "where am I", just at different
+          scales. */}
       <div className="bg-card border-b border-border px-4 sm:px-6 py-3">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground font-medium">
-              Question {globalQuestionNumber} of {totalQuestions}
+          <SubjectStepper assessments={assessments} currentIdx={currentAssessmentIdx} />
+
+          <div className="mt-3 flex items-center gap-3">
+            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+              Question {sectionNumber} of {sectionTotal}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">
-              {Math.round((answeredCount / totalQuestions) * 100)}%
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ background: subjectColor }}
+                initial={false}
+                animate={{ width: `${(sectionNumber / sectionTotal) * 100}%` }}
+                transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              />
+            </div>
+            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+              {totalQuestions} total
             </span>
           </div>
-          <ProgressBar
-            value={(globalQuestionNumber / totalQuestions) * 100}
-            showPercent={false}
-            variant="blue"
-            size="sm"
-          />
-        </div>
-      </div>
-
-      {/* Subject tabs */}
-      <div className="bg-card border-b border-border px-4 sm:px-6 py-2 overflow-x-auto">
-        <div className="max-w-2xl mx-auto flex gap-2">
-          {assessments.map((a, i) => (
-            <div
-              key={a.id}
-              className={cn(
-                "flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold transition-colors",
-                i === currentAssessmentIdx
-                  ? cn(SUBJECT_COLORS[a.subjectCode] ?? "bg-primary-light text-primary", "ring-1 ring-inset ring-current/20")
-                  : i < currentAssessmentIdx
-                    ? "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400"
-                    : "bg-muted text-muted-foreground",
-              )}
-            >
-              {i < currentAssessmentIdx && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
-                  <Check className="w-3 h-3 shrink-0" />
-                </motion.span>
-              )}
-              {a.subjectCode}
-            </div>
-          ))}
         </div>
       </div>
 
@@ -456,10 +651,17 @@ export default function PreAssessmentPage() {
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <div className="bg-card rounded-2xl border border-border shadow-sm p-4 sm:p-8 mb-6">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-4">
-                  Question {currentQuestionIdx + 1} of{" "}
-                  {currentAssessment.questions.length}
+              <div
+                className="bg-card rounded-2xl border border-border border-t-4 shadow-sm p-4 sm:p-8 mb-6"
+                style={{ borderTopColor: subjectColor }}
+              >
+                {/* Number only — the subject is already named twice above, in
+                    the header pill and the stepper. */}
+                <p
+                  className="text-xs uppercase tracking-wide font-bold mb-4"
+                  style={{ color: subjectColor }}
+                >
+                  Question {sectionNumber} of {sectionTotal}
                 </p>
                 <p className="text-lg font-medium text-foreground leading-relaxed">
                   {currentQuestion.text}

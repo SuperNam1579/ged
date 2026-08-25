@@ -63,7 +63,7 @@ function PasswordStrengthMeter({ password }: { password: string }) {
               flex: 1,
               height: 3,
               borderRadius: 2,
-              background: i <= score ? color : "#d8e6f7",
+              background: i <= score ? color : "var(--border)",
               transition: "background .25s",
             }}
           />
@@ -270,7 +270,7 @@ export default function RegisterPage() {
     // Route through /dashboard, which sends users to onboarding only when they
     // have no preferences yet. Hardcoding /onboarding here forced *returning*
     // Google users (who already onboarded) back through onboarding.
-    await signIn("google", { callbackUrl: "/dashboard" });
+    await signIn("google", { callbackUrl: "/welcome" });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -390,26 +390,26 @@ export default function RegisterPage() {
             </div>
           </motion.div>
           <h2
-            className="text-[30px] font-bold text-foreground leading-[1.2] mb-2.5"
+            className="text-[30px] font-bold text-[#0f2748] leading-[1.2] mb-2.5"
             style={{ fontFamily: "var(--font-feather)" }}
           >
             Start free.<br />Pass your GED.
           </h2>
-          <p className="text-sm leading-[1.65] max-w-[310px] mb-[26px] text-muted-foreground">
+          <p className="text-sm leading-[1.65] max-w-[310px] mb-[26px] text-[#5b769a]">
             Take the diagnostic and get a personalized study plan in minutes — Nam&apos;s got your back the whole way.
           </p>
           <div
             className="rounded-2xl p-5 w-full text-left bg-white/85"
             style={{ border: "1px solid rgba(37,99,235,.22)", boxShadow: "0 12px 28px -12px rgba(37,99,235,.28)" }}
           >
-            <p className="text-[11px] font-bold uppercase tracking-[.08em] mb-3 text-muted-foreground">What you get</p>
+            <p className="text-[11px] font-bold uppercase tracking-[.08em] mb-3 text-[#5b769a]">What you get</p>
             <div className="flex flex-col gap-2.5">
               {FEATURES.map((feat) => (
                 <div key={feat} className="flex items-center gap-2.5">
                   <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: "rgba(34,197,94,.20)" }}>
                     <CheckIcon />
                   </div>
-                  <span className="text-[13px] font-medium text-foreground/80">{feat}</span>
+                  <span className="text-[13px] font-medium text-[#0f2748]/80">{feat}</span>
                 </div>
               ))}
             </div>
@@ -482,7 +482,7 @@ export default function RegisterPage() {
                 <svg className="flex-shrink-0 mt-px" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
-                <span className="text-[13px] text-red-600 dark:text-red-400 font-semibold leading-[1.4]">{globalError}</span>
+                <span className="text-[13px] text-red-600 font-semibold leading-[1.4]">{globalError}</span>
               </div>
             )}
 

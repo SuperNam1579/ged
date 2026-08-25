@@ -95,7 +95,7 @@ function QuizPageInner() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <p className="text-red-600 dark:text-red-400 font-medium mb-4">{error || "Quiz not found."}</p>
+          <p className="text-red-600 font-medium mb-4">{error || "Quiz not found."}</p>
           <Link href={returnTo}>
             <Button variant="secondary">Back to {backLabel}</Button>
           </Link>

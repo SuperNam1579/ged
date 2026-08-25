@@ -172,10 +172,10 @@ function MockSessionContent() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-2xl font-bold ${isPassing ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                      <p className={`text-2xl font-bold ${isPassing ? "text-green-600" : "text-red-500"}`}>
                         <AnimatedNumber value={Math.round(r.score)} format={(n) => `${n}%`} />
                       </p>
-                      <p className={`text-xs font-medium ${isPassing ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+                      <p className={`text-xs font-medium ${isPassing ? "text-green-600" : "text-red-500"}`}>
                         {isPassing ? "Passing" : "Below Passing"}
                       </p>
                     </div>
@@ -354,7 +354,7 @@ function MockSessionContent() {
 
           <div className="mt-8 flex flex-col items-end gap-3">
             {submitError && (
-              <p className="text-red-600 dark:text-red-400 text-sm">{submitError}</p>
+              <p className="text-red-600 text-sm">{submitError}</p>
             )}
             <Button
               onClick={handleNext}

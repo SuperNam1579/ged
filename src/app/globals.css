@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* Enable class-based dark mode (.dark on <html>) */
-@custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
   /* Typography */
   --font-feather: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
@@ -14,7 +11,7 @@
 
 /*
   Semantic + legacy tokens mapped to live CSS variables so every utility
-  (bg-primary, bg-duo-green, text-charcoal, …) automatically flips in dark mode.
+  (bg-primary, bg-duo-green, text-charcoal, …) resolves through one place.
 */
 @theme inline {
   --color-background: var(--background);
@@ -58,7 +55,7 @@
   --color-almost-black: var(--foreground);
 }
 
-/* ── Light theme — blue on white ── */
+/* ── Theme — blue on white ── */
 :root {
   --background: #f4f8ff;
   --foreground: #0f2748;
@@ -83,33 +80,6 @@
   --success: #17a673;
   --warning: #f5a623;
   --danger: #e5484d;
-}
-
-/* ── Dark theme — blue on navy-black ── */
-.dark {
-  --background: #060d1c;
-  --foreground: #e7f0fc;
-  --card: #0f1c33;
-  --card-foreground: #e7f0fc;
-  --muted: #16253f;
-  --muted-foreground: #93a7c6;
-  --border: #223451;
-  --input: #223451;
-  --ring: #3aa5f7;
-
-  --primary: #2f9bf0;
-  --primary-dark: #195f9c;
-  --primary-light: #123456;
-  --primary-foreground: #ffffff;
-
-  --accent: #38b6ff;
-  --accent-dark: #1f8fd6;
-  --accent-foreground: #06121f;
-
-  --gold: #ffc85c;
-  --success: #26c489;
-  --warning: #f5b942;
-  --danger: #ff6369;
 }
 
 html {

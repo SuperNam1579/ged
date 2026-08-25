@@ -648,7 +648,7 @@ export default function DashboardPage() {
               className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-md hover:scale-[1.03] active:scale-[0.98] transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{ background: "var(--card)", border: "1px solid var(--border)" }}
             >
-              <div className="flex items-center justify-center shrink-0 rounded-[9px] w-8.5 h-8.5 bg-orange-50 dark:bg-orange-500/15">
+              <div className="flex items-center justify-center shrink-0 rounded-[9px] w-8.5 h-8.5 bg-orange-50">
                 <Calendar className="w-4 h-4 text-orange-500" />
               </div>
               <div>
@@ -662,7 +662,7 @@ export default function DashboardPage() {
               className="flex items-center gap-[11px] rounded-[14px] px-[18px] py-4 cursor-pointer hover:shadow-md hover:scale-[1.03] active:scale-[0.98] transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{ background: "var(--card)", border: "1px solid var(--border)" }}
             >
-              <div className="flex items-center justify-center shrink-0 rounded-[9px] w-8.5 h-8.5 bg-green-50 dark:bg-green-500/15">
+              <div className="flex items-center justify-center shrink-0 rounded-[9px] w-8.5 h-8.5 bg-green-50">
                 <TrendingUp className="w-4 h-4 text-green-500" />
               </div>
               <div>

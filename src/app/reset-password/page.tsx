@@ -292,7 +292,7 @@ function ResetPasswordContent() {
 
               <motion.div variants={authItem} className="mt-6 text-center text-sm text-muted-foreground">
                 {resendStatus === "sent" ? (
-                  <span className="text-green-600 dark:text-green-400">
+                  <span className="text-green-600">
                     A new code is on its way. Check your inbox.
                   </span>
                 ) : (
@@ -404,7 +404,7 @@ function ErrorBanner({ error }: { error: string }) {
           exit={{ opacity: 0, height: 0 }}
           className="overflow-hidden"
         >
-          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
+          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
             {error}
           </div>
         </motion.div>
@@ -420,7 +420,7 @@ function SuccessState() {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 18 }}
-        className="w-14 h-14 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5"
+        className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5"
       >
         <CheckCircle className="w-8 h-8 text-green-500" />
       </motion.div>

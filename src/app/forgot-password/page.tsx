@@ -71,7 +71,7 @@ function ForgotPasswordContent() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="mb-4 px-4 py-3 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-100 dark:border-yellow-500/25 text-sm text-yellow-700 dark:text-yellow-400">
+              <div className="mb-4 px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-100 text-sm text-yellow-700">
                 Too many requests. Please wait a while before trying again.
               </div>
             </motion.div>
@@ -83,7 +83,7 @@ function ForgotPasswordContent() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/25 text-sm text-red-700 dark:text-red-400">
+              <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-700">
                 Something went wrong. Please try again.
               </div>
             </motion.div>
