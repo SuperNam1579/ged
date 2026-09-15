@@ -54,8 +54,26 @@ const SUBJECT_BAR_COLOR: Record<string, string> = {
   SS: "#D97706",
 };
 
-// Paired with SUBJECT_BAR_COLOR for the one primary Button that gets themed
-// (the section-intro "Start" button). Button's own classes read the raw
+// The selected answer card is drawn in the section's subject colour rather than
+// the app blue, so choosing an answer in Social Studies reads as part of the
+// orange section around it instead of a stray blue control. Tint is the
+// Tailwind 50 step (a background the text stays readable on); text is the 700
+// step, dark enough for small type on that tint.
+const SUBJECT_TINT: Record<string, string> = {
+  MATH: "var(--primary-light)",
+  RLA: "#F0FDF4",
+  SCI: "#F5F3FF",
+  SS: "#FFFBEB",
+};
+const SUBJECT_TEXT: Record<string, string> = {
+  MATH: "var(--primary)",
+  RLA: "#15803D",
+  SCI: "#6D28D9",
+  SS: "#B45309",
+};
+
+// Paired with SUBJECT_BAR_COLOR for the primary Buttons that get themed
+// (the section-intro "Start" button and the Next/Finish button). Button's own classes read the raw
 // `--primary`/`--primary-dark` variables for both its fill and its drop
 // shadow, so overriding only `background` inline leaves a blue-tinted shadow
 // under a green or purple button. Setting both variables together keeps the
@@ -134,7 +152,11 @@ function SubjectStepper({
 
         return (
           <div key={a.id} className="flex flex-1 items-center last:flex-none">
-            <div className="flex items-center gap-2">
+            {/* The current node is scaled up and wears a 5px ring, which reaches
+                about 7px past its box — layout doesn't see either. The gap is
+                sized for that overhang, so the label beside the current
+                subject doesn't end up pressed against its ring. */}
+            <div className="flex items-center gap-4">
               <motion.div
                 animate={{ scale: isCurrent ? 1.1 : 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -177,7 +199,7 @@ function SubjectStepper({
             </div>
 
             {i < assessments.length - 1 && (
-              <div className="mx-2 h-0.5 flex-1 overflow-hidden rounded-full bg-border">
+              <div className="mx-3 h-0.5 flex-1 overflow-hidden rounded-full bg-border">
                 <motion.div
                   className="h-full rounded-full"
                   style={{ background: "#16A34A" }}
@@ -441,8 +463,15 @@ export default function PreAssessmentPage() {
     );
   }
 
+  // A section submitted on an earlier visit comes back without its questions,
+  // so its size is taken from its result instead. Otherwise the header read
+  // "30 total" when taken in one go and "10 total" after a resume.
   const totalQuestions = assessments.reduce(
-    (sum, a) => sum + a.questions.length,
+    (sum, a) =>
+      sum +
+      (a.completed
+        ? results.find((r) => r.subjectCode === a.subjectCode)?.maxScore ?? a.questions.length
+        : a.questions.length),
     0,
   );
 
@@ -461,6 +490,8 @@ export default function PreAssessmentPage() {
   const sectionNumber = currentQuestionIdx + 1;
 
   const subjectColor = SUBJECT_BAR_COLOR[currentAssessment.subjectCode] ?? "var(--primary)";
+  const subjectTint = SUBJECT_TINT[currentAssessment.subjectCode] ?? "var(--primary-light)";
+  const subjectText = SUBJECT_TEXT[currentAssessment.subjectCode] ?? "var(--primary)";
   const SubjectIcon = SUBJECT_ICONS[currentAssessment.subjectCode] ?? BookOpen;
 
   // Gate the very first question of a subject behind an explicit "Start"
@@ -590,7 +621,10 @@ export default function PreAssessmentPage() {
             className="w-full max-w-md text-center"
           >
             {resumed && (
-              <p className="mx-auto mb-5 max-w-sm rounded-xl bg-primary-light px-4 py-2.5 text-sm font-medium text-primary">
+              <p
+                className="mx-auto mb-5 max-w-sm rounded-xl px-4 py-2.5 text-sm font-medium"
+                style={{ background: subjectTint, color: subjectText }}
+              >
                 Welcome back — you&apos;re picking up where you left off.
               </p>
             )}
@@ -724,7 +758,9 @@ export default function PreAssessmentPage() {
                 aria-label="Answer choices"
                 className="space-y-3 mb-8"
               >
-                {currentQuestion.options.map((option, i) => (
+                {currentQuestion.options.map((option, i) => {
+                  const isSelected = selectedOption === option.id;
+                  return (
                   <motion.button
                     key={option.id}
                     role="radio"
@@ -745,33 +781,30 @@ export default function PreAssessmentPage() {
                     }}
                     className={cn(
                       "w-full text-left px-3 py-3 sm:px-5 sm:py-4 rounded-xl border-2 transition-all flex items-center gap-3 sm:gap-4",
-                      selectedOption === option.id
-                        ? "border-primary bg-primary-light shadow-sm"
-                        : "border-border bg-card hover:border-border hover:bg-background",
+                      isSelected
+                        ? "shadow-sm"
+                        : "border-border bg-card hover:bg-background",
                     )}
+                    style={isSelected ? { borderColor: subjectColor, background: subjectTint } : undefined}
                   >
                     <span
                       className={cn(
                         "shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-sm font-bold",
-                        selectedOption === option.id
-                          ? "bg-primary text-white"
-                          : "bg-muted text-muted-foreground",
+                        isSelected ? "text-white" : "bg-muted text-muted-foreground",
                       )}
+                      style={isSelected ? { background: subjectColor } : undefined}
                     >
                       {OPTION_LABELS[i]}
                     </span>
                     <span
-                      className={cn(
-                        "text-sm font-medium",
-                        selectedOption === option.id
-                          ? "text-primary"
-                          : "text-foreground",
-                      )}
+                      className={cn("text-sm font-medium", !isSelected && "text-foreground")}
+                      style={isSelected ? { color: subjectText } : undefined}
                     >
                       {option.text}
                     </span>
                   </motion.button>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           </AnimatePresence>
@@ -794,6 +827,7 @@ export default function PreAssessmentPage() {
               disabled={!selectedOption || submitting}
               loading={submitting}
               className="px-8"
+              style={SUBJECT_BUTTON_VARS[currentAssessment.subjectCode]}
             >
               {submitError
                 ? "Try Again"
