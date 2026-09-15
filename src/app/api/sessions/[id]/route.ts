@@ -15,6 +15,9 @@ export async function GET(
     where: { id },
     include: {
       studyPlan: { select: { userId: true } },
+      resources: {
+        select: { resource: { select: { order: true, lessonRef: { select: { unit: { select: { name: true } } } } } } },
+      },
       subtopic: {
         include: {
           topic: {
@@ -38,6 +41,44 @@ export async function GET(
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
+  // For a session that is one part of a split subtopic: the units it covers,
+  // and the next part still to do, so the page can say "next: Thursday"
+  // instead of offering the subtopic quiz halfway through the subtopic.
+  const isPart = session.resources.length > 0;
+  const firstOrder = isPart ? Math.min(...session.resources.map((r) => r.resource.order)) : 0;
+  const unitNames = [
+    ...new Set(
+      [...session.resources]
+        .sort((a, b) => a.resource.order - b.resource.order)
+        .map((r) => r.resource.lessonRef?.unit.name)
+        .filter((n): n is string => !!n)
+    ),
+  ];
+
+  let nextPart: { id: string; scheduledDate: string } | null = null;
+  if (isPart) {
+    const siblings = await db.studySession.findMany({
+      where: {
+        studyPlanId: session.studyPlanId,
+        subtopicId: session.subtopicId,
+        id: { not: session.id },
+        status: { not: "COMPLETED" },
+        resources: { some: {} },
+      },
+      select: { id: true, scheduledDate: true, resources: { select: { resource: { select: { order: true } } } } },
+    });
+    const later = siblings
+      .map((s) => ({ ...s, first: Math.min(...s.resources.map((r) => r.resource.order)) }))
+      .filter((s) => s.first > firstOrder)
+      .sort((a, b) => a.first - b.first)[0];
+    if (later) nextPart = { id: later.id, scheduledDate: later.scheduledDate.toISOString().split("T")[0] };
+  }
+
+  // The subtopic quiz belongs after its last part. partCount stays null until
+  // every clip is scheduled, so an unknown total is never treated as "last".
+  const isLastPart = !isPart || (session.partIndex !== null && session.partIndex === session.partCount) ||
+    (session.partIndex === null && nextPart === null);
+
   return NextResponse.json({
     session: {
       id: session.id,
@@ -55,6 +96,11 @@ export async function GET(
       difficultyLevel: session.subtopic.difficultyLevel,
       estimatedMinutes: session.subtopic.estimatedMinutes,
       prerequisites: session.subtopic.prerequisites.map((p) => p.prerequisite.name),
+      partIndex: session.partIndex,
+      partCount: session.partCount,
+      unitNames,
+      isLastPart,
+      nextPart,
     },
   });
 }

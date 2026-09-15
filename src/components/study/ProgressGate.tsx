@@ -21,6 +21,9 @@ interface ProgressGateProps {
   /** Origin to hand on to the quiz, so its result page can return there. */
   returnTo: string;
   onCompleted: () => void;
+  /** More parts of this subtopic follow — hold the quiz until the last one. */
+  isLastPart?: boolean;
+  nextPartDate?: string | null;
 }
 
 interface VerifyResponse {
@@ -49,6 +52,8 @@ export function ProgressGate({
   elapsedSec,
   returnTo,
   onCompleted,
+  isLastPart = true,
+  nextPartDate = null,
 }: ProgressGateProps) {
   const reduceMotion = useReducedMotion();
   const [verifying, setVerifying] = useState(false);
@@ -117,10 +122,16 @@ export function ProgressGate({
             </p>
             <p className="truncate text-xs text-muted-foreground">
               {isCompleted
-                ? "Session complete — the quiz is unlocked."
+                ? isLastPart
+                  ? "Session complete — the quiz is unlocked."
+                  : "Part complete — the quiz unlocks after the last part."
                 : looksReady
-                  ? "Ready to complete this session."
-                  : `${Math.round(remaining)}% more to unlock the quiz.`}
+                  ? isLastPart
+                    ? "Ready to complete this session."
+                    : "Ready to complete this part."
+                  : isLastPart
+                    ? `${Math.round(remaining)}% more to unlock the quiz.`
+                    : `${Math.round(remaining)}% more to finish this part.`}
             </p>
           </div>
         </div>
@@ -139,12 +150,23 @@ export function ProgressGate({
                   <CheckCircle2 className="h-4 w-4" aria-hidden />
                   Complete
                 </span>
-                <Link
-                  href={withReturnTo(`/quiz/${subtopicId}`, returnTo)}
-                  className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
-                >
-                  Take the quiz
-                </Link>
+                {isLastPart ? (
+                  <Link
+                    href={withReturnTo(`/quiz/${subtopicId}`, returnTo)}
+                    className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
+                  >
+                    Take the quiz
+                  </Link>
+                ) : (
+                  <Link
+                    href={returnTo}
+                    className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    {nextPartDate
+                      ? `Next part: ${new Date(`${nextPartDate}T00:00:00`).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}`
+                      : "Back to schedule"}
+                  </Link>
+                )}
               </motion.div>
             ) : (
               <motion.button
@@ -167,7 +189,9 @@ export function ProgressGate({
                   ? "Checking…"
                   : looksReady
                     ? "Complete session"
-                    : "Watch 80% to unlock"}
+                    : isLastPart
+                      ? "Watch 80% to unlock"
+                      : "Watch 80% to finish"}
               </motion.button>
             )}
           </AnimatePresence>

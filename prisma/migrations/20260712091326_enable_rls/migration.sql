@@ -35,3 +35,10 @@ ALTER TABLE "RevokedToken"            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "AuditLog"                ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "WeeklyAvailabilityTemplate"     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "WeeklyAvailabilityTemplateSlot" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "UserResourceProgress" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Resource" ENABLE ROW LEVEL SECURITY;
+
+-- Added Sep 2026 with the Subtopic → Unit → Lesson structure and session parts.
+ALTER TABLE "Unit"                 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Lesson"               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "StudySessionResource" ENABLE ROW LEVEL SECURITY;

@@ -194,20 +194,31 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Gate the dashboard fetch behind a preferences check so a brand-new
-  // account (e.g. fresh Google sign-up, which never set up a study plan)
-  // never renders a flash of empty/zeroed dashboard before bouncing to
-  // onboarding — it goes straight there instead.
+  // Gate the dashboard fetch behind the next-step check so a learner who
+  // doesn't belong here yet — a brand-new account with no preferences, or one
+  // who dropped out of the pre-assessment part-way — goes straight to where
+  // they do belong, without a flash of an empty, zeroed dashboard first.
+  // This also covers a sign-in that honoured a ?callbackUrl=/dashboard and so
+  // skipped the login page's own routing.
   useEffect(() => {
     if (authLoading) return;
     let cancelled = false;
 
-    fetch("/api/user/preferences")
-      .then((r) => r.json())
+    fetch("/api/user/next-step")
+      .then((r) => {
+        // A 401 here means the session ended while the page was open. Reading
+        // the body as "no preferences" used to send that learner to onboarding.
+        if (r.status === 401) {
+          router.replace("/login?expired=1");
+          return null;
+        }
+        if (!r.ok) throw new Error(`next-step ${r.status}`);
+        return r.json() as Promise<{ route: string }>;
+      })
       .then((data) => {
-        if (cancelled) return;
-        if (!data.preferences) {
-          router.replace("/onboarding");
+        if (cancelled || !data) return;
+        if (data.route !== "/dashboard") {
+          router.replace(data.route);
           return;
         }
         return fetch("/api/dashboard")

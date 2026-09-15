@@ -1,4 +1,4 @@
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth, { CredentialsSignin, type DefaultSession } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -26,6 +26,14 @@ const CredentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 });
+
+// ─── Sign-in errors ───────────────────────────────────────────────────────────
+
+// `code` is what Auth.js appends to the redirect as ?code=… alongside
+// ?error=CredentialsSignin; the login page maps it to a specific message.
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "EMAIL_NOT_VERIFIED";
+}
 
 // ─── NextAuth configuration ───────────────────────────────────────────────────
 
@@ -83,10 +91,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!valid) return null;
 
         // Email must be verified before a credentials session is issued.
-        // Throwing causes NextAuth to redirect to /login?error=EMAIL_NOT_VERIFIED
-        // so the frontend can show a targeted "resend verification" prompt.
+        // Must be a CredentialsSignin — Auth.js only forwards a small allow-list
+        // of error types to the browser. A plain Error is wrapped in a
+        // CallbackRouteError, which is NOT on that list, so it would surface as
+        // the useless generic ?error=Configuration instead. CredentialsSignin is
+        // on the list and carries `code` through, giving the frontend the
+        // targeted "resend verification" prompt it expects.
         if (!user.emailVerified) {
-          throw new Error("EMAIL_NOT_VERIFIED");
+          throw new EmailNotVerifiedError();
         }
 
         return {
@@ -121,12 +133,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // emailVerified stays null forever even though they're actively signing
     // in — silently blocking them from ever using password login later, and
     // leaving the DB out of sync with reality. A no-op if already verified.
+    //
+    // Best-effort: an event that throws is wrapped in a CallbackRouteError and
+    // aborts an otherwise-valid sign-in with the opaque ?error=Configuration.
+    // A failed backfill is not worth locking the user out over — log it and let
+    // the sign-in through; the next Google sign-in retries it.
     async signIn({ user, account }) {
       if (account?.provider === "google" && user?.id) {
-        await db.user.updateMany({
-          where: { id: user.id, emailVerified: null },
-          data: { emailVerified: new Date() },
-        });
+        try {
+          await db.user.updateMany({
+            where: { id: user.id, emailVerified: null },
+            data: { emailVerified: new Date() },
+          });
+        } catch (err) {
+          console.error("[auth] emailVerified backfill failed:", err);
+        }
       }
     },
   },

@@ -42,7 +42,6 @@ model User {
   weeklyAvailabilities WeeklyAvailability[]
   availabilityTemplate WeeklyAvailabilityTemplate?
   auditLogs            AuditLog[]
-  Session              Session[]
   resourceProgress     UserResourceProgress[]
 
   @@index([email])
@@ -51,10 +50,15 @@ model User {
 }
 
 // ─── NEXTAUTH MODELS ───────────────────────────────────────────────────────────
-// These three models are required by the @auth/prisma-adapter contract.
 // Account: stores OAuth provider tokens; one user can link multiple providers.
-// Session: required by the adapter interface even when using JWT session strategy.
-// VerificationToken: used by Auth.js email magic-link provider (not our custom flow).
+//
+// The adapter's Session and VerificationToken models were removed (Sep 2026).
+// Auth.js only touches Session under the "database" session strategy — every
+// createSession/getSessionAndUser/deleteSession call in @auth/core sits behind
+// !useJwtSession — and VerificationToken only for the email magic-link
+// provider. This app uses the JWT strategy and its own email verification
+// (User.emailVerificationToken), so both tables were empty and unread. Switching
+// to database sessions or adding the Email provider means adding them back.
 
 model Account {
   id                String   @id @default(cuid())
@@ -78,33 +82,11 @@ model Account {
   @@index([userId])
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
 model UserPreferences {
   id                   String   @id @default(cuid())
   userId               String   @unique
   targetExamDate       DateTime
   targetScore          Int      @default(145)
-  studyGoal            String   @default("PASS") // only "PASS" is used anywhere in the app
   selectedSubjectCodes String[] @default([]) // e.g. ["MATH","SCI"] — chosen in onboarding step 1
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -150,6 +132,11 @@ model Category {
 
   subject Subject @relation(fields: [subjectId], references: [id])
   topics  Topic[]
+
+  // Natural key. The seed upserts the curriculum tree on these rather than
+  // deleting and recreating it, so that IDs — which learner progress, study
+  // plans and the resource table all point at — survive a re-seed.
+  @@unique([subjectId, name])
 }
 
 model Topic {
@@ -161,6 +148,8 @@ model Topic {
 
   category  Category   @relation(fields: [categoryId], references: [id])
   subtopics Subtopic[]
+
+  @@unique([categoryId, name])
 }
 
 model Subtopic {
@@ -174,11 +163,15 @@ model Subtopic {
   createdAt        DateTime @default(now())
 
   topic         Topic                     @relation(fields: [topicId], references: [id])
+  units         Unit[]
+  resources     Resource[]
   proficiencies UserSubtopicProficiency[]
   questions     Question[]
   studySessions StudySession[]
   prerequisites SubtopicPrerequisite[]    @relation("Dependent")
   dependents    SubtopicPrerequisite[]    @relation("Prerequisite")
+
+  @@unique([topicId, name])
 }
 
 model SubtopicPrerequisite {
@@ -203,7 +196,6 @@ model Assessment {
   subjectId  String?
   subtopicId String?
   title      String
-  timeLimit  Int? // minutes, null = unlimited
   createdAt  DateTime       @default(now())
 
   subject   Subject?                @relation(fields: [subjectId], references: [id])
@@ -229,15 +221,13 @@ model Question {
 }
 
 model UserAssessmentAttempt {
-  id            String    @id @default(cuid())
-  userId        String
-  assessmentId  String
-  score         Float // 0–100 percentage
-  rawScore      Int
-  maxScore      Int
-  startedAt     DateTime  @default(now())
-  completedAt   DateTime?
-  triggerAction String? // GA action triggered by this attempt
+  id           String    @id @default(cuid())
+  userId       String
+  assessmentId String
+  score        Float // 0–100 percentage
+  rawScore     Int
+  maxScore     Int
+  completedAt  DateTime?
 
   user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   assessment Assessment             @relation(fields: [assessmentId], references: [id])
@@ -346,19 +336,128 @@ model StudySession {
   completedAt   DateTime?
   createdAt     DateTime      @default(now())
 
-  studyPlan StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
-  subtopic  Subtopic  @relation(fields: [subtopicId], references: [id])
+  // A long subtopic is split into several sessions at unit or lesson
+  // boundaries, so one session may cover only part of it: "part 2 of 5".
+  // Both null means the session covers the whole subtopic — every session
+  // created before the split existed, and every subtopic with no videos.
+  partIndex Int?
+  partCount Int?
+
+  studyPlan StudyPlan              @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  subtopic  Subtopic               @relation(fields: [subtopicId], references: [id])
+  resources StudySessionResource[]
 
   @@index([studyPlanId, scheduledDate, status])
 }
 
-// Per-user watch progress against a learning resource.
+// The clips one study session covers. No rows = the whole subtopic (see
+// StudySession.partIndex).
 //
-// `resourceId` is intentionally a plain String with no foreign key: resources
-// still live in a fixture file (src/lib/resources/), not in this database.
-// Progress, by contrast, is real user data and has to survive a page reload, so
-// it lands here from day one. When the Resource table arrives, this becomes a
-// relation and the column type does not change.
+// Points at Resource rather than at Lesson on purpose: a Resource ID is
+// `<subtopicId>-<youtubeId>` and survives re-imports, whereas renaming a unit or
+// lesson in the sheet mints a new row — a session tied to a lesson would lose
+// its content the next time the curriculum is imported.
+model StudySessionResource {
+  sessionId  String
+  resourceId String
+
+  session  StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  resource Resource     @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, resourceId])
+  @@index([resourceId])
+}
+
+// ─── Curriculum structure below the subtopic ─────────────────────────────────
+// Subtopic → Unit → Lesson → Resource, from the sheet's "Unit (Khan)" and
+// "หัวข้อหลัก (Lesson)" columns. Owned by scripts/import-curriculum.ts.
+//
+// Units belong to one subtopic even when the same Khan unit feeds two subtopics
+// (exponent rules serve both "Exponents & roots" and "Quadratic functions"):
+// each subtopic keeps its own copy so their orders never interfere.
+//
+// The scheduler cuts long subtopics into sessions at unit boundaries first and
+// lesson boundaries only when a unit won't fit in a day, so these are the
+// seams a session can start and end on. A lesson is never split.
+model Unit {
+  id         String @id @default(cuid())
+  subtopicId String
+  name       String
+  order      Int
+
+  subtopic Subtopic @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
+  lessons  Lesson[]
+
+  @@unique([subtopicId, name])
+}
+
+model Lesson {
+  id     String @id @default(cuid())
+  unitId String
+  name   String
+  order  Int
+
+  unit      Unit       @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  resources Resource[]
+
+  @@unique([unitId, name])
+}
+
+// A learning resource attached to a subtopic. Video-only for now.
+//
+// ── About the ID ──────────────────────────────────────────────────────────
+// `id` is not a cuid. It is `<subtopicId>-<youtubeId>`, minted by
+// scripts/import-curriculum.ts, and that is a deliberate choice rather than a
+// leftover from the fixture this table replaced.
+//
+// The obvious alternative — numbering clips by their position in the subtopic —
+// fails in a way that is silent and therefore dangerous. Insert one clip in the
+// middle of a subtopic and every later position shifts by one, so an ID that
+// meant clip A now means clip B. Watch progress does not go missing; it moves
+// onto the wrong video. Nobody sees an error, and the 80% gate starts letting
+// learners past material they never opened.
+//
+// Deriving the ID from the video itself makes identity follow the content:
+// clips can be inserted, reordered or cut and every learner's progress stays
+// attached to what they actually watched. Replacing a taken-down video with a
+// different upload does start its progress over, which is correct — it is a
+// different video.
+model Resource {
+  id         String @id
+  subtopicId String
+
+  // The 11-character YouTube video ID — not a full URL.
+  youtubeId    String
+  title        String
+  channelTitle String
+
+  // Total length in whole seconds. Completion is decided on the server, and the
+  // server cannot ask the browser how long a video is without trusting the
+  // browser — duration has to be known independently of the player.
+  durationSec Int
+
+  // The Lesson row this clip belongs to (the sheet's "หัวข้อหลัก" column, inside
+  // its "Unit (Khan)"). Replaced a plain `lesson` name column, which could not
+  // tell apart lessons that share a name across units. Null only for clips from
+  // the old search-based importer, which have no curriculum structure.
+  lessonId String?
+
+  // Position within the subtopic's list, ascending and contiguous from 0.
+  order Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subtopic      Subtopic               @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
+  lessonRef     Lesson?                @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  progress      UserResourceProgress[]
+  studySessions StudySessionResource[]
+
+  @@index([subtopicId])
+  @@index([lessonId])
+}
+
+// Per-user watch progress against a learning resource.
 model UserResourceProgress {
   id         String @id @default(cuid())
   userId     String
@@ -380,10 +479,12 @@ model UserResourceProgress {
   // time elapsed since the previous heartbeat.
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, resourceId])
   @@index([userId])
+  @@index([resourceId])
 }
 
 model GaExecutionLog {

@@ -1,6 +1,7 @@
 "use client";
 
 import { signOut } from "next-auth/react";
+import { postJson } from "@/lib/csrf-client";
 
 /**
  * Clear every trace of the current app session in the browser before starting
@@ -15,6 +16,26 @@ import { signOut } from "next-auth/react";
  *   2. NextAuth session cookie — via signOut(), so OAuth is treated as a fresh
  *      login rather than "link a provider to whoever is currently signed in".
  */
+/**
+ * Log the learner out, for the "Log out" button.
+ *
+ * Unlike clearExistingSession(), this one throws when the server didn't confirm
+ * it. The auth-token cookie is httpOnly, so only the server can clear it: a
+ * logout that failed but still navigated away would leave the account signed
+ * in behind a page that looks signed out. (The sidebar button did exactly that
+ * — it posted without the CSRF header, got a 403 every time, and redirected
+ * anyway.)
+ */
+export async function logOut(): Promise<void> {
+  // postJson supplies the CSRF header and throws on a non-2xx response.
+  await postJson("/api/auth/logout", {});
+  try {
+    await signOut({ redirect: false });
+  } catch {
+    // The logout route already deleted the NextAuth cookie server-side.
+  }
+}
+
 export async function clearExistingSession(): Promise<void> {
   try {
     const res = await fetch("/api/csrf");

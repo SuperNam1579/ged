@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
-import { runGeneticAlgorithm } from "@/lib/ga/engine";
-import { recommendOrder } from "@/lib/ga/ordering";
+import { planWeek, savePlan } from "@/lib/ga/engine";
+import { loadWorkItems } from "@/lib/schedule/work-items";
 import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
 import type { TriggerReason } from "@/types";
@@ -17,14 +17,6 @@ const GenerateSchema = z.object({
     "MANUAL_REQUEST",
   ]),
 });
-
-function calcSlotMins(slots: { startTime: string; endTime: string }[]): number {
-  return slots.reduce((sum, s) => {
-    const [sh, sm] = s.startTime.split(":").map(Number);
-    const [eh, em] = s.endTime.split(":").map(Number);
-    return sum + Math.max(0, eh * 60 + em - (sh * 60 + sm));
-  }, 0);
-}
 
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req);
@@ -111,88 +103,68 @@ export async function POST(req: NextRequest) {
     proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score])
   );
 
-  // Start exclusion set from already-completed subtopics only (fresh regeneration)
-  const completed = await db.studySession.findMany({
-    where: { studyPlan: { userId: authUser.id }, status: "COMPLETED" },
-    select: { subtopicId: true },
-    distinct: ["subtopicId"],
-  });
-  const assignedIds = new Set<string>(
-    completed.map((s: { subtopicId: string }) => s.subtopicId)
-  );
+  // What is left to learn, per clip. A subtopic with one completed part still
+  // has its other parts planned — the old "any completed session = finished"
+  // rule would have dropped them.
+  let pending = await loadWorkItems(authUser.id, subtopicData, "regenerate");
 
-  if (assignedIds.size >= subtopicData.length) {
+  if (pending.length === 0) {
     return NextResponse.json({ message: "All subtopics have been scheduled. Great work!" });
   }
-
-  const latestPlan = await db.studyPlan.findFirst({
-    where: { userId: authUser.id },
-    orderBy: { version: "desc" },
-    select: { version: true },
-  });
 
   // 20s per week — allows up to 3 weeks before hitting a 60s function limit
   const GA_TIMEOUT_MS = 20000;
 
-  let lastResult: { studyPlanId: string; bestFitness: number; fitnessBreakdown: object; generationLogs: unknown[] } | null = null;
+  let lastResult: { studyPlanId: string; bestFitness: number } | null = null;
+  let planCreated = false;
 
   for (let i = 0; i < validWeeks.length; i++) {
     const week = validWeeks[i];
+    if (pending.length === 0) break;
+
     const weekSlots = week.slots.map((s) => ({
       dayOfWeek: s.dayOfWeek,
       startTime: s.startTime,
       endTime: s.endTime,
     }));
 
-    const remaining = subtopicData.filter((s) => !assignedIds.has(s.id));
-    if (remaining.length === 0) break;
-
-    const budget = Math.max(Math.floor(calcSlotMins(weekSlots) * 0.95), 30);
-    const ordered = recommendOrder({ subtopics: remaining, proficiencies: profMap });
-    let cumMins = 0;
-    const weekSubtopics = ordered.filter((s) => {
-      if (cumMins + s.estimatedMinutes <= budget) {
-        cumMins += s.estimatedMinutes;
-        return true;
-      }
-      return false;
-    });
-    if (weekSubtopics.length === 0) weekSubtopics.push(ordered[0]);
-
-    // Reserve these subtopics for this week so next weeks don't re-use them
-    weekSubtopics.forEach((s) => assignedIds.add(s.id));
-
     try {
-      const result = await Promise.race([
-        runGeneticAlgorithm({
-          userId: authUser.id,
-          proficiencies: profMap,
-          preferences: {
-            targetExamDate: preferences.targetExamDate,
-            targetScore: preferences.targetScore,
-          },
-          weeklyAvailability: weekSlots,
-          weekStartDate: week.weekStartDate,
-          weeklyAvailabilityId: week.id,
-          subtopics: weekSubtopics,
-          triggerReason: triggerReason as TriggerReason,
-          existingPlanVersion: latestPlan?.version,
-          // Week 0: replace mode (deactivates old plan, creates fresh one)
-          // Week 1+: append mode (adds sessions to the new plan)
-          appendToExisting: i > 0,
-        }),
+      const plan = await Promise.race([
+        Promise.resolve().then(() =>
+          planWeek({
+            items: pending,
+            subtopics: subtopicData,
+            proficiencies: profMap,
+            slots: weekSlots,
+            weekStartDate: week.weekStartDate,
+          })
+        ),
         new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error(`Week ${i + 1} generation timed out.`)),
-            GA_TIMEOUT_MS
-          )
+          setTimeout(() => reject(new Error(`Week ${i + 1} generation timed out.`)), GA_TIMEOUT_MS)
         ),
       ]);
-      lastResult = result;
+      if (!plan) continue; // no study days left in this week
+
+      const saved = await savePlan({
+        userId: authUser.id,
+        sessions: plan.sessions,
+        fitness: plan.fitness,
+        logs: plan.logs,
+        cfg: plan.cfg,
+        triggerReason: triggerReason as TriggerReason,
+        weeklyAvailabilityId: week.id,
+        // The first week that gets sessions replaces the active plan; later
+        // weeks add to it.
+        append: planCreated,
+      });
+      planCreated = true;
+      // Unfinished parts continue first next week.
+      pending = plan.leftovers;
+      lastResult = { studyPlanId: saved.studyPlanId, bestFitness: plan.fitness.total };
     } catch (err) {
       console.error(`GA failed for week starting ${week.weekStartDate.toISOString()}:`, err);
-      // If week 0 fails, abort entirely; subsequent weeks are best-effort
-      if (i === 0) {
+      // If the first plan can't be made, abort; later weeks are best-effort.
+      if (!planCreated) {
         const message = err instanceof Error ? err.message : "GA execution failed";
         return NextResponse.json({ error: message }, { status: 500 });
       }
@@ -214,6 +186,7 @@ export async function POST(req: NextRequest) {
     metadata: {
       triggerReason,
       fitnessScore: lastResult.bestFitness,
+      unscheduledSubtopics: pending.length,
       weeksGenerated: validWeeks.length,
     },
     success: true,

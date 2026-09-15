@@ -12,6 +12,12 @@ export interface StudyResource {
   title: string;
   channelTitle: string;
   durationSec: number;
+  /** Curriculum lesson name — the grouping the contents panel draws. "" when unstructured. */
+  lesson: string;
+  lessonId: string | null;
+  /** Curriculum unit the lesson sits in. "" when unstructured. */
+  unit: string;
+  unitId: string | null;
   order: number;
   requiredSec: number;
   watchedSec: number;

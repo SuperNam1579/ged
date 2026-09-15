@@ -15,6 +15,10 @@ const SubmitSchema = z.object({
       timeSpent: z.number().optional(),
     })
   ),
+  // Sent only by the pre-assessment page. It opts the request into
+  // once-per-subject semantics (see below); the mock test can submit PRE
+  // assessments as a fallback and must keep being allowed to repeat them.
+  purpose: z.literal("PRE_ASSESSMENT").optional(),
 });
 
 export async function POST(
@@ -51,6 +55,40 @@ export async function POST(
 
   if (!assessment) {
     return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
+  }
+
+  // A pre-assessment section is taken once per subject. The page retries a
+  // submission whose response never arrived, and the first request may well
+  // have been saved — without this, the retry would record a second attempt and
+  // feed the same answers into proficiency twice. Report the stored result
+  // instead, in the same shape the page reads from a fresh submission.
+  if (parsed.data.purpose === "PRE_ASSESSMENT") {
+    if (assessment.type !== "PRE" || !assessment.subjectId) {
+      return NextResponse.json({ error: "Not a pre-assessment" }, { status: 400 });
+    }
+    const existing = await db.userAssessmentAttempt.findFirst({
+      where: {
+        userId: authUser.id,
+        completedAt: { not: null },
+        assessment: { type: "PRE", subjectId: assessment.subjectId },
+      },
+      orderBy: { completedAt: "desc" },
+      select: { id: true, score: true, rawScore: true, maxScore: true },
+    });
+    if (existing) {
+      return NextResponse.json({
+        attemptId: existing.id,
+        score: existing.score,
+        rawScore: existing.rawScore,
+        maxScore: existing.maxScore,
+        correctCount: existing.rawScore,
+        incorrectCount: existing.maxScore - existing.rawScore,
+        responses: [],
+        weakSubtopics: [],
+        triggered: null,
+        alreadySubmitted: true,
+      });
+    }
   }
 
   type QuestionRecord = {
@@ -107,8 +145,12 @@ export async function POST(
   const maxScore = assessment.questions.length;
   const score = maxScore > 0 ? (rawScore / maxScore) * 100 : 0;
 
-  // Persist attempt
-  const attempt = await db.userAssessmentAttempt.create({
+  // The attempt and the proficiency updates it causes are written in ONE
+  // transaction. They used to be two separate writes, so a failure in between
+  // left an attempt with no proficiency effect — and now that a pre-assessment
+  // retry returns the stored attempt instead of re-grading, that gap would
+  // never be filled.
+  const createAttempt = db.userAssessmentAttempt.create({
     data: {
       userId: authUser.id,
       assessmentId,
@@ -145,6 +187,7 @@ export async function POST(
   // round-trips to the database — the cause of the long pause on the last
   // question of each subject in the pre-assessment.
   const subtopicIds = Array.from(subtopicScores.keys());
+  let proficiencyWrites: ReturnType<typeof db.userSubtopicProficiency.upsert>[] = [];
   if (subtopicIds.length > 0) {
     const existingProfs = await db.userSubtopicProficiency.findMany({
       where: { userId: authUser.id, subtopicId: { in: subtopicIds } },
@@ -177,8 +220,10 @@ export async function POST(
       });
     });
 
-    await db.$transaction(upserts);
+    proficiencyWrites = upserts;
   }
+
+  const [attempt] = await db.$transaction([createAttempt, ...proficiencyWrites]);
 
   // Check adaptive triggers for QUIZ and MOCK
   let triggered = null;

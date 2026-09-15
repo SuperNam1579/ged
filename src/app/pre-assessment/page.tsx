@@ -1,27 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BookOpen, Check, Sparkles, ArrowRight,
-  Calculator, BookText, FlaskConical, Landmark,
+  Calculator, BookText, FlaskConical, Landmark, WifiOff,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import { cn } from "@/lib/utils/cn";
+import { postJson } from "@/lib/csrf-client";
+import { bySubjectOrder } from "@/lib/subject-order";
+import {
+  clearProgress, pruneAnswers, readProgress, resumePosition, writeProgress,
+  type SavedAnswers,
+} from "@/lib/pre-assessment/progress";
+import type { SubjectResult } from "@/lib/pre-assessment/status";
 import type { QuestionData } from "@/types";
 
 interface Assessment {
   id: string;
   subjectCode: string;
   subjectName: string;
+  /** Already submitted on an earlier visit; carries no questions. */
+  completed: boolean;
   questions: QuestionData[];
 }
 
-interface SubjectResult {
-  subjectCode: string;
-  subjectName: string;
+interface PreAssessmentResponse {
+  userId: string;
+  assessments: Assessment[];
+  results: SubjectResult[];
+}
+
+interface SubmitResponse {
   rawScore: number;
   maxScore: number;
   score: number;
@@ -66,38 +79,25 @@ const SUBJECT_ICONS: Record<string, typeof BookOpen> = {
 };
 
 const OPTION_LABELS = ["A", "B", "C", "D"];
-const STORAGE_KEY = "ged-pre-assessment-v1";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0 },
 };
 
-interface SavedProgress {
-  answers: Record<string, Record<string, string>>;
-  currentAssessmentIdx: number;
-  currentQuestionIdx: number;
-}
-
 /**
- * Reads whatever progress was saved from a previous visit, once, before the
- * first paint — the initial state a `useState` lazy initializer computes
- * rather than something an effect corrects after the fact.
- *
- * `window` is absent during the server render Next.js still performs for a
- * "use client" page, so the guard isn't optional: without it this throws
- * during that pass instead of just returning null.
+ * Wording for a submission that didn't go through. A fetch that never reached
+ * the server rejects with a TypeError; anything else is a response the server
+ * sent back, whose own message is more useful than a generic one.
  */
-function loadSavedProgress(): SavedProgress | null {
-  if (typeof window === "undefined") return null;
-  const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (!saved) return null;
-  try {
-    return JSON.parse(saved) as SavedProgress;
-  } catch {
-    window.localStorage.removeItem(STORAGE_KEY);
-    return null;
+function submitErrorMessage(err: unknown): string {
+  if (err instanceof TypeError) {
+    return "Couldn't reach the server. Your answers are saved on this device — check your connection and try again.";
   }
+  if (err instanceof Error && err.message === "Unauthorized") {
+    return "Your session has expired. Sign in again — your answers are saved and you'll pick up right here.";
+  }
+  return "Your answers couldn't be submitted. They're saved on this device — please try again.";
 }
 
 /**
@@ -128,7 +128,7 @@ function SubjectStepper({
     <div className="flex items-center">
       {assessments.map((a, i) => {
         const Icon = SUBJECT_ICONS[a.subjectCode] ?? BookOpen;
-        const isDone = i < currentIdx;
+        const isDone = a.completed;
         const isCurrent = i === currentIdx;
         const color = SUBJECT_BAR_COLOR[a.subjectCode] ?? "var(--primary)";
 
@@ -199,29 +199,25 @@ export default function PreAssessmentPage() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // Needed to scope saved progress to this account; set from the load response.
+  const [userId, setUserId] = useState<string | null>(null);
 
-  // Read once, lazily, before first paint — see loadSavedProgress().
-  const [savedProgress] = useState(loadSavedProgress);
-
-  // Flat list of all questions: { assessmentIndex, questionIndex }
-  const [currentAssessmentIdx, setCurrentAssessmentIdx] = useState(
-    savedProgress?.currentAssessmentIdx ?? 0
-  );
-  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(
-    savedProgress?.currentQuestionIdx ?? 0
-  );
+  const [currentAssessmentIdx, setCurrentAssessmentIdx] = useState(0);
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
 
   // Answers: assessmentId -> { questionId -> optionId }
-  const [answers, setAnswers] = useState<Record<string, Record<string, string>>>(
-    savedProgress?.answers ?? {}
-  );
+  const [answers, setAnswers] = useState<SavedAnswers>({});
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
+  // Set when a section's submission fails. The learner stays on the last
+  // question with their answer still selected; pressing the button retries.
+  const [submitError, setSubmitError] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<SubjectResult[]>([]);
   const [showResults, setShowResults] = useState(false);
-  const [csrfToken, setCsrfToken] = useState("");
+  // True when this visit picks up earlier work, so the intro can say so.
+  const [resumed, setResumed] = useState(false);
 
   // Indexes of assessments whose section-intro card has been dismissed. Not
   // persisted: reappearing after a reload mid-transition is a mild reminder,
@@ -229,47 +225,78 @@ export default function PreAssessmentPage() {
   // states which subject is starting.
   const [dismissedIntroFor, setDismissedIntroFor] = useState<Set<number>>(new Set());
 
+  // The error box and the retry button under it sit below the answer list,
+  // which on a short screen is below the fold. Centre the box when it appears,
+  // which brings the button with it, so a failed submit can't look like a
+  // button that did nothing.
+  const submitErrorRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    fetch("/api/csrf")
-      .then((r) => r.json())
-      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
-      .catch(() => {});
-  }, []);
+    if (submitError) submitErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [submitError]);
 
-  // Persist progress on each answer change
+  // Persist progress on each answer change. Only after the load has told us
+  // who the learner is — and never an empty object, which would overwrite
+  // saved answers with nothing before they have been read back.
   useEffect(() => {
-    if (Object.values(answers).every((q) => Object.keys(q).length === 0)) return;
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ answers, currentAssessmentIdx, currentQuestionIdx })
-    );
-  }, [answers, currentAssessmentIdx, currentQuestionIdx]);
+    if (!userId || Object.keys(answers).length === 0) return;
+    writeProgress(window.localStorage, userId, answers);
+  }, [answers, userId]);
 
   useEffect(() => {
-    fetch("/api/assessment/pre")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.assessments) {
-          setAssessments(data.assessments);
-          setAnswers((prev) => {
-            const merged: Record<string, Record<string, string>> = { ...prev };
-            data.assessments.forEach((a: Assessment) => {
-              if (!merged[a.id]) {
-                merged[a.id] = {};
-              }
-            });
-            return merged;
-          });
-        } else {
-          setError("Failed to load assessment questions.");
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const res = await fetch("/api/assessment/pre");
+        if (cancelled) return;
+        if (res.status === 401) {
+          router.replace("/login?expired=1");
+          return;
         }
+        if (!res.ok) {
+          setError("Failed to load assessment questions.");
+          setLoading(false);
+          return;
+        }
+        const data = (await res.json()) as PreAssessmentResponse;
+        if (cancelled) return;
+
+        setUserId(data.userId);
+        setAssessments(data.assessments);
+        setResults(data.results);
+
+        const saved = pruneAnswers(
+          data.assessments,
+          readProgress(window.localStorage, data.userId)
+        );
+        setAnswers(saved);
+
+        const position = resumePosition(data.assessments, saved);
+        if (!position) {
+          // Nothing left to take. Someone who already finished and came back
+          // sees their results; anyone else has nothing to do here.
+          clearProgress(window.localStorage, data.userId);
+          if (data.results.length > 0) setShowResults(true);
+          else router.replace("/dashboard");
+          setLoading(false);
+          return;
+        }
+
+        setCurrentAssessmentIdx(position.assessmentIdx);
+        setCurrentQuestionIdx(position.questionIdx);
+        setSelectedOption(position.selectedOption);
+        setResumed(data.results.length > 0 || Object.keys(saved).length > 0);
         setLoading(false);
-      })
-      .catch(() => {
-        setError("Failed to load assessment. Please try again.");
+      } catch {
+        if (cancelled) return;
+        setError("Failed to load assessment. Please check your connection and try again.");
         setLoading(false);
-      });
-  }, []);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [router]);
 
   if (loading) {
     return (
@@ -448,82 +475,95 @@ export default function PreAssessmentPage() {
   };
 
   const handleNext = async () => {
-    if (!selectedOption) return;
+    if (!selectedOption || submitting || !userId) return;
 
-    // Record answer
-    setAnswers((prev) => ({
-      ...prev,
-      [currentAssessment.id]: {
-        ...prev[currentAssessment.id],
-        [currentQuestion.id]: selectedOption,
-      },
-    }));
+    // Record the answer. Computed here rather than read back from state so the
+    // submission below includes it without waiting for a re-render.
+    const sectionAnswers = {
+      ...answers[currentAssessment.id],
+      [currentQuestion.id]: selectedOption,
+    };
+    const nextAnswers = { ...answers, [currentAssessment.id]: sectionAnswers };
+    setAnswers(nextAnswers);
 
     const isLastQuestion =
       currentQuestionIdx === currentAssessment.questions.length - 1;
-    const isLastAssessment = currentAssessmentIdx === assessments.length - 1;
 
-    if (isLastQuestion) {
-      // Submit this assessment
-      const currentAnswers = {
-        ...answers[currentAssessment.id],
-        [currentQuestion.id]: selectedOption,
-      };
-
-      setSubmitting(true);
-      try {
-        const res = await fetch(`/api/assessment/${currentAssessment.id}/submit`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-          body: JSON.stringify({
-            responses: Object.entries(currentAnswers).map(
-              ([questionId, selectedOption]) => ({
-                questionId,
-                selectedOption, // ← match API contract
-              }),
-            ),
-          }),
-        });
-        const data = await res.json().catch(() => null);
-        if (data && typeof data.rawScore === "number") {
-          setResults((prev) => [
-            ...prev,
-            {
-              subjectCode: currentAssessment.subjectCode,
-              subjectName: currentAssessment.subjectName,
-              rawScore: data.rawScore,
-              maxScore: data.maxScore,
-              score: data.score,
-            },
-          ]);
-        }
-      } catch {
-        // Continue regardless
-      }
-      setSubmitting(false);
-
-      if (isLastAssessment) {
-        // All done
-        localStorage.removeItem(STORAGE_KEY);
-        setAnalyzing(true);
-        setTimeout(() => {
-          setAnalyzing(false);
-          setShowResults(true);
-        }, 2200);
-      } else {
-        // Move to next assessment
-        setCurrentAssessmentIdx((i) => i + 1);
-        setCurrentQuestionIdx(0);
-        setSelectedOption(null);
-      }
-    } else {
+    if (!isLastQuestion) {
       setCurrentQuestionIdx((i) => i + 1);
       setSelectedOption(null);
+      return;
     }
+
+    setSubmitting(true);
+    setSubmitError("");
+    let data: SubmitResponse;
+    try {
+      data = await postJson<SubmitResponse>(
+        `/api/assessment/${currentAssessment.id}/submit`,
+        {
+          responses: Object.entries(sectionAnswers).map(([questionId, option]) => ({
+            questionId,
+            selectedOption: option,
+          })),
+          // Makes a retry of a submission that did land return the stored
+          // result instead of recording the section twice.
+          purpose: "PRE_ASSESSMENT",
+        }
+      );
+    } catch (err) {
+      // Stay put. Moving on here is what used to lose a section for good: the
+      // page advanced as if it had been saved, and at the end cleared the only
+      // copy of the answers.
+      setSubmitError(submitErrorMessage(err));
+      setSubmitting(false);
+      return;
+    }
+    setSubmitting(false);
+
+    const result: SubjectResult = {
+      subjectCode: currentAssessment.subjectCode,
+      subjectName: currentAssessment.subjectName,
+      rawScore: data.rawScore,
+      maxScore: data.maxScore,
+      score: data.score,
+    };
+    setResults((prev) =>
+      [...prev.filter((r) => r.subjectCode !== result.subjectCode), result].sort(bySubjectOrder)
+    );
+
+    const updated = assessments.map((a, i) =>
+      i === currentAssessmentIdx ? { ...a, completed: true } : a
+    );
+    setAssessments(updated);
+
+    const next = resumePosition(updated, nextAnswers, currentAssessmentIdx + 1);
+    if (!next) {
+      // Every section is on the server now, so the local copy has done its job.
+      // Emptying the state first means a persist effect still pending from
+      // this answer finds nothing to write, instead of restoring the copy
+      // just cleared.
+      setAnswers({});
+      clearProgress(window.localStorage, userId);
+      setAnalyzing(true);
+      setTimeout(() => {
+        setAnalyzing(false);
+        setShowResults(true);
+      }, 2200);
+      return;
+    }
+
+    setCurrentAssessmentIdx(next.assessmentIdx);
+    setCurrentQuestionIdx(next.questionIdx);
+    setSelectedOption(next.selectedOption);
   };
 
+  // Counted from the sections themselves, not from the current index: after a
+  // resume, the section on screen is not necessarily preceded only by done ones.
+  const completedCount = assessments.filter((a) => a.completed).length;
+
   if (showingIntro) {
-    const isFirstSection = currentAssessmentIdx === 0;
+    const isFirstSection = completedCount === 0;
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="bg-card border-b border-border px-4 sm:px-6 py-4">
@@ -549,6 +589,12 @@ export default function PreAssessmentPage() {
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="w-full max-w-md text-center"
           >
+            {resumed && (
+              <p className="mx-auto mb-5 max-w-sm rounded-xl bg-primary-light px-4 py-2.5 text-sm font-medium text-primary">
+                Welcome back — you&apos;re picking up where you left off.
+              </p>
+            )}
+
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-5">
               Section {currentAssessmentIdx + 1} of {assessments.length}
             </p>
@@ -570,7 +616,12 @@ export default function PreAssessmentPage() {
 
             <Button
               size="lg"
-              onClick={() => setDismissedIntroFor((prev) => new Set(prev).add(currentAssessmentIdx))}
+              onClick={() => {
+                setDismissedIntroFor((prev) => new Set(prev).add(currentAssessmentIdx));
+                // The welcome-back note is for the first screen of a return
+                // visit, not every section intro that follows it.
+                setResumed(false);
+              }}
               className="px-8 flex items-center justify-center gap-2 mx-auto"
               style={SUBJECT_BUTTON_VARS[currentAssessment.subjectCode]}
             >
@@ -580,7 +631,7 @@ export default function PreAssessmentPage() {
 
             {!isFirstSection && (
               <p className="text-xs text-muted-foreground mt-5">
-                {currentAssessmentIdx} of {assessments.length} sections complete
+                {completedCount} of {assessments.length} sections complete
               </p>
             )}
           </motion.div>
@@ -725,6 +776,17 @@ export default function PreAssessmentPage() {
             </motion.div>
           </AnimatePresence>
 
+          {submitError && (
+            <div
+              role="alert"
+              ref={submitErrorRef}
+              className="mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              <WifiOff className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              <p>{submitError}</p>
+            </div>
+          )}
+
           <div className="flex justify-end">
             <Button
               size="lg"
@@ -733,10 +795,13 @@ export default function PreAssessmentPage() {
               loading={submitting}
               className="px-8"
             >
-              {currentAssessmentIdx === assessments.length - 1 &&
-              currentQuestionIdx === currentAssessment.questions.length - 1
-                ? "Finish Assessment"
-                : "Next Question"}
+              {submitError
+                ? "Try Again"
+                : currentQuestionIdx < currentAssessment.questions.length - 1
+                  ? "Next Question"
+                  : assessments.filter((a) => !a.completed).length === 1
+                    ? "Finish Assessment"
+                    : `Finish ${currentAssessment.subjectName}`}
             </Button>
           </div>
         </div>

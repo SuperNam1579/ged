@@ -35,6 +35,16 @@ interface SessionEntry {
   difficultyLevel: number;
   learningUrl: string | null;
   order: number;
+  /** One part of a subtopic split across several sessions; partCount null until all are scheduled. */
+  partIndex?: number | null;
+  partCount?: number | null;
+  unitNames?: string[];
+}
+
+/** "Part 2/5", "Part 3" (total not known yet), or "" for a whole-subtopic session. */
+function partLabel(s: SessionEntry): string {
+  if (!s.partIndex) return "";
+  return s.partCount ? `Part ${s.partIndex}/${s.partCount}` : `Part ${s.partIndex}`;
 }
 
 interface PlacedSession {
@@ -55,9 +65,12 @@ function timeToMinutes(t: string): number {
 }
 
 function formatClock(min: number): string {
+  // Past midnight is shown as such ("01:10 +1") rather than silently wrapped:
+  // a bare "01:10" hid a session that ran five hours past the evening's slot.
+  const days = Math.floor(min / (24 * 60));
   const h = Math.floor(min / 60) % 24;
   const m = min % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}${days > 0 ? ` +${days}` : ""}`;
 }
 
 // Packs a day's sessions back-to-back into its availability slots (sessions
@@ -657,6 +670,7 @@ function WeekCalendarGrid({
                           <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", colors.dot)} />
                           <span className={cn("text-[11px] font-semibold truncate min-w-0", done && "line-through")}>
                             {session.subtopicName}
+                            {partLabel(session) && <span className="font-medium opacity-70"> · {partLabel(session)}</span>}
                           </span>
                         </div>
                         <span className="text-[10px] font-medium opacity-70 pl-2.5">
@@ -842,6 +856,7 @@ function MobileDayCalendar({
                   <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", colors.dot)} />
                   <span className={cn("text-[12px] font-semibold truncate min-w-0", done && "line-through")}>
                     {session.subtopicName}
+                    {partLabel(session) && <span className="font-medium opacity-70"> · {partLabel(session)}</span>}
                   </span>
                 </div>
                 <span className="text-[10px] font-medium opacity-70 pl-3">
@@ -874,11 +889,7 @@ function SessionDetailModal({
   const { session, startMin, endMin } = placed;
   const colors = SUBJECT_COLOR[session.subjectCode] ?? DEFAULT_SUBJECT_COLOR;
   const done = session.status === "COMPLETED";
-  const fmtClock = (min: number) => {
-    const h = Math.floor(min / 60) % 24;
-    const m = min % 60;
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  };
+  const fmtClock = formatClock;
 
   return (
     <>
@@ -915,7 +926,9 @@ function SessionDetailModal({
             <h2 className={cn("text-lg font-bold text-foreground mt-2", done && "line-through opacity-70")}>
               {session.subtopicName}
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">{session.topicName}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {partLabel(session) ? `${partLabel(session)} · ${(session.unitNames ?? []).join(", ") || session.topicName}` : session.topicName}
+            </p>
           </div>
 
           <div className="px-5 py-4 space-y-3">
@@ -981,11 +994,7 @@ function DayDetailPanel({
   const placed = layoutDaySessions(sessions, slots).sort((a, b) => a.startMin - b.startMin);
   const totalMins = sessions.reduce((a, s) => a + s.durationMins, 0);
   const nextSession = sessions.find((s) => s.status !== "COMPLETED") ?? sessions[0];
-  const fmtClock = (min: number) => {
-    const h = Math.floor(min / 60) % 24;
-    const m = min % 60;
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  };
+  const fmtClock = formatClock;
 
   return (
     <>
@@ -1059,6 +1068,7 @@ function DayDetailPanel({
                 </div>
                 <p className={cn("text-sm font-semibold text-foreground mb-1", done && "line-through")}>
                   {session.subtopicName}
+                  {partLabel(session) && <span className="font-medium text-muted-foreground"> · {partLabel(session)}</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">{session.topicName}</p>
               </Link>

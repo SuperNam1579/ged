@@ -1,7 +1,8 @@
 import type { Chromosome, GASubtopicGene, SubtopicData, ProficiencyMap, AvailabilitySlotInput } from "@/types";
 import { recommendOrder } from "./ordering";
 
-function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string): number {
+/** Minutes of availability on a calendar date ("YYYY-MM-DD"). */
+export function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string): number {
   const dow = new Date(date).getDay();
   return slots
     .filter((s) => s.dayOfWeek === dow)

@@ -49,7 +49,6 @@ export async function GET(
         type: "QUIZ",
         subtopicId,
         title: `${subtopic.name} Quiz`,
-        timeLimit: 10,
         questions: {
           create: Array.from({ length: 5 }, (_, questionIndex) => {
             const correctIndex = Math.floor(Math.random() * 4);

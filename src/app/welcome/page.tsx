@@ -25,11 +25,15 @@ export default function WelcomePage() {
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/user/preferences")
-      .then((r) => r.json())
-      .then((data: { preferences?: unknown }) => {
+    fetch("/api/user/next-step")
+      .then((r) => {
+        if (!r.ok) throw new Error(`next-step ${r.status}`);
+        return r.json();
+      })
+      .then((data: { route: string }) => {
         if (cancelled) return;
-        router.replace(data.preferences ? "/dashboard" : "/onboarding");
+        // Includes /pre-assessment for a learner who dropped out part-way.
+        router.replace(data.route);
       })
       .catch(() => {
         // The preferences call is the only thing this page does, so a failure

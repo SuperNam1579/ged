@@ -22,8 +22,7 @@
  * without spending any API quota.
  */
 
-import { PrismaClient } from "@prisma/client";
-import { RESOURCES } from "../src/lib/resources/fixture.data";
+import { PrismaClient, type Resource } from "@prisma/client";
 
 const db = new PrismaClient();
 
@@ -52,8 +51,8 @@ async function main() {
     orderBy: [{ topic: { category: { subject: { code: "asc" } } } }, { name: "asc" }],
   });
 
-  const byId = new Map<string, typeof RESOURCES>();
-  for (const r of RESOURCES) {
+  const byId = new Map<string, Resource[]>();
+  for (const r of await db.resource.findMany({ orderBy: { order: "asc" } })) {
     const list = byId.get(r.subtopicId) ?? [];
     list.push(r);
     byId.set(r.subtopicId, list);

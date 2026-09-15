@@ -16,13 +16,21 @@ import {
   authStagger,
 } from "@/components/auth/authMotion";
 
-/* ── Error map for NextAuth query params ── */
+/* ── Error map for NextAuth query params ──
+   Keyed by ?error=… , plus the ?code=… values a CredentialsSignin carries.
+   "Configuration" is Auth.js's catch-all for anything it won't disclose to the
+   browser — in practice a server-side failure during the callback, most often
+   the database being unreachable. It is not the user's fault and retrying
+   later usually works, so it must not read like a rejected credential. ── */
 const NEXTAUTH_ERRORS: Record<string, string> = {
   CredentialsSignin: "Invalid email or password.",
   OAuthAccountNotLinked: "This email is already registered with a different sign-in method.",
   EMAIL_NOT_VERIFIED: "Please verify your email before signing in. Check your inbox for the verification code.",
   OAuthSignin: "Could not sign in with Google. Please try again.",
   OAuthCallback: "Could not sign in with Google. Please try again.",
+  OAuthCallbackError: "Google sign-in didn't complete. Please try again.",
+  AccessDenied: "Sign-in was cancelled or denied.",
+  Configuration: "Sign-in is temporarily unavailable. Please try again in a moment.",
   Default: "Something went wrong. Please try again.",
 };
 
@@ -59,8 +67,12 @@ function LoginContent() {
   const emailVerified = searchParams.get("verified") === "true";
   const sessionExpired = searchParams.get("expired") === "1";
   const nextAuthError = searchParams.get("error");
+  // A CredentialsSignin narrows its reason into ?code= — prefer that when present.
+  const nextAuthCode = searchParams.get("code");
   const nextAuthErrorMessage = nextAuthError
-    ? (NEXTAUTH_ERRORS[nextAuthError] ?? NEXTAUTH_ERRORS.Default)
+    ? (NEXTAUTH_ERRORS[nextAuthCode ?? ""] ??
+       NEXTAUTH_ERRORS[nextAuthError] ??
+       NEXTAUTH_ERRORS.Default)
     : null;
 
   const callbackUrl = safeRedirect(searchParams.get("callbackUrl"), "");
@@ -161,9 +173,11 @@ function LoginContent() {
         router.push(callbackUrl);
         return;
       }
-      const prefsRes = await fetch("/api/user/preferences");
-      const prefsData = await prefsRes.json();
-      router.push(prefsData.preferences ? "/dashboard" : "/onboarding");
+      // Onboarding, an unfinished pre-assessment, or the dashboard — decided
+      // on the server so every sign-in path lands in the same place.
+      const nextRes = await fetch("/api/user/next-step");
+      const nextData = (await nextRes.json().catch(() => null)) as { route?: string } | null;
+      router.push(nextRes.ok && nextData?.route ? nextData.route : "/dashboard");
     } catch {
       setGlobalError("Something went wrong. Please try again.");
       setLoading(false);

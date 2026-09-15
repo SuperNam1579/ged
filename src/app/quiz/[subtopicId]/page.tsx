@@ -1,13 +1,14 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, ArrowLeft } from "lucide-react";
+import { BookOpen, ArrowLeft, WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { cn } from "@/lib/utils/cn";
+import { postJson } from "@/lib/csrf-client";
 import { returnLabel, safeReturnTo, withReturnTo } from "@/lib/utils/return-to";
 import type { QuestionData } from "@/types";
 
@@ -57,14 +58,18 @@ function QuizPageInner() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [csrfToken, setCsrfToken] = useState("");
+  // Set when submitting fails. The learner stays on the last question with
+  // their answer selected, and the button retries.
+  const [submitError, setSubmitError] = useState("");
 
+  // The error box and the retry button under it sit below the answer list,
+  // which on a short screen is below the fold. Centre the box when it appears,
+  // which brings the button with it, so a failed submit can't look like a
+  // button that did nothing.
+  const submitErrorRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    fetch("/api/csrf")
-      .then((r) => r.json())
-      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
-      .catch(() => {});
-  }, []);
+    if (submitError) submitErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [submitError]);
 
   useEffect(() => {
     fetch(`/api/assessment/quiz/${subtopicId}`)
@@ -104,6 +109,21 @@ function QuizPageInner() {
     );
   }
 
+  // An assessment row with no questions would otherwise crash on
+  // `currentQuestion.text` below and draw a NaN progress bar.
+  if (quiz.questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <p className="text-foreground font-medium mb-4">This quiz has no questions yet.</p>
+          <Link href={returnTo}>
+            <Button variant="secondary">Back to {backLabel}</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const totalQuestions = quiz.questions.length;
   const currentQuestion = quiz.questions[currentIdx];
   const isLast = currentIdx === totalQuestions - 1;
@@ -114,7 +134,7 @@ function QuizPageInner() {
   };
 
   const handleNext = async () => {
-    if (!selectedOption) return;
+    if (!selectedOption || submitting) return;
 
     const updatedAnswers = { ...answers, [currentQuestion.id]: selectedOption };
     setAnswers(updatedAnswers);
@@ -127,37 +147,39 @@ function QuizPageInner() {
 
     // Submit quiz
     setSubmitting(true);
+    setSubmitError("");
     try {
-      const res = await fetch(`/api/assessment/${quiz.assessmentId}/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({
-          responses: Object.entries(updatedAnswers).map(([questionId, selectedOption]) => ({
-            questionId,
-            selectedOption,
-          })),
-        }),
+      const data = await postJson<{
+        correctCount: number;
+        maxScore: number;
+        attemptId: string;
+        triggered: { gaRerun?: boolean } | null;
+      }>(`/api/assessment/${quiz.assessmentId}/submit`, {
+        responses: Object.entries(updatedAnswers).map(([questionId, option]) => ({
+          questionId,
+          selectedOption: option,
+        })),
       });
 
-      const data = await res.json();
-      const score = data.correctCount ?? 0;
-      const max = data.maxScore ?? totalQuestions;
-
       router.push(
         withReturnTo(
-          `/quiz/${subtopicId}/result?score=${score}&max=${max}&attemptId=${data.attemptId ?? ""}&gaRerun=${data.triggered?.gaRerun ? "1" : "0"}`,
+          `/quiz/${subtopicId}/result?score=${data.correctCount}&max=${data.maxScore}&attemptId=${data.attemptId}&gaRerun=${data.triggered?.gaRerun ? "1" : "0"}`,
           returnTo
         )
       );
-    } catch {
-      // Even on error, navigate to result page with available data
-      const score = Object.values(updatedAnswers).length;
-      router.push(
-        withReturnTo(
-          `/quiz/${subtopicId}/result?score=${score}&max=${totalQuestions}&attemptId=&gaRerun=0`,
-          returnTo
-        )
+    } catch (err) {
+      // Stay on the quiz. This used to navigate to the result page anyway —
+      // on a dropped connection with `score` set to the number of questions
+      // answered, so every failed submission showed a perfect score that was
+      // never recorded; on a server error, with 0.
+      setSubmitError(
+        err instanceof TypeError
+          ? "Couldn't reach the server. Check your connection and try again — your answers are still here."
+          : err instanceof Error && err.message === "Unauthorized"
+            ? "Your session has expired. Please sign in again."
+            : "Your quiz couldn't be submitted. Please try again."
       );
+      setSubmitting(false);
     }
   };
 
@@ -269,6 +291,17 @@ function QuizPageInner() {
             </motion.div>
           </AnimatePresence>
 
+          {submitError && (
+            <div
+              role="alert"
+              ref={submitErrorRef}
+              className="mb-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              <WifiOff className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              <p>{submitError}</p>
+            </div>
+          )}
+
           <div className="flex justify-end">
             <Button
               size="lg"
@@ -277,7 +310,7 @@ function QuizPageInner() {
               loading={submitting}
               className="px-8"
             >
-              {isLast ? "Submit Quiz" : "Next Question"}
+              {submitError ? "Try Again" : isLast ? "Submit Quiz" : "Next Question"}
             </Button>
           </div>
         </div>

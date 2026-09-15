@@ -7,6 +7,7 @@ import {
   LayoutDashboard, TrendingUp, Calendar, CalendarClock, ClipboardList, Settings,
   BookOpen, LogOut, X, ChevronLeft, ChevronRight,
 } from "lucide-react";
+import { logOut } from "@/lib/auth-client";
 
 const NAV_ITEMS = [
   { href: "/dashboard",    label: "Dashboard",    icon: LayoutDashboard },
@@ -98,7 +99,14 @@ export default function Sidebar({
   const pct = Math.round(overallProgress);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    try {
+      await logOut();
+    } catch {
+      // Stay signed in visibly rather than send someone to the home page
+      // believing they are logged out when the session is still live.
+      window.alert("Couldn't log you out. Check your connection and try again.");
+      return;
+    }
     window.location.href = "/";
   };
 

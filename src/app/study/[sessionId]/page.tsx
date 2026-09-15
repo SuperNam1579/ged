@@ -6,12 +6,13 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import {
   ArrowLeft, BookOpen, CheckCircle, ChevronRight, Clock,
-  ExternalLink, GraduationCap, Layers, Timer,
+  ExternalLink, GraduationCap, Layers, Timer, WifiOff,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import DifficultyDots from "@/components/ui/DifficultyDots";
 import { safeUrl } from "@/lib/utils/sanitize";
+import { postJson } from "@/lib/csrf-client";
 import { returnLabel, safeReturnTo, withReturnTo } from "@/lib/utils/return-to";
 import { StudySessionView } from "@/components/study/StudySessionView";
 import { studySection, studyStagger } from "@/components/study/studyMotion";
@@ -57,18 +58,12 @@ function StudySessionPageInner() {
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [csrfToken, setCsrfToken] = useState("");
+  // Why "Mark as complete" didn't go through, shown under the button.
+  const [completeError, setCompleteError] = useState("");
   // null until the resource list has loaded, so the manual completion control
   // isn't flashed on screen and then withdrawn once videos turn up.
   const [videoCount, setVideoCount] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    fetch("/api/csrf")
-      .then((r) => r.json())
-      .then((d: { csrfToken?: string }) => setCsrfToken(d.csrfToken ?? ""))
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,20 +114,23 @@ function StudySessionPageInner() {
   const handleComplete = async () => {
     if (completing || completed) return;
     setCompleting(true);
+    setCompleteError("");
 
     try {
-      const res = await fetch(`/api/sessions/${sessionId}/complete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({ elapsedSeconds: elapsed }),
-      });
-      if (res.ok || res.status === 409) {
-        setCompleted(true);
-        if (timerRef.current) clearInterval(timerRef.current);
-      }
-    } catch {
-      // Network error — reflect it in the UI and let the next load reconcile.
+      await postJson(`/api/sessions/${sessionId}/complete`, { elapsedSeconds: elapsed });
       setCompleted(true);
+      if (timerRef.current) clearInterval(timerRef.current);
+    } catch (err) {
+      // Only the server's answer marks a session done. This used to call
+      // setCompleted(true) on a network error too, showing "Completed" and
+      // unlocking the quiz for a session that was still PENDING in the database.
+      setCompleteError(
+        err instanceof TypeError
+          ? "Couldn't reach the server. Check your connection and try again."
+          : err instanceof Error && err.message !== ""
+            ? err.message
+            : "Couldn't mark this session complete. Please try again."
+      );
     } finally {
       setCompleting(false);
     }
@@ -232,6 +230,17 @@ function StudySessionPageInner() {
             </div>
 
             <h1 className="mt-3 text-2xl font-bold text-foreground">{session.subtopicName}</h1>
+            {/* One part of a subtopic split across several sessions. The units
+                named are what this sitting actually covers. */}
+            {session.partIndex ? (
+              <p className="mt-1 text-sm font-medium text-primary">
+                Part {session.partIndex}
+                {session.partCount ? ` of ${session.partCount}` : ""}
+                {session.unitNames && session.unitNames.length > 0 && (
+                  <span className="font-normal text-muted-foreground"> · {session.unitNames.join(", ")}</span>
+                )}
+              </p>
+            ) : null}
             {session.subtopicDescription && (
               <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">
                 {session.subtopicDescription}
@@ -284,6 +293,8 @@ function StudySessionPageInner() {
               returnTo={returnTo}
               onResourcesLoaded={setVideoCount}
               onCompleted={() => setCompleted(true)}
+              isLastPart={session.isLastPart ?? true}
+              nextPartDate={session.nextPart?.scheduledDate ?? null}
               fallback={
                 /* Videos when the subtopic has them, the original external link
                    when it doesn't. Coverage is still partial, so the link is a
@@ -313,11 +324,17 @@ function StudySessionPageInner() {
                         variant="secondary"
                         onClick={handleComplete}
                         loading={completing}
-                        disabled={completing || completed || !csrfToken}
+                        disabled={completing || completed}
                       >
                         <CheckCircle className="mr-1.5 h-4 w-4" />
-                        {completed ? "Completed" : "Mark as complete"}
+                        {completed ? "Completed" : completeError ? "Try again" : "Mark as complete"}
                       </Button>
+                      {completeError && (
+                        <p role="alert" className="flex w-full items-center gap-2 text-sm text-red-700">
+                          <WifiOff className="h-4 w-4 shrink-0" aria-hidden />
+                          {completeError}
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div className="rounded-xl border border-dashed border-border p-6 text-center">

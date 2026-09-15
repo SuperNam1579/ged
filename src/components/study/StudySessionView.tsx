@@ -29,6 +29,13 @@ interface StudySessionViewProps {
    */
   onResourcesLoaded?: (count: number) => void;
   onCompleted?: () => void;
+  /**
+   * False when this session is one part of a split subtopic and more parts
+   * follow. The quiz covers the whole subtopic, so it waits for the last part.
+   */
+  isLastPart?: boolean;
+  /** When the next part is scheduled, for the "part complete" footer. */
+  nextPartDate?: string | null;
 }
 
 interface ResourcesResponse {
@@ -60,6 +67,8 @@ export function StudySessionView({
   fallback,
   onResourcesLoaded,
   onCompleted,
+  isLastPart = true,
+  nextPartDate = null,
 }: StudySessionViewProps) {
   const reduceMotion = useReducedMotion();
 
@@ -75,7 +84,8 @@ export function StudySessionView({
   useEffect(() => {
     let cancelled = false;
 
-    fetch(`/api/subtopics/${subtopicId}/resources`)
+    // Scoped to the session: a part of a split subtopic plays only its clips.
+    fetch(`/api/subtopics/${subtopicId}/resources?session=${encodeURIComponent(sessionId)}`)
       .then((res) => {
         if (!res.ok) throw new Error("Couldn't load the videos for this session.");
         return res.json() as Promise<ResourcesResponse>;
@@ -102,7 +112,7 @@ export function StudySessionView({
     // onResourcesLoaded is a render-scoped callback; re-running this effect for
     // a new identity would refetch on every parent render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subtopicId]);
+  }, [subtopicId, sessionId]);
 
   const activeIndex = useMemo(
     () => resources.findIndex((r) => r.id === activeId),
@@ -201,7 +211,18 @@ export function StudySessionView({
             <div className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="flex items-start justify-between gap-4 px-5 py-4">
                 <div className="min-w-0">
+                  {/* The lesson name is the learner's place in the subtopic;
+                      without it "Video 34 of 91" says nothing about what they
+                      are actually in the middle of. */}
                   <p className="text-xs font-medium text-muted-foreground">
+                    {active.lesson ? (
+                      <>
+                        <span className="font-semibold text-primary">{active.lesson}</span>
+                        <span className="mx-1.5" aria-hidden>
+                          ·
+                        </span>
+                      </>
+                    ) : null}
                     Video {activeIndex + 1} of {resources.length}
                   </p>
                   <h2 className="mt-0.5 truncate text-lg font-bold text-foreground">
@@ -321,6 +342,8 @@ export function StudySessionView({
         isCompleted={status === "COMPLETED"}
         elapsedSec={elapsedSec}
         returnTo={returnTo}
+        isLastPart={isLastPart}
+        nextPartDate={nextPartDate}
         onCompleted={() => {
           setStatus("COMPLETED");
           onCompleted?.();

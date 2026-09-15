@@ -1,14 +1,21 @@
 // Shapes for subtopic learning resources and per-user watch progress.
 //
-// These deliberately mirror the Prisma models they will become, so that the day
-// the fixture is replaced by real rows, `getSubtopicResources()` is the only
-// function that changes — every consumer keeps compiling untouched.
+// These mirror the Prisma models rather than re-exporting them: the row carries
+// timestamps and relations the app has no business passing to a client
+// component, and naming the fields consumers may rely on keeps that boundary
+// visible. Structural typing means a Prisma row satisfies these directly.
 //
 // Naming follows the DB convention: seconds are stored as integers with a `Sec`
 // suffix, never as floats or as ISO-8601 durations. The YouTube Data API returns
 // `PT12M34S`; that is parsed once, at seed time, and never travels past it.
 
-/** A learning resource attached to a subtopic. Video-only for now. */
+/**
+ * A learning resource attached to a subtopic. Video-only for now.
+ *
+ * `id` is `<subtopicId>-<youtubeId>`, not a cuid — identity follows the video
+ * rather than its position, so clips can be inserted or reordered without watch
+ * progress sliding onto the wrong one. See the Resource model in schema.prisma.
+ */
 export interface Resource {
   id: string;
   subtopicId: string;
@@ -24,6 +31,11 @@ export interface Resource {
    * trusting the browser. Duration must be known independently of the player.
    */
   durationSec: number;
+  /**
+   * The Lesson row this clip belongs to (Subtopic → Unit → Lesson → Resource),
+   * from the curriculum sheet. Null only for clips with no curriculum structure.
+   */
+  lessonId: string | null;
   /** Position within the subtopic's resource list, ascending. */
   order: number;
 }
@@ -42,9 +54,18 @@ export interface ResourceProgress {
   completedAt: string | null;
 }
 
+/** Where a clip sits in the curriculum, by name, for display. */
+export interface ResourcePlacement {
+  lessonId: string;
+  lessonName: string;
+  unitId: string;
+  unitName: string;
+}
+
 /** A resource joined with the requesting user's progress, if any. */
 export interface ResourceWithProgress extends Resource {
   progress: ResourceProgress | null;
+  placement: ResourcePlacement | null;
 }
 
 /**

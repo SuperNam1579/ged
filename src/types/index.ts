@@ -54,6 +54,17 @@ export interface StudySessionWithSubtopic {
   estimatedMinutes?: number;
   /** Names of the subtopics this one builds on. Empty when there are none. */
   prerequisites?: string[];
+  /**
+   * Set when the session is one part of a split subtopic. partCount is null
+   * until every part has been scheduled.
+   */
+  partIndex?: number | null;
+  partCount?: number | null;
+  /** Curriculum units this session's clips come from, in order. */
+  unitNames?: string[];
+  /** Only from GET /api/sessions/[id]: whether the subtopic quiz follows this session. */
+  isLastPart?: boolean;
+  nextPart?: { id: string; scheduledDate: string } | null;
 }
 
 export interface ProficiencyMap {

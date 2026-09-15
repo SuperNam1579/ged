@@ -1,5 +1,5 @@
 /**
- * Builds the subtopic resource fixture from real YouTube data.
+ * Fills the Resource table from real YouTube data.
  *
  *   npx tsx scripts/fetch-resources.ts                   # top up every subtopic
  *   npx tsx scripts/fetch-resources.ts --refilter        # re-apply TOPIC_FILTERS, no network
@@ -7,7 +7,20 @@
  *   npx tsx scripts/fetch-resources.ts --subject MATH
  *   npx tsx scripts/fetch-resources.ts --sync-estimates  # also fix study times
  *
- * Output: src/lib/resources/fixture.data.ts
+ * Output: the Resource table, via scripts/lib/resources.ts.
+ *
+ * ── Only for subjects with no CSV ─────────────────────────────────────────
+ * Subjects listed in prisma/curriculum.data.ts get their clips from the sheets
+ * in `curriculum/` via scripts/import-curriculum.ts, which pins every video by
+ * hand. This script discovers clips by searching, and it rewrites every
+ * subtopic it is pointed at — so running it over a converted subject would
+ * replace those hand-picked lists with search results. Use it only for subjects
+ * that have no CSV yet, and re-run `import-curriculum.ts --resources` afterwards
+ * to restore the rest.
+ *
+ * Clips carry no `lesson`, because search has no notion of one — the grouping in
+ * `curriculum/*.csv` is editorial. The study page files them under a single
+ * catch-all group until the subject is converted.
  *
  * Re-runs are incremental: whatever the last run wrote is kept, and only the
  * gaps cost quota. `--fresh` forces full rediscovery.
@@ -33,15 +46,13 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { existsSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseIsoDuration } from "../src/lib/youtube/duration";
-import type { Resource } from "../src/lib/resources/types";
+import { saveSubtopicResources, type ResourceInput } from "./lib/resources";
 
 process.loadEnvFile(resolve(process.cwd(), ".env"));
 
 const API_KEY = process.env.YOUTUBE_API_KEY;
-const OUT_PATH = resolve(process.cwd(), "src/lib/resources/fixture.data.ts");
 
 /**
  * Upper bound on clips per subtopic — a guard rail, not a target.
@@ -495,6 +506,14 @@ interface Picked {
   title: string;
   channelTitle: string;
   durationSec: number;
+  /**
+   * Lesson grouping, when the row came from a curriculum CSV rather than a
+   * search. Discovery has no notion of a lesson — the grouping is editorial and
+   * lives in the sheet — so anything this script picks itself carries "", and
+   * the contents panel files it under a single catch-all group.
+   */
+  lesson: string;
+  unit: string;
 }
 
 function toPicked(v: YtVideoItem): Picked {
@@ -503,11 +522,13 @@ function toPicked(v: YtVideoItem): Picked {
     title: v.snippet.title,
     channelTitle: v.snippet.channelTitle,
     durationSec: parseIsoDuration(v.contentDetails.duration),
+    lesson: "",
+    unit: "",
   };
 }
 
 /**
- * Reads whatever the last run produced, so a re-run tops up the gaps instead of
+ * Reads what is already in the table, so a re-run tops up the gaps instead of
  * paying 100 quota units to rediscover videos we already have.
  *
  * `--fresh` skips this and rebuilds from nothing, which costs a full search per
@@ -515,16 +536,20 @@ function toPicked(v: YtVideoItem): Picked {
  */
 async function loadExisting(): Promise<Map<string, Picked[]>> {
   const bySubtopic = new Map<string, Picked[]>();
-  if (!existsSync(OUT_PATH)) return bySubtopic;
 
-  const mod: { RESOURCES: Resource[] } = await import("../src/lib/resources/fixture.data");
-  for (const r of mod.RESOURCES) {
+  const rows = await db.resource.findMany({
+    orderBy: { order: "asc" },
+    include: { lessonRef: { select: { name: true, unit: { select: { name: true } } } } },
+  });
+  for (const r of rows) {
     const list = bySubtopic.get(r.subtopicId) ?? [];
     list.push({
       youtubeId: r.youtubeId,
       title: r.title,
       channelTitle: r.channelTitle,
       durationSec: r.durationSec,
+      lesson: r.lessonRef?.name ?? "",
+      unit: r.lessonRef?.unit.name ?? "",
     });
     bySubtopic.set(r.subtopicId, list);
   }
@@ -532,7 +557,8 @@ async function loadExisting(): Promise<Map<string, Picked[]>> {
 }
 
 /**
- * Re-applies TOPIC_FILTERS to the fixture already on disk, touching no network.
+ * Re-applies TOPIC_FILTERS to the clips already in the table, touching no
+ * network.
  *
  * Tightening a filter only ever removes clips, so there is nothing to re-fetch —
  * and re-fetching would be actively risky, because a `--fresh` run has to
@@ -545,7 +571,7 @@ async function refilter() {
   const subs = await db.subtopic.findMany({ select: { id: true, name: true } });
   const nameById = new Map(subs.map((s) => [s.id, s.name]));
 
-  const rows: string[] = [];
+  const staged = new Map<string, Picked[]>();
   let kept = 0;
   let dropped = 0;
   const changes: string[] = [];
@@ -565,26 +591,12 @@ async function refilter() {
       );
     }
 
-    // Renumber: `order` has to stay contiguous from 0, and the resource id is
-    // derived from it, so a gap would silently orphan any stored progress.
-    after.forEach((p, order) => {
-      rows.push(
-        `  {\n` +
-          `    id: ${JSON.stringify(`${s.id}-r${order}`)},\n` +
-          `    subtopicId: ${JSON.stringify(s.id)},\n` +
-          `    youtubeId: ${JSON.stringify(p.youtubeId)},\n` +
-          `    title: ${JSON.stringify(p.title)},\n` +
-          `    channelTitle: ${JSON.stringify(p.channelTitle)},\n` +
-          `    durationSec: ${p.durationSec},\n` +
-          `    order: ${order},\n` +
-          `  },`
-      );
-    });
+    staged.set(s.id, after);
   }
 
-  writeFile(rows);
+  const saved = await commit(staged);
 
-  console.log("Re-applied TOPIC_FILTERS to the existing fixture (no API calls).\n");
+  console.log(`Re-applied TOPIC_FILTERS (no API calls) — ${saved.removed} clip(s) removed.\n`);
   if (changes.length) {
     console.log("CHANGED");
     changes.forEach((c) => console.log(c));
@@ -605,9 +617,16 @@ async function refilter() {
   console.log(`\nKept ${kept}, dropped ${dropped}.`);
 }
 
-/** Serialises rows into the fixture module. */
-function writeFile(rows: string[]) {
-  const ids = rows.map((r) => /youtubeId: "([^"]+)"/.exec(r)?.[1] ?? "");
+/**
+ * Writes the staged clips to the Resource table, one subtopic at a time.
+ *
+ * The duplicate guard stays where it was, just moved onto objects: the dedup
+ * rules are spread across `vet`, `take` and the carry-over loop, and a gap in
+ * any one of them is invisible in the output. Assert the invariant that matters
+ * instead — one video, one place — before anything is written.
+ */
+async function commit(staged: Map<string, Picked[]>) {
+  const ids = [...staged.values()].flatMap((list) => list.map((p) => p.youtubeId));
   const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
   if (dupes.length) {
     throw new Error(
@@ -615,20 +634,14 @@ function writeFile(rows: string[]) {
     );
   }
 
-  writeFileSync(
-    OUT_PATH,
-    `// AUTO-GENERATED by scripts/fetch-resources.ts — do not edit by hand.\n` +
-      `//\n` +
-      `// Real YouTube metadata, checked for embeddability at fetch time. This is a\n` +
-      `// staging ground, not mock data: when the Resource table lands, the same\n` +
-      `// script writes these rows to the database instead of to this file, and\n` +
-      `// getSubtopicResources() switches over without any consumer noticing.\n` +
-      `//\n` +
-      `// Generated: ${new Date().toISOString()}\n\n` +
-      `import type { Resource } from "./types";\n\n` +
-      `export const RESOURCES: Resource[] = [\n${rows.join("\n")}\n];\n`,
-    "utf8"
-  );
+  const totals = { created: 0, updated: 0, removed: 0 };
+  for (const [subtopicId, clips] of staged) {
+    const result = await saveSubtopicResources(db, subtopicId, clips satisfies ResourceInput[]);
+    totals.created += result.created;
+    totals.updated += result.updated;
+    totals.removed += result.removed;
+  }
+  return totals;
 }
 
 async function main() {
@@ -687,7 +700,8 @@ async function main() {
    */
   const usedIds = new Set<string>();
 
-  const rows: string[] = [];
+  /** Clips chosen per subtopic, written to the table once the run completes. */
+  const staged = new Map<string, Picked[]>();
   let quotaUnits = 0;
 
   /** search() with the quota meter attached, so the final tally stays honest. */
@@ -851,45 +865,11 @@ async function main() {
       titles: picked.map((v) => v.title),
     });
 
-    picked.forEach((v, order) => {
-      rows.push(
-        `  {\n` +
-          `    id: ${JSON.stringify(`${st.id}-r${order}`)},\n` +
-          `    subtopicId: ${JSON.stringify(st.id)},\n` +
-          `    youtubeId: ${JSON.stringify(v.youtubeId)},\n` +
-          `    title: ${JSON.stringify(v.title)},\n` +
-          `    channelTitle: ${JSON.stringify(v.channelTitle)},\n` +
-          `    durationSec: ${v.durationSec},\n` +
-          `    order: ${order},\n` +
-          `  },`
-      );
-    });
+    staged.set(st.id, picked);
   }
 
-  const file =
-    `// AUTO-GENERATED by scripts/fetch-resources.ts — do not edit by hand.\n` +
-    `//\n` +
-    `// Real YouTube metadata, checked for embeddability at fetch time. This is a\n` +
-    `// staging ground, not mock data: when the Resource table lands, the same\n` +
-    `// script writes these rows to the database instead of to this file, and\n` +
-    `// getSubtopicResources() switches over without any consumer noticing.\n` +
-    `//\n` +
-    `// Generated: ${new Date().toISOString()}\n\n` +
-    `import type { Resource } from "./types";\n\n` +
-    `export const RESOURCES: Resource[] = [\n${rows.join("\n")}\n];\n`;
-
-  // Guard rather than trust: the dedup rules are spread across `vet`, `take`,
-  // and the carry-over loop, and a gap in any one of them is invisible in the
-  // output. Assert the invariant that matters instead — one video, one place.
-  const ids = rows.map((r) => /youtubeId: "([^"]+)"/.exec(r)?.[1] ?? "");
-  const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
-  if (dupes.length) {
-    throw new Error(
-      `Refusing to write: ${dupes.length} duplicate video(s) — ${[...new Set(dupes)].join(", ")}`
-    );
-  }
-
-  writeFileSync(OUT_PATH, file, "utf8");
+  const saved = await commit(staged);
+  const written = [...staged.values()].reduce((n, list) => n + list.length, 0);
 
   // ── Report ──────────────────────────────────────────────────────────────
   // Grouped by subject so gaps are obvious at a glance: a subtopic showing 0
@@ -976,7 +956,9 @@ async function main() {
 
   const gaps = report.filter((r) => r.count === 0);
   console.log("\n" + "─".repeat(72));
-  console.log(`Wrote ${rows.length} resource(s) to src/lib/resources/fixture.data.ts`);
+  console.log(
+    `${written} resource(s) in the table — ${saved.created} added, ${saved.updated} updated, ${saved.removed} removed`
+  );
   console.log(
     `Covered ${report.length - gaps.length}/${report.length} subtopics; ${gaps.length} still on the external-link fallback`
   );

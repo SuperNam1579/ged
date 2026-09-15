@@ -461,7 +461,6 @@ export default function OnboardingPage() {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify({
-          studyGoal: "PASS",
           targetScore: 145,
           targetExamDate: examDate,
           selectedSubjectCodes: selectedSubjects,

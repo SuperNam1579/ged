@@ -1,73 +1,71 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
-import { bySubjectOrder } from "@/lib/subject-order";
+import { getPreAssessmentSnapshot } from "@/lib/pre-assessment";
 
+/**
+ * GET /api/assessment/pre
+ *
+ * The learner's pre-assessment, one section per required subject in canonical
+ * subject order, plus what they have already submitted.
+ *
+ * Sections already submitted come back with `completed: true` and no questions:
+ * the page needs them for the stepper and the results screen, not to be taken
+ * again. That is what lets a learner who dropped out part-way resume at the
+ * first unfinished subject instead of starting over — or, worse, re-submitting
+ * a subject and having its proficiency counted twice.
+ */
 export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const prefs = await db.userPreferences.findUnique({
-    where: { userId: authUser.id },
-    select: { selectedSubjectCodes: true },
-  });
+  const { status, assessments: picked } = await getPreAssessmentSnapshot(authUser.id);
 
-  // Fall back to every subject for accounts from before subject selection was
-  // persisted (empty/missing selection) so their pre-assessment isn't blank.
-  const subjectCodes = prefs?.selectedSubjectCodes?.length ? prefs.selectedSubjectCodes : null;
+  const doneCodes = new Set(status.completed.map((c) => c.subjectCode));
+  const sections = status.required
+    .map((code) => picked.find((a) => a.subjectCode === code))
+    .filter((a) => a !== undefined);
 
-  const all = await db.assessment.findMany({
-    where: {
-      type: "PRE",
-      ...(subjectCodes ? { subject: { code: { in: subjectCodes } } } : {}),
-    },
-    include: {
-      subject: { select: { id: true, name: true, code: true } },
-      questions: {
+  const pendingIds = sections.filter((s) => !doneCodes.has(s.subjectCode)).map((s) => s.id);
+  const questionRows = pendingIds.length
+    ? await db.question.findMany({
+        where: { assessmentId: { in: pendingIds } },
         select: {
           id: true,
+          assessmentId: true,
           text: true,
           options: true,
           difficulty: true,
           subtopicId: true,
         },
-      },
-    },
-    orderBy: { createdAt: "asc" },
+        // Fixed order, so a question index saved in the browser still points
+        // at the same question after a reload.
+        orderBy: { id: "asc" },
+      })
+    : [];
+
+  // Flattened `subjectCode` / `subjectName` rather than the raw Prisma
+  // relation — the client's Assessment interface declares those two fields,
+  // and the raw row left them undefined and blanked every subject label.
+  const assessments = sections.map((s) => ({
+    id: s.id,
+    subjectCode: s.subjectCode,
+    subjectName: s.subjectName,
+    completed: doneCodes.has(s.subjectCode),
+    questions: questionRows
+      .filter((q) => q.assessmentId === s.id)
+      .map((q) => ({
+        id: q.id,
+        text: q.text,
+        options: q.options,
+        difficulty: q.difficulty,
+        subtopicId: q.subtopicId,
+      })),
+  }));
+
+  return NextResponse.json({
+    userId: authUser.id,
+    assessments,
+    results: status.completed,
   });
-
-  // Group by subject, then randomly pick one per subject
-  const bySubject = new Map<string, typeof all>();
-  for (const a of all) {
-    if (!a.subjectId) continue;
-    const list = bySubject.get(a.subjectId) ?? [];
-    list.push(a);
-    bySubject.set(a.subjectId, list);
-  }
-
-  // Flatten `subject: { code, name }` into the `subjectCode` / `subjectName`
-  // pair the client's Assessment interface declares — the same shape the quiz
-  // route returns. Handing back the raw Prisma row instead left both fields
-  // undefined on the client, which silently blanked every subject label and
-  // made `key={r.subjectCode}` a missing key on the results breakdown.
-  //
-  // Sorted into the canonical subject order rather than left in the order the
-  // rows arrived: `bySubject` preserves the insertion order of the `createdAt`
-  // query, so which subject a learner met first depended on the order the seed
-  // inserted assessments in. It also has to hold for any subset — someone who
-  // picked only Science and Math should still get Math first, not whichever of
-  // the two happens to be older.
-  const assessments = Array.from(bySubject.values())
-    .map((list) => {
-      const picked = list[Math.floor(Math.random() * list.length)];
-      return {
-        id: picked.id,
-        subjectCode: picked.subject?.code ?? "",
-        subjectName: picked.subject?.name ?? "",
-        questions: picked.questions,
-      };
-    })
-    .sort(bySubjectOrder);
-
-  return NextResponse.json({ assessments });
 }

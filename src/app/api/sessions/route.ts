@@ -29,6 +29,9 @@ export async function GET(req: NextRequest) {
       ...(dateFilter ? { scheduledDate: dateFilter } : {}),
     },
     include: {
+      resources: {
+        select: { resource: { select: { order: true, lessonRef: { select: { unit: { select: { name: true } } } } } } },
+      },
       subtopic: {
         include: {
           topic: {
@@ -57,6 +60,16 @@ export async function GET(req: NextRequest) {
     status: s.status,
     learningUrl: s.subtopic.learningUrl,
     difficultyLevel: s.subtopic.difficultyLevel,
+    partIndex: s.partIndex,
+    partCount: s.partCount,
+    unitNames: [
+      ...new Set(
+        [...s.resources]
+          .sort((a, b) => a.resource.order - b.resource.order)
+          .map((r) => r.resource.lessonRef?.unit.name)
+          .filter((n): n is string => !!n)
+      ),
+    ],
   }));
 
   return NextResponse.json({ sessions: formatted, plan: activePlan });

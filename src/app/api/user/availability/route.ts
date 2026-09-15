@@ -3,8 +3,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
-import { runGeneticAlgorithm } from "@/lib/ga/engine";
-import { recommendOrder } from "@/lib/ga/ordering";
+import { planWeek, savePlan } from "@/lib/ga/engine";
+import { loadWorkItems } from "@/lib/schedule/work-items";
 import type { TriggerReason } from "@/types";
 
 const SlotSchema = z.object({
@@ -133,107 +133,49 @@ export async function POST(req: NextRequest) {
     proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score])
   );
 
-  // ── Generation window + budget ────────────────────────────────────────────
-  // Plan only the days of THIS week that haven't passed yet, and size the budget
-  // to the capacity of exactly those days — otherwise a full-week budget gets
-  // crammed onto the couple of days that are actually left (e.g. everything
-  // piled onto Sunday). If the current week has no days left at all, roll the
-  // window (and budget) forward to next week so onboarding still gets a plan.
+  // ── Generation window ─────────────────────────────────────────────────────
+  // Plan only the days of THIS week that haven't passed yet. If the current
+  // week has no study days left, roll forward to next week so onboarding still
+  // gets a plan. (planWeek clamps the start to today and sizes the week from
+  // each remaining day's own length.)
   const DAY_MS = 24 * 60 * 60 * 1000;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  const slotMins = (s: { startTime: string; endTime: string }) => {
-    const [sh, sm] = s.startTime.split(":").map(Number);
-    const [eh, em] = s.endTime.split(":").map(Number);
-    return Math.max(0, eh * 60 + em - (sh * 60 + sm));
-  };
-
-  // Capacity (minutes) of the available days inside [max(anchor,today), anchor+7).
-  const windowStats = (anchor: Date) => {
-    const start = anchor < today ? today : anchor;
+  const hasDaysLeft = (anchor: Date) => {
     const end = new Date(anchor.getTime() + 7 * DAY_MS);
-    let mins = 0;
-    let dayCount = 0;
-    for (const cur = new Date(start); cur < end; cur.setDate(cur.getDate() + 1)) {
-      const daySlots = slots.filter((s) => s.dayOfWeek === cur.getDay());
-      if (daySlots.length > 0) {
-        dayCount++;
-        for (const s of daySlots) mins += slotMins(s);
-      }
+    for (const cur = new Date(anchor < today ? today : anchor); cur < end; cur.setDate(cur.getDate() + 1)) {
+      if (slots.some((s) => s.dayOfWeek === cur.getDay())) return true;
     }
-    return { mins, dayCount };
+    return false;
   };
+  const genAnchor = hasDaysLeft(weekStart) ? weekStart : new Date(weekStart.getTime() + 7 * DAY_MS);
 
-  let genAnchor = weekStart;
-  let { mins: totalSlotMins, dayCount } = windowStats(genAnchor);
-  if (dayCount === 0) {
-    // No study days left this week → generate for next week instead.
-    genAnchor = new Date(weekStart.getTime() + 7 * DAY_MS);
-    ({ mins: totalSlotMins, dayCount } = windowStats(genAnchor));
-  }
+  // ── What is left to schedule ─────────────────────────────────────────────
+  // Per clip: anything already in the active plan (pending or done) or
+  // completed under an earlier plan is covered. A subtopic whose earlier parts
+  // are planned continues with its next part instead of being skipped whole.
+  const pending = await loadWorkItems(authUser.id, subtopicData, "append");
 
-  // ── Exclude subtopics already in the active plan (completed OR still pending) ─
-  // This prevents the same topic from appearing twice across weeks.
-  const alreadyInPlan = await db.studySession.findMany({
-    where: { studyPlan: { userId: authUser.id, isActive: true } },
-    select: { subtopicId: true },
-    distinct: ["subtopicId"],
-  });
-  const alreadyIds = new Set(
-    alreadyInPlan.map((s: { subtopicId: string }) => s.subtopicId)
-  );
-  const remaining = subtopicData.filter((s) => !alreadyIds.has(s.id));
-
-  if (remaining.length === 0) {
+  if (pending.length === 0) {
     return NextResponse.json({
       message: "All subtopics have been scheduled. Great work!",
       weeklyAvailabilityId: weeklyAvail.id,
     });
   }
 
-  // ── Pick subtopics that fit within this week's budget (95% of capacity) ─
-  const budget = Math.max(Math.floor(totalSlotMins * 0.95), 30);
-  const ordered = recommendOrder({ subtopics: remaining, proficiencies: profMap });
-  let cumMins = 0;
-  const weekSubtopics = ordered.filter((s) => {
-    if (cumMins + s.estimatedMinutes <= budget) {
-      cumMins += s.estimatedMinutes;
-      return true;
-    }
-    return false;
-  });
-  // Always schedule at least one subtopic even if it exceeds budget
-  if (weekSubtopics.length === 0) weekSubtopics.push(ordered[0]);
-
-  const latestPlan = await db.studyPlan.findFirst({
-    where: { userId: authUser.id },
-    orderBy: { version: "desc" },
-    select: { version: true },
-  });
-
   const GA_TIMEOUT_MS = 25000;
 
   try {
-    const result = await Promise.race([
-      runGeneticAlgorithm({
-        userId: authUser.id,
-        proficiencies: profMap,
-        preferences: {
-          targetExamDate: preferences.targetExamDate,
-          targetScore: preferences.targetScore,
-        },
-        weeklyAvailability: slots,
-        weekStartDate: genAnchor,
-        weeklyAvailabilityId: weeklyAvail.id,
-        // engine computes endDate = genAnchor + 7d and clamps the start to today,
-        // so the window matches the [max(genAnchor,today), genAnchor+7) capacity
-        // the budget above was sized against.
-        subtopics: weekSubtopics,
-        triggerReason: "SCHEDULE_CHANGE" as TriggerReason,
-        existingPlanVersion: latestPlan?.version,
-        appendToExisting: true,
-      }),
+    const plan = await Promise.race([
+      Promise.resolve().then(() =>
+        planWeek({
+          items: pending,
+          subtopics: subtopicData,
+          proficiencies: profMap,
+          slots,
+          weekStartDate: genAnchor,
+        })
+      ),
       new Promise<never>((_, reject) =>
         setTimeout(
           () => reject(new Error("Study plan generation timed out. Please try again.")),
@@ -242,10 +184,25 @@ export async function POST(req: NextRequest) {
       ),
     ]);
 
+    if (!plan) {
+      return NextResponse.json({ weeklyAvailabilityId: weeklyAvail.id, message: "No study days left this week." });
+    }
+
+    const saved = await savePlan({
+      userId: authUser.id,
+      sessions: plan.sessions,
+      fitness: plan.fitness,
+      logs: plan.logs,
+      cfg: plan.cfg,
+      triggerReason: "SCHEDULE_CHANGE" as TriggerReason,
+      weeklyAvailabilityId: weeklyAvail.id,
+      append: true,
+    });
+
     return NextResponse.json({
       weeklyAvailabilityId: weeklyAvail.id,
-      studyPlanId: result.studyPlanId,
-      bestFitness: result.bestFitness,
+      studyPlanId: saved.studyPlanId,
+      bestFitness: plan.fitness.total,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to generate study plan";

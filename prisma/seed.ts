@@ -1,9 +1,108 @@
 import { PrismaClient } from "@prisma/client";
+import { CURRICULUM } from "./curriculum.data";
 
 const prisma = new PrismaClient();
 
+/**
+ * Upserts for the curriculum tree.
+ *
+ * These take the same `{ data: … }` argument shape as `prisma.x.create`, so the
+ * call sites below read unchanged — what differs is that a second run updates
+ * the existing row instead of creating a duplicate.
+ *
+ * ── Why the seed no longer deletes the curriculum ─────────────────────────
+ * It used to drop every category, topic and subtopic and build them again,
+ * which handed each subtopic a fresh cuid on every run. Those IDs are what
+ * learner progress, study plans and the Resource table all point at, so a
+ * re-seed took every learner's watch history, proficiency and schedule with it
+ * — and it did so quietly, as a side effect of editing a description.
+ *
+ * Matching on the natural key instead — a name within its parent — keeps IDs
+ * stable across runs, so the curriculum can be reshaped without touching
+ * anything hanging off it. A *rename* still reads as a different subtopic; that
+ * is the case the old comment here called out as needing a real migration, and
+ * it still does.
+ */
+// Everything this run touched, so what it did *not* touch can be reported.
+const seen = { categories: new Set<string>(), topics: new Set<string>(), subtopics: new Set<string>() };
+
+async function upsertCategory({ data }: { data: { subjectId: string; name: string; weight: number } }) {
+  const row = await prisma.category.upsert({
+    where: { subjectId_name: { subjectId: data.subjectId, name: data.name } },
+    update: { weight: data.weight },
+    create: data,
+  });
+  seen.categories.add(row.id);
+  return row;
+}
+
+async function upsertTopic({
+  data,
+}: {
+  data: { categoryId: string; name: string; description?: string };
+}) {
+  const row = await prisma.topic.upsert({
+    where: { categoryId_name: { categoryId: data.categoryId, name: data.name } },
+    update: { description: data.description },
+    create: data,
+  });
+  seen.topics.add(row.id);
+  return row;
+}
+
+async function upsertSubtopic({
+  data,
+}: {
+  data: {
+    topicId: string;
+    name: string;
+    description: string;
+    learningUrl: string;
+    estimatedMinutes: number;
+    difficultyLevel: number;
+  };
+}) {
+  const row = await prisma.subtopic.upsert({
+    where: { topicId_name: { topicId: data.topicId, name: data.name } },
+    update: {
+      description: data.description,
+      learningUrl: data.learningUrl,
+      estimatedMinutes: data.estimatedMinutes,
+      difficultyLevel: data.difficultyLevel,
+    },
+    create: data,
+  });
+  seen.subtopics.add(row.id);
+  return row;
+}
+
+/**
+ * Clears only what this seed rebuilds wholesale.
+ *
+ * Assessments and their questions are regenerated from scratch every run — the
+ * seeded questions are placeholder text keyed to nothing — so they are dropped
+ * along with the attempts and responses that reference them. That still costs a
+ * learner their assessment history on a re-seed, which is worth fixing, but it
+ * is a separate problem from the curriculum IDs.
+ *
+ * Prerequisites are re-derived below from names, so they are rebuilt too.
+ *
+ * Everything else now survives: proficiencies, study plans, study sessions,
+ * resources and watch progress all hang off subtopic IDs that no longer change.
+ */
+async function resetGeneratedContent() {
+  await prisma.userQuestionResponse.deleteMany();
+  await prisma.userAssessmentAttempt.deleteMany();
+  await prisma.question.deleteMany();
+  await prisma.assessment.deleteMany();
+  await prisma.subtopicPrerequisite.deleteMany();
+  console.log("Cleared assessments and prerequisites (curriculum kept).");
+}
+
 async function main() {
   console.log("Seeding GED curriculum...");
+
+  await resetGeneratedContent();
 
   // ─── Subjects ──────────────────────────────────────────────────────────────
 
@@ -30,176 +129,80 @@ async function main() {
     }),
   ]);
 
-  // ─── MATH Categories & Topics & Subtopics ──────────────────────────────────
+  const subjectByCode = new Map([math, rla, ss, sci].map((s) => [s.code, s]));
 
-const mathQuantCat = await prisma.category.create({ data: { subjectId: math.id, name: "Quantitative Problem Solving", weight: 45 } });
-const mathAlgCat   = await prisma.category.create({ data: { subjectId: math.id, name: "Algebraic Reasoning", weight: 55 } });
+  // ─── Generated curriculum ──────────────────────────────────────────────────
+  //
+  // Subjects listed in prisma/curriculum.data.ts are seeded from there rather
+  // than from a block in this file. That file is built by
+  // scripts/import-curriculum.ts out of the CSVs in `curriculum/`, where the
+  // clip lists are actually maintained, so hand-editing the structure here
+  // would be overwritten on the next import.
+  //
+  // Subjects absent from it keep their hand-written block below, and move over
+  // as their CSV arrives.
 
-const numSenseTopic = await prisma.topic.create({ data: { categoryId: mathQuantCat.id, name: "Number Sense" } });
-const dataStatTopic = await prisma.topic.create({ data: { categoryId: mathQuantCat.id, name: "Data and Statistics" } });
-const geoMeasTopic  = await prisma.topic.create({ data: { categoryId: mathQuantCat.id, name: "Geometric Measurement" } });
-const exprTopic     = await prisma.topic.create({ data: { categoryId: mathAlgCat.id,   name: "Expressions and Polynomials" } });
-const eqTopic       = await prisma.topic.create({ data: { categoryId: mathAlgCat.id,   name: "Equations and Inequalities" } });
-const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat.id,   name: "Graphs and Functions" } });
+  for (const subject of CURRICULUM) {
+    const row = subjectByCode.get(subject.code);
+    if (!row) throw new Error(`curriculum.data.ts has ${subject.code}, which is not a seeded subject`);
 
-  // MATH Subtopics (15 total)
-  const mathSubtopics = await Promise.all([
-    // Number Operations
-    prisma.subtopic.create({
-      data: {
-        topicId: numSenseTopic.id, name: "Integer Operations",
-        description: "Add, subtract, multiply, and divide integers including negative numbers.",
-        learningUrl: "https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-negative-number-topic",
-        estimatedMinutes: 45, difficultyLevel: 1,
-      },
-    }),
-    prisma.subtopic.create({
-      data: {
-        topicId: numSenseTopic.id, name: "Fractions, Decimals & Percents",
-        description: "Convert and compute with fractions, decimals, and percentages.",
-        learningUrl: "https://www.khanacademy.org/math/pre-algebra/pre-algebra-fractions",
-        estimatedMinutes: 60, difficultyLevel: 2,
-      },
-    }),
-    prisma.subtopic.create({
-      data: {
-        topicId: numSenseTopic.id, name: "Ratios & Rates",
-        description: "Understand and apply ratios, unit rates, and proportional reasoning.",
-        learningUrl: "https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-ratios-prop",
-        estimatedMinutes: 50, difficultyLevel: 2,
-      },
-    }),
-    prisma.subtopic.create({
-      data: {
-        topicId: numSenseTopic.id, name: "Percent Problems",
-        description: "Solve percent change, percent of a number, and real-world percent applications.",
-        learningUrl: "https://www.khanacademy.org/math/pre-algebra/pre-algebra-ratios-rates",
-        estimatedMinutes: 45, difficultyLevel: 2,
-      },
-    }),
-    // Expressions & Polynomials
-    prisma.subtopic.create({
-      data: {
-        topicId: exprTopic.id, name: "Algebraic Expressions",
-        description: "Write, simplify, and evaluate algebraic expressions.",
-        learningUrl: "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra",
-        estimatedMinutes: 55, difficultyLevel: 2,
-      },
-    }),
-    prisma.subtopic.create({
-      data: {
-        topicId: exprTopic.id, name: "Polynomial Operations",
-        description: "Add, subtract, multiply, and factor polynomials.",
-        learningUrl: "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:polynomial-arithmetic",
-        estimatedMinutes: 70, difficultyLevel: 3,
-      },
-    }),
-    // Equations & Inequalities
-    prisma.subtopic.create({
-      data: {
-        topicId: eqTopic.id, name: "Linear Equations",
-        description: "Solve one-variable and two-variable linear equations.",
-        learningUrl: "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:solve-equations-inequalities",
-        estimatedMinutes: 60, difficultyLevel: 2,
-      },
-    }),
-    prisma.subtopic.create({
-      data: {
-        topicId: eqTopic.id, name: "Inequalities & Systems",
-        description: "Solve linear inequalities and systems of equations.",
-        learningUrl: "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:linear-equation-inequality",
-        estimatedMinutes: 65, difficultyLevel: 3,
-      },
-    }),
-    // Linear Functions
-    prisma.subtopic.create({
-      data: {
-        topicId: graphFuncTopic.id, name: "Slope & Linear Graphs",
-        description: "Calculate slope, interpret graphs, and write linear equations.",
-        learningUrl: "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:linear-equations-graphs",
-        estimatedMinutes: 60, difficultyLevel: 2,
-      },
-    }),
-    // Quadratic & Other Functions
-    prisma.subtopic.create({
-      data: {
-        topicId: graphFuncTopic.id, name: "Quadratic Functions",
-        description: "Graph, solve, and interpret quadratic equations and parabolas.",
-        learningUrl: "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:quadratics-multiplying-factoring",
-        estimatedMinutes: 75, difficultyLevel: 4,
-      },
-    }),
-    // Geometry
-    prisma.subtopic.create({
-      data: {
-        topicId: geoMeasTopic.id, name: "Area, Perimeter & Volume",
-        description: "Calculate area, perimeter, surface area, and volume of 2D and 3D figures.",
-        learningUrl: "https://www.khanacademy.org/math/geometry/hs-geo-foundations",
-        estimatedMinutes: 70, difficultyLevel: 2,
-      },
-    }),
-    prisma.subtopic.create({
-      data: {
-        topicId: geoMeasTopic.id, name: "Pythagorean Theorem",
-        description: "Apply the Pythagorean theorem and distance formula.",
-        learningUrl: "https://www.khanacademy.org/math/basic-geo/basic-geo-pythagorean-topic",
-        estimatedMinutes: 50, difficultyLevel: 3,
-      },
-    }),
-    prisma.subtopic.create({
-      data: {
-        topicId: geoMeasTopic.id, name: "Coordinate Geometry",
-        description: "Work with the coordinate plane, midpoints, and transformations.",
-        learningUrl: "https://www.khanacademy.org/math/geometry/hs-geo-analytic-geometry",
-        estimatedMinutes: 55, difficultyLevel: 3,
-      },
-    }),
-    // Statistics
-    prisma.subtopic.create({
-      data: {
-        topicId: dataStatTopic.id, name: "Data Analysis & Central Tendency",
-        description: "Calculate mean, median, mode, and interpret data displays.",
-        learningUrl: "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data",
-        estimatedMinutes: 55, difficultyLevel: 2,
-      },
-    }),
-    prisma.subtopic.create({
-      data: {
-        topicId: dataStatTopic.id, name: "Probability",
-        description: "Compute and interpret basic and compound probability.",
-        learningUrl: "https://www.khanacademy.org/math/statistics-probability/probability-library",
-        estimatedMinutes: 55, difficultyLevel: 3,
-      },
-    }),
-  ]);
+    for (const cat of subject.categories) {
+      const category = await upsertCategory({
+        data: { subjectId: row.id, name: cat.name, weight: cat.weight },
+      });
+      for (const topic of cat.topics) {
+        const topicRow = await upsertTopic({
+          data: { categoryId: category.id, name: topic.name },
+        });
+        for (const st of topic.subtopics) {
+          await upsertSubtopic({
+            data: {
+              topicId: topicRow.id,
+              name: st.name,
+              description: st.description,
+              learningUrl: st.learningUrl,
+              estimatedMinutes: st.estimatedMinutes,
+              difficultyLevel: st.difficultyLevel,
+            },
+          });
+        }
+      }
+    }
+
+    const subtopicCount = subject.categories.reduce(
+      (n, c) => n + c.topics.reduce((m, t) => m + t.subtopics.length, 0),
+      0
+    );
+    console.log(`${subject.code}: ${subtopicCount} subtopics from curriculum.data.ts`);
+  }
 
   // ─── RLA Categories & Subtopics (14 total) ────────────────────────────────
 
-  const rlaReadCat = await prisma.category.create({
+  const rlaReadCat = await upsertCategory({
     data: { subjectId: rla.id, name: "Reading for Meaning", weight: 45 },
   });
-  const rlaWriteCat = await prisma.category.create({
+  const rlaWriteCat = await upsertCategory({
     data: { subjectId: rla.id, name: "Extended Writing", weight: 35 },
   });
-  const rlaLangCat = await prisma.category.create({
+  const rlaLangCat = await upsertCategory({
     data: { subjectId: rla.id, name: "Language & Grammar", weight: 20 },
   });
 
-  const infoTopic = await prisma.topic.create({
+  const infoTopic = await upsertTopic({
     data: { categoryId: rlaReadCat.id, name: "Informational Text" },
   });
-  const litTopic = await prisma.topic.create({
+  const litTopic = await upsertTopic({
     data: { categoryId: rlaReadCat.id, name: "Literary Text" },
   });
-  const argTopic = await prisma.topic.create({
+  const argTopic = await upsertTopic({
     data: { categoryId: rlaWriteCat.id, name: "Argument & Evidence Writing" },
   });
-  const grammarTopic = await prisma.topic.create({
+  const grammarTopic = await upsertTopic({
     data: { categoryId: rlaLangCat.id, name: "Grammar & Usage" },
   });
 
   await Promise.all([
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: infoTopic.id, name: "Main Idea & Supporting Details",
         description: "Identify the central idea and how details support it in informational texts.",
@@ -207,7 +210,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 40, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: infoTopic.id, name: "Author's Purpose & Point of View",
         description: "Determine the author's purpose and analyze bias in non-fiction texts.",
@@ -215,7 +218,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 45, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: infoTopic.id, name: "Text Structure & Features",
         description: "Analyze how authors use text structure (cause-effect, compare-contrast) to convey meaning.",
@@ -223,7 +226,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 40, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: infoTopic.id, name: "Argument Analysis",
         description: "Evaluate claims, evidence, and reasoning in argumentative texts.",
@@ -231,7 +234,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 50, difficultyLevel: 4,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: litTopic.id, name: "Reading Fiction",
         description: "Analyze plot, character, setting, and theme in literary texts.",
@@ -239,7 +242,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 45, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: litTopic.id, name: "Figurative Language & Tone",
         description: "Identify and interpret figurative language, mood, and tone in literature.",
@@ -247,7 +250,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 45, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: litTopic.id, name: "Comparing Texts",
         description: "Compare themes, arguments, and structures across multiple texts.",
@@ -255,7 +258,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 50, difficultyLevel: 4,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: argTopic.id, name: "Writing an Argument Essay",
         description: "Structure and write a persuasive extended response using evidence.",
@@ -263,7 +266,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 90, difficultyLevel: 4,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: argTopic.id, name: "Using Evidence & Citations",
         description: "Integrate and cite textual evidence effectively in written responses.",
@@ -271,7 +274,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 60, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: grammarTopic.id, name: "Sentence Structure",
         description: "Identify and correct run-ons, fragments, and complex sentence structures.",
@@ -279,7 +282,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 45, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: grammarTopic.id, name: "Punctuation & Capitalization",
         description: "Apply correct punctuation (commas, semicolons, apostrophes) and capitalization rules.",
@@ -287,7 +290,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 40, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: grammarTopic.id, name: "Vocabulary in Context",
         description: "Use context clues and word parts to determine the meaning of unfamiliar words.",
@@ -295,7 +298,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 35, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: grammarTopic.id, name: "Subject-Verb Agreement",
         description: "Apply subject-verb and pronoun-antecedent agreement rules.",
@@ -303,7 +306,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 40, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: grammarTopic.id, name: "Verb Tense & Modifiers",
         description: "Use consistent verb tenses and correctly place modifiers in sentences.",
@@ -315,34 +318,34 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
 
   // ─── Social Studies (14 total) ────────────────────────────────────────────
 
-  const ssCivCat = await prisma.category.create({
+  const ssCivCat = await upsertCategory({
     data: { subjectId: ss.id, name: "Civics & Government", weight: 50 },
   });
-  const ssUshCat = await prisma.category.create({
+  const ssUshCat = await upsertCategory({
     data: { subjectId: ss.id, name: "United States History", weight: 20 },
   });
-  const ssEconCat = await prisma.category.create({
+  const ssEconCat = await upsertCategory({
     data: { subjectId: ss.id, name: "Economics", weight: 15 },
   });
-  const ssGeoCat = await prisma.category.create({
+  const ssGeoCat = await upsertCategory({
     data: { subjectId: ss.id, name: "Geography & the World", weight: 15 },
   });
 
-  const civTopic = await prisma.topic.create({
+  const civTopic = await upsertTopic({
     data: { categoryId: ssCivCat.id, name: "Government & Citizenship" },
   });
-  const ushTopic = await prisma.topic.create({
+  const ushTopic = await upsertTopic({
     data: { categoryId: ssUshCat.id, name: "American History" },
   });
-  const econTopic = await prisma.topic.create({
+  const econTopic = await upsertTopic({
     data: { categoryId: ssEconCat.id, name: "Economic Principles" },
   });
-  const worldGeoTopic = await prisma.topic.create({
+  const worldGeoTopic = await upsertTopic({
     data: { categoryId: ssGeoCat.id, name: "World Geography & Cultures" },
   });
 
   await Promise.all([
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: civTopic.id, name: "US Constitution & Bill of Rights",
         description: "Understand the structure of the US Constitution and the rights it guarantees.",
@@ -350,7 +353,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 60, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: civTopic.id, name: "Branches of Government",
         description: "Describe the powers and functions of the legislative, executive, and judicial branches.",
@@ -358,7 +361,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: civTopic.id, name: "Elections & Political Participation",
         description: "Explain the electoral process, voting rights, and civic responsibility.",
@@ -366,7 +369,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 45, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: civTopic.id, name: "Civil Rights & Liberties",
         description: "Trace the civil rights movement and key legislation protecting individual rights.",
@@ -374,7 +377,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: ushTopic.id, name: "American Revolution & Founding",
         description: "Analyze causes and outcomes of the American Revolution and the founding documents.",
@@ -382,7 +385,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 60, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: ushTopic.id, name: "Civil War & Reconstruction",
         description: "Examine causes, key events, and aftermath of the Civil War and Reconstruction era.",
@@ -390,7 +393,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 60, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: ushTopic.id, name: "World Wars & Modern America",
         description: "Evaluate America's role in WWI, WWII, and the Cold War era.",
@@ -398,7 +401,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 65, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: ushTopic.id, name: "Social Movements of the 20th Century",
         description: "Analyse the civil rights, women's rights, and labor movements.",
@@ -406,7 +409,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 50, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: econTopic.id, name: "Supply, Demand & Markets",
         description: "Apply supply and demand principles to real-world economic scenarios.",
@@ -414,7 +417,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: econTopic.id, name: "Personal Finance",
         description: "Understand budgeting, credit, taxes, and basic personal financial planning.",
@@ -422,7 +425,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 50, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: econTopic.id, name: "Macro & Microeconomics",
         description: "Distinguish macro and microeconomic concepts including GDP, inflation, and competition.",
@@ -430,7 +433,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 60, difficultyLevel: 4,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: worldGeoTopic.id, name: "Map Skills & Geographic Tools",
         description: "Read and interpret maps, charts, and geographic data.",
@@ -438,7 +441,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 40, difficultyLevel: 1,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: worldGeoTopic.id, name: "Human Geography & Migration",
         description: "Examine how geography shapes human societies, culture, and migration patterns.",
@@ -446,7 +449,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 50, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: worldGeoTopic.id, name: "Global Interdependence",
         description: "Analyze trade, environmental, and political connections between nations.",
@@ -458,31 +461,31 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
 
   // ─── Science (14 total) ───────────────────────────────────────────────────
 
-  const sciLifeCat = await prisma.category.create({
+  const sciLifeCat = await upsertCategory({
     data: { subjectId: sci.id, name: "Life Science", weight: 40 },
   });
-  const sciPhysCat = await prisma.category.create({
+  const sciPhysCat = await upsertCategory({
     data: { subjectId: sci.id, name: "Physical Science", weight: 40 },
   });
-  const sciEarthCat = await prisma.category.create({
+  const sciEarthCat = await upsertCategory({
     data: { subjectId: sci.id, name: "Earth & Space Science", weight: 20 },
   });
 
-  const bioTopic = await prisma.topic.create({
+  const bioTopic = await upsertTopic({
     data: { categoryId: sciLifeCat.id, name: "Biology & Ecology" },
   });
-  const chemTopic = await prisma.topic.create({
+  const chemTopic = await upsertTopic({
     data: { categoryId: sciPhysCat.id, name: "Chemistry" },
   });
-  const physTopic = await prisma.topic.create({
+  const physTopic = await upsertTopic({
     data: { categoryId: sciPhysCat.id, name: "Physics" },
   });
-  const earthTopic = await prisma.topic.create({
+  const earthTopic = await upsertTopic({
     data: { categoryId: sciEarthCat.id, name: "Earth & Space" },
   });
 
   await Promise.all([
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: bioTopic.id, name: "Cell Biology",
         description: "Identify cell structures and explain cellular processes including mitosis.",
@@ -490,7 +493,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 60, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: bioTopic.id, name: "Genetics & Heredity",
         description: "Explain DNA structure, inheritance, and how traits are passed to offspring.",
@@ -498,7 +501,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 65, difficultyLevel: 4,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: bioTopic.id, name: "Evolution & Natural Selection",
         description: "Understand the mechanisms of evolution and how species adapt over time.",
@@ -506,7 +509,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: bioTopic.id, name: "Ecosystems & Energy Flow",
         description: "Describe food webs, energy pyramids, and nutrient cycles in ecosystems.",
@@ -514,7 +517,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: bioTopic.id, name: "Human Body Systems",
         description: "Explain the major human body systems and how they interact.",
@@ -522,7 +525,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 70, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: chemTopic.id, name: "Atomic Structure & Periodic Table",
         description: "Describe atomic structure and trends in the periodic table.",
@@ -530,7 +533,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 60, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: chemTopic.id, name: "Chemical Reactions & Bonding",
         description: "Identify types of chemical reactions and explain chemical bonding.",
@@ -538,7 +541,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 65, difficultyLevel: 4,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: chemTopic.id, name: "States of Matter & Solutions",
         description: "Explain properties of solids, liquids, gases, and solutions.",
@@ -546,7 +549,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: physTopic.id, name: "Motion & Forces",
         description: "Apply Newton's laws of motion and analyze forces in everyday situations.",
@@ -554,7 +557,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 60, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: physTopic.id, name: "Energy & Work",
         description: "Distinguish kinetic and potential energy and apply the law of conservation of energy.",
@@ -562,7 +565,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: physTopic.id, name: "Waves, Light & Sound",
         description: "Describe wave properties, the electromagnetic spectrum, and sound.",
@@ -570,7 +573,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 3,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: earthTopic.id, name: "Earth's Structure & Plate Tectonics",
         description: "Describe Earth's layers and explain plate tectonic theory and its effects.",
@@ -578,7 +581,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 55, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: earthTopic.id, name: "Weather, Climate & Atmosphere",
         description: "Explain weather patterns, climate change, and atmospheric science.",
@@ -586,7 +589,7 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         estimatedMinutes: 50, difficultyLevel: 2,
       },
     }),
-    prisma.subtopic.create({
+    upsertSubtopic({
       data: {
         topicId: earthTopic.id, name: "Astronomy & the Universe",
         description: "Describe the solar system, stars, and the scale and origin of the universe.",
@@ -599,18 +602,24 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
   // ─── Seed subtopic prerequisites ─────────────────────────────────────────
 
   const prereqPairs: Array<[string, string]> = [
-    // MATH
-    ["Fractions, Decimals & Percents", "Integer Operations"],
-    ["Percent Problems", "Ratios & Rates"],
-    ["Algebraic Expressions", "Integer Operations"],
-    ["Polynomial Operations", "Algebraic Expressions"],
-    ["Linear Equations", "Algebraic Expressions"],
-    ["Inequalities & Systems", "Linear Equations"],
-    ["Slope & Linear Graphs", "Linear Equations"],
-    ["Quadratic Functions", "Polynomial Operations"],
-    ["Pythagorean Theorem", "Area, Perimeter & Volume"],
-    ["Coordinate Geometry", "Slope & Linear Graphs"],
-    ["Probability", "Data Analysis & Central Tendency"],
+    // MATH — names follow prisma/curriculum.data.ts.
+    ["Decimals", "Fractions"],
+    ["Ratios", "Fractions"],
+    ["Percentages", "Ratios"],
+    ["Proportions", "Ratios"],
+    ["Exponents & roots", "Positive & negative numbers"],
+    ["Scientific notation", "Exponents & roots"],
+    ["Variables & expressions", "Positive & negative numbers"],
+    ["Solving equations & inequalities", "Variables & expressions"],
+    ["Systems of equations", "Solving equations & inequalities"],
+    ["Slope & linear functions", "Solving equations & inequalities"],
+    ["Quadratic functions", "Exponents & roots"],
+    ["Surface area & volume", "Area & perimeter"],
+    ["Circles", "Area & perimeter"],
+    ["Pythagorean theorem", "Area & perimeter"],
+    ["Dot plots, histograms & box plots", "Mean, median, mode, range"],
+    ["Probability", "Mean, median, mode, range"],
+    ["Scatter plots", "Slope & linear functions"],
     // RLA
     ["Author's Purpose & Point of View", "Main Idea & Supporting Details"],
     ["Argument Analysis", "Author's Purpose & Point of View"],
@@ -672,7 +681,6 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         type: "PRE",
         subjectId: subject.id,
         title: `${subject.name} Pre-Assessment`,
-        timeLimit: 30,
       },
     });
 
@@ -708,7 +716,6 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
         type: "MOCK",
         subjectId: subject.id,
         title: `${subject.name} Mock Test`,
-        timeLimit: 30,
       },
     });
 
@@ -728,9 +735,32 @@ const graphFuncTopic= await prisma.topic.create({ data: { categoryId: mathAlgCat
     }
   }
 
+  await reportOrphans();
+
   console.log("Seeding complete!");
   console.log(`Subjects: 4`);
   console.log(`Subtopics: ${allSubtopics.length}`);
+}
+
+/**
+ * Names what the seed no longer describes, without deleting it.
+ *
+ * A subtopic dropped from the curriculum — or renamed, which looks the same
+ * from here — still has learner progress, study sessions and resources attached.
+ * Removing it is a decision about someone's data, so the seed reports it and
+ * leaves it alone rather than cascading through it at 2am.
+ */
+async function reportOrphans() {
+  const stale = await prisma.subtopic.findMany({
+    where: { id: { notIn: [...seen.subtopics] } },
+    select: { name: true, topic: { select: { name: true } } },
+  });
+  if (!stale.length) return;
+
+  console.log(`
+${stale.length} subtopic(s) in the database are no longer in the seed:`);
+  for (const s of stale) console.log(`  - ${s.topic.name} / ${s.name}`);
+  console.log("  Left in place — they may still hold learner progress. Remove them deliberately.");
 }
 
 const OPTION_IDS = ["A", "B", "C", "D"] as const;

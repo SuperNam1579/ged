@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
-import { getSubtopicResources } from "@/lib/resources";
+import { getSessionResourceIds, getSubtopicResources } from "@/lib/resources";
 import { isComplete, requiredWatchSec } from "@/lib/resources/types";
 
 /**
@@ -44,7 +44,12 @@ export async function POST(
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
-  const resources = await getSubtopicResources(session.subtopicId);
+  // A session that is one part of a split subtopic is complete when its own
+  // clips are watched — not every clip in the subtopic, which used to demand
+  // 88 videos before any Fractions session could be finished.
+  const partIds = await getSessionResourceIds(session.id);
+  const allResources = await getSubtopicResources(session.subtopicId);
+  const resources = partIds ? allResources.filter((r) => partIds.includes(r.id)) : allResources;
 
   if (resources.length === 0) {
     return NextResponse.json(
