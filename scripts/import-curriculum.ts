@@ -52,6 +52,7 @@ import { pathToFileURL } from "node:url";
 import { parseIsoDuration } from "../src/lib/youtube/duration";
 import { PLANS, type SubjectPlan, type SubtopicPlan } from "./curriculum/plan";
 import { normalizeUrl, saveSubtopicResources, type ResourceInput } from "./lib/resources";
+import { assertDatabaseWriteAllowed } from "./db/guard";
 import { READING_TIME_FACTOR, readingSec } from "../src/lib/resources/types";
 import { STUDY_TIME_FACTOR } from "../src/lib/schedule/parts";
 
@@ -664,6 +665,7 @@ async function writeLandingFromData() {
  * fetch-resources.ts so both importers treat learner progress the same way.
  */
 async function writeResources() {
+  assertDatabaseWriteAllowed("write resources");
   if (!existsSync(DATA_PATH)) {
     throw new Error("prisma/curriculum.data.ts is missing — run this script without --resources first.");
   }

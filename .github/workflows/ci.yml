@@ -1,0 +1,42 @@
+name: CI
+
+# Runs on every push and pull request. Vercel deploys the branch on push
+# regardless, so this is the check to look at before trusting a deploy.
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The build reads these at import time. Placeholders only: nothing here
+    # connects to a database or sends mail, and no real secret belongs in CI.
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      NEXTAUTH_SECRET: ci-placeholder-secret-not-used-anywhere-real
+      AUTH_SECRET: ci-placeholder-secret-not-used-anywhere-real
+      CSRF_SECRET: ci-placeholder-secret-not-used-anywhere-real
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      RESEND_API_KEY: re_ci_placeholder
+      EMAIL_FROM: CI <ci@example.com>
+      RATE_LIMIT_ENABLED: "false"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npx eslint src scripts prisma
+      - name: Unit tests
+        run: npx vitest run
+      - name: Build
+        run: npx next build

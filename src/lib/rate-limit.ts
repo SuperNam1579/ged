@@ -133,6 +133,15 @@ const RATE_LIMIT_CONFIGS = {
     requests: 30,
     window: "1 m" as Duration,
   },
+  // Study-plan generation runs the GA — CPU-bound, around half a second per
+  // week of availability on the real curriculum. A learner regenerates a few
+  // times while adjusting availability; this caps a script hammering it.
+  // Bucket per account, like resource-progress.
+  "plan-generate": {
+    algorithm: "sliding" as Algorithm,
+    requests: 8,
+    window: "10 m" as Duration,
+  },
 } as const;
 
 export type RateLimitKey = keyof typeof RATE_LIMIT_CONFIGS;

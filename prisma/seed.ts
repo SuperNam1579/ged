@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { CURRICULUM } from "./curriculum.data";
+import { assertDatabaseWriteAllowed } from "../scripts/db/guard";
 
 const prisma = new PrismaClient();
 
@@ -133,6 +134,7 @@ async function ensureAssessment(
 }
 
 async function main() {
+  assertDatabaseWriteAllowed("seed the curriculum");
   console.log("Seeding GED curriculum...");
 
   await resetGeneratedContent();

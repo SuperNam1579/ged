@@ -49,6 +49,7 @@ import { PrismaClient } from "@prisma/client";
 import { resolve } from "node:path";
 import { parseIsoDuration } from "../src/lib/youtube/duration";
 import { saveSubtopicResources, type ResourceInput } from "./lib/resources";
+import { assertDatabaseWriteAllowed } from "./db/guard";
 
 process.loadEnvFile(resolve(process.cwd(), ".env"));
 
@@ -630,6 +631,7 @@ async function refilter() {
  * instead — one video, one place — before anything is written.
  */
 async function commit(staged: Map<string, Picked[]>) {
+  assertDatabaseWriteAllowed("write resources");
   const ids = [...staged.values()].flatMap((list) => list.map((p) => p.youtubeId));
   const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
   if (dupes.length) {

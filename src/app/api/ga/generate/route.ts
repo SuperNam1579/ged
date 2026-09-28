@@ -4,6 +4,7 @@ import { getAuthUserStrict } from "@/lib/auth";
 import { planWeek, savePlan } from "@/lib/ga/engine";
 import { loadWorkItems } from "@/lib/schedule/work-items";
 import { checkCsrf } from "@/lib/csrf";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { audit, extractRequestContext } from "@/lib/audit";
 import type { TriggerReason } from "@/types";
 import { z } from "zod";
@@ -18,12 +19,21 @@ const GenerateSchema = z.object({
   ]),
 });
 
+/** Upper bound for the whole request; the weeks cap below keeps it well inside. */
+export const maxDuration = 60;
+
+/** Weeks planned per request — see where validWeeks is built. */
+const MAX_WEEKS_PER_RUN = 12;
+
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req);
   if (csrfError) return csrfError;
 
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const limited = await checkRateLimit("plan-generate", req, authUser.id);
+  if (limited) return limited;
 
   const body = await req.json();
   const parsed = GenerateSchema.safeParse(body);
@@ -58,7 +68,10 @@ export async function POST(req: NextRequest) {
     include: { slots: { orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }] } },
   });
 
-  const validWeeks = allWeeks.filter((w) => w.slots.length > 0);
+  // Bounded so one request can't outgrow the function's time limit: each week
+  // is a GA run (≈0.5 s on the full curriculum, measured 2026-09-28), and
+  // weeks beyond this are planned by the next regeneration as they come up.
+  const validWeeks = allWeeks.filter((w) => w.slots.length > 0).slice(0, MAX_WEEKS_PER_RUN);
   if (validWeeks.length === 0) {
     return NextResponse.json(
       { error: "Weekly availability not set. Please enter your available time slots first." },

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { planWeek, savePlan } from "@/lib/ga/engine";
 import { loadWorkItems } from "@/lib/schedule/work-items";
 import type { TriggerReason } from "@/types";
@@ -28,12 +29,18 @@ const AvailabilitySchema = z.object({
   applyToFutureWeeks: z.boolean().optional(),
 });
 
+/** Saving availability plans the coming week with the GA; see ga/generate. */
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req);
   if (csrfError) return csrfError;
 
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const limited = await checkRateLimit("plan-generate", req, authUser.id);
+  if (limited) return limited;
 
   const body = await req.json();
   const parsed = AvailabilitySchema.safeParse(body);

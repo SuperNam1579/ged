@@ -30,6 +30,19 @@ export async function getAuthUser(
   if (legacyToken) {
     const payload = await verifyToken(legacyToken);
     if (payload?.sub) {
+      // A token signed out of is still validly signed until it expires; logout
+      // records its jti. This check used to live only in the proxy, as an HTTP
+      // call back into the app that let the request through whenever the call
+      // failed — so a revoked token worked again during any hiccup, and routes
+      // had no check of their own. Here it is one indexed lookup, and a revoked
+      // token is refused outright.
+      if (typeof payload.jti === "string") {
+        const revoked = await db.revokedToken.findUnique({
+          where: { tokenJti: payload.jti },
+          select: { id: true },
+        });
+        if (revoked) return null;
+      }
       return {
         id: payload.sub as string,
         email: payload.email as string,

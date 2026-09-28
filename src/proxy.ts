@@ -41,10 +41,13 @@ export default auth(async (req) => {
   };
 
   // Static assets — skip immediately.
+  // Static files skip the auth gate. Matched on a trailing file extension and
+  // never under /api — `includes(".")` used to wave through any path with a
+  // dot anywhere in it, including API calls with a dotted id.
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
-    pathname.includes(".")
+    (!pathname.startsWith("/api/") && /\.[a-z0-9]{2,5}$/i.test(pathname))
   ) {
     return NextResponse.next();
   }
@@ -82,30 +85,8 @@ export default auth(async (req) => {
     const payload = await verifyToken(legacyToken);
 
     if (payload) {
-      // Preserve revocation checking for API routes on the legacy path.
-      if (pathname.startsWith("/api/") && payload.jti) {
-        try {
-          const checkRes = await fetch(
-            new URL("/api/auth/check-revoked", req.url),
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ jti: payload.jti }),
-            }
-          );
-          if (checkRes.ok) {
-            const { revoked } = await checkRes.json();
-            if (revoked) {
-              return NextResponse.json(
-                { error: "Token has been revoked" },
-                { status: 401 }
-              );
-            }
-          }
-        } catch {
-          // Revocation check failed — fail open (prefer availability over blocking).
-        }
-      }
+      // Revocation is checked by getAuthUser in every route, against the
+      // database, where it can't be skipped by a failed side call.
       return pass();
     }
 

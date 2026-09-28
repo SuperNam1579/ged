@@ -8,12 +8,14 @@
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push",
+    "db:push": "tsx scripts/db/guard.ts \"push the schema\" && prisma db push && tsx scripts/db/enable-rls.ts",
     "db:seed": "tsx prisma/seed.ts",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "tsx scripts/db/no-migrate.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:rls": "tsx scripts/db/enable-rls.ts",
+    "db:rls:check": "tsx scripts/db/enable-rls.ts --check"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
