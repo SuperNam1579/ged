@@ -1,21 +1,18 @@
 import type { ReactNode } from "react";
 import { subjectOrder } from "@/lib/subject-order";
+import { GENERATED_CURRICULUM } from "./curriculum.generated";
 
 /**
  * The GED curriculum as presented on the marketing pages.
  *
- * Mirrors the hierarchy in `prisma/seed.ts` — subject → category → topic →
- * subtopic — and the figures here were extracted from it, so the public pages
- * quote the same curriculum the product teaches. Everything countable is derived
- * from this list rather than written by hand; the per-subject numbers previously
- * hardcoded on the landing page had drifted from the seed (14/18/15/10 against
- * an actual 15/14/14/14).
+ * Subjects built from the curriculum sheets (MATH, SS, SCI) take their tree from
+ * curriculum.generated.ts, which scripts/import-curriculum.ts writes from the
+ * same data the product teaches from — so these pages can't drift from it the
+ * way the hand-written copy did. RLA has no sheet yet and keeps its hand-written
+ * block below until it does.
  *
- * This stays presentation data, not a runtime source of truth. Onboarding,
- * mock-test and the seed each still carry their own subject lists; unifying all
- * of those is a separate job.
+ * Everything countable is derived from this list rather than written by hand.
  */
-
 /** The smallest unit — one studiable lesson. */
 export interface LandingSubtopic {
   name: string;
@@ -24,6 +21,9 @@ export interface LandingSubtopic {
   minutes: number;
   /** Difficulty, 1 (easiest) to 4 (hardest). */
   level: number;
+  /** Clips and Khan articles in the lesson. Absent for subjects without a sheet. */
+  videos?: number;
+  articles?: number;
 }
 
 /** A topic within a category. */
@@ -71,140 +71,8 @@ export const LANDING_SUBJECTS: LandingSubject[] = [
         ∑
       </span>
     ),
-    categories: [
-      {
-        name: "Quantitative Problem Solving",
-        weight: 45,
-        topics: [
-          {
-            name: "Number Sense",
-            subtopics: [
-              {
-                name: "Integer Operations",
-                description: "Add, subtract, multiply, and divide integers including negative numbers.",
-                minutes: 45,
-                level: 1,
-              },
-              {
-                name: "Fractions, Decimals & Percents",
-                description: "Convert and compute with fractions, decimals, and percentages.",
-                minutes: 60,
-                level: 2,
-              },
-              {
-                name: "Ratios & Rates",
-                description: "Understand and apply ratios, unit rates, and proportional reasoning.",
-                minutes: 50,
-                level: 2,
-              },
-              {
-                name: "Percent Problems",
-                description: "Solve percent change, percent of a number, and real-world percent applications.",
-                minutes: 45,
-                level: 2,
-              },
-            ],
-          },
-          {
-            name: "Data and Statistics",
-            subtopics: [
-              {
-                name: "Data Analysis & Central Tendency",
-                description: "Calculate mean, median, mode, and interpret data displays.",
-                minutes: 55,
-                level: 2,
-              },
-              {
-                name: "Probability",
-                description: "Compute and interpret basic and compound probability.",
-                minutes: 55,
-                level: 3,
-              },
-            ],
-          },
-          {
-            name: "Geometric Measurement",
-            subtopics: [
-              {
-                name: "Area, Perimeter & Volume",
-                description: "Calculate area, perimeter, surface area, and volume of 2D and 3D figures.",
-                minutes: 70,
-                level: 2,
-              },
-              {
-                name: "Pythagorean Theorem",
-                description: "Apply the Pythagorean theorem and distance formula.",
-                minutes: 50,
-                level: 3,
-              },
-              {
-                name: "Coordinate Geometry",
-                description: "Work with the coordinate plane, midpoints, and transformations.",
-                minutes: 55,
-                level: 3,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Algebraic Reasoning",
-        weight: 55,
-        topics: [
-          {
-            name: "Expressions and Polynomials",
-            subtopics: [
-              {
-                name: "Algebraic Expressions",
-                description: "Write, simplify, and evaluate algebraic expressions.",
-                minutes: 55,
-                level: 2,
-              },
-              {
-                name: "Polynomial Operations",
-                description: "Add, subtract, multiply, and factor polynomials.",
-                minutes: 70,
-                level: 3,
-              },
-            ],
-          },
-          {
-            name: "Equations and Inequalities",
-            subtopics: [
-              {
-                name: "Linear Equations",
-                description: "Solve one-variable and two-variable linear equations.",
-                minutes: 60,
-                level: 2,
-              },
-              {
-                name: "Inequalities & Systems",
-                description: "Solve linear inequalities and systems of equations.",
-                minutes: 65,
-                level: 3,
-              },
-            ],
-          },
-          {
-            name: "Graphs and Functions",
-            subtopics: [
-              {
-                name: "Slope & Linear Graphs",
-                description: "Calculate slope, interpret graphs, and write linear equations.",
-                minutes: 60,
-                level: 2,
-              },
-              {
-                name: "Quadratic Functions",
-                description: "Graph, solve, and interpret quadratic equations and parabolas.",
-                minutes: 75,
-                level: 4,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    // From the curriculum sheets — see curriculum.generated.ts.
+    categories: GENERATED_CURRICULUM.MATH,
   },
   {
     slug: "rla",
@@ -363,130 +231,8 @@ export const LANDING_SUBJECTS: LandingSubject[] = [
         <line x1="19" y1="12" x2="22" y2="12" />
       </svg>
     ),
-    categories: [
-      {
-        name: "Life Science",
-        weight: 40,
-        topics: [
-          {
-            name: "Biology & Ecology",
-            subtopics: [
-              {
-                name: "Cell Biology",
-                description: "Identify cell structures and explain cellular processes including mitosis.",
-                minutes: 60,
-                level: 3,
-              },
-              {
-                name: "Genetics & Heredity",
-                description: "Explain DNA structure, inheritance, and how traits are passed to offspring.",
-                minutes: 65,
-                level: 4,
-              },
-              {
-                name: "Evolution & Natural Selection",
-                description: "Understand the mechanisms of evolution and how species adapt over time.",
-                minutes: 55,
-                level: 3,
-              },
-              {
-                name: "Ecosystems & Energy Flow",
-                description: "Describe food webs, energy pyramids, and nutrient cycles in ecosystems.",
-                minutes: 55,
-                level: 3,
-              },
-              {
-                name: "Human Body Systems",
-                description: "Explain the major human body systems and how they interact.",
-                minutes: 70,
-                level: 3,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Physical Science",
-        weight: 40,
-        topics: [
-          {
-            name: "Chemistry",
-            subtopics: [
-              {
-                name: "Atomic Structure & Periodic Table",
-                description: "Describe atomic structure and trends in the periodic table.",
-                minutes: 60,
-                level: 3,
-              },
-              {
-                name: "Chemical Reactions & Bonding",
-                description: "Identify types of chemical reactions and explain chemical bonding.",
-                minutes: 65,
-                level: 4,
-              },
-              {
-                name: "States of Matter & Solutions",
-                description: "Explain properties of solids, liquids, gases, and solutions.",
-                minutes: 55,
-                level: 3,
-              },
-            ],
-          },
-          {
-            name: "Physics",
-            subtopics: [
-              {
-                name: "Motion & Forces",
-                description: "Apply Newton's laws of motion and analyze forces in everyday situations.",
-                minutes: 60,
-                level: 3,
-              },
-              {
-                name: "Energy & Work",
-                description: "Distinguish kinetic and potential energy and apply the law of conservation of energy.",
-                minutes: 55,
-                level: 3,
-              },
-              {
-                name: "Waves, Light & Sound",
-                description: "Describe wave properties, the electromagnetic spectrum, and sound.",
-                minutes: 55,
-                level: 3,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Earth & Space Science",
-        weight: 20,
-        topics: [
-          {
-            name: "Earth & Space",
-            subtopics: [
-              {
-                name: "Earth's Structure & Plate Tectonics",
-                description: "Describe Earth's layers and explain plate tectonic theory and its effects.",
-                minutes: 55,
-                level: 2,
-              },
-              {
-                name: "Weather, Climate & Atmosphere",
-                description: "Explain weather patterns, climate change, and atmospheric science.",
-                minutes: 50,
-                level: 2,
-              },
-              {
-                name: "Astronomy & the Universe",
-                description: "Describe the solar system, stars, and the scale and origin of the universe.",
-                minutes: 50,
-                level: 2,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    // From the curriculum sheets — see curriculum.generated.ts.
+    categories: GENERATED_CURRICULUM.SCI,
   },
   {
     slug: "social",
@@ -503,136 +249,8 @@ export const LANDING_SUBJECTS: LandingSubject[] = [
         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
       </svg>
     ),
-    categories: [
-      {
-        name: "Civics & Government",
-        weight: 50,
-        topics: [
-          {
-            name: "Government & Citizenship",
-            subtopics: [
-              {
-                name: "US Constitution & Bill of Rights",
-                description: "Understand the structure of the US Constitution and the rights it guarantees.",
-                minutes: 60,
-                level: 3,
-              },
-              {
-                name: "Branches of Government",
-                description: "Describe the powers and functions of the legislative, executive, and judicial branches.",
-                minutes: 55,
-                level: 2,
-              },
-              {
-                name: "Elections & Political Participation",
-                description: "Explain the electoral process, voting rights, and civic responsibility.",
-                minutes: 45,
-                level: 2,
-              },
-              {
-                name: "Civil Rights & Liberties",
-                description: "Trace the civil rights movement and key legislation protecting individual rights.",
-                minutes: 55,
-                level: 3,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "United States History",
-        weight: 20,
-        topics: [
-          {
-            name: "American History",
-            subtopics: [
-              {
-                name: "American Revolution & Founding",
-                description: "Analyze causes and outcomes of the American Revolution and the founding documents.",
-                minutes: 60,
-                level: 3,
-              },
-              {
-                name: "Civil War & Reconstruction",
-                description: "Examine causes, key events, and aftermath of the Civil War and Reconstruction era.",
-                minutes: 60,
-                level: 3,
-              },
-              {
-                name: "World Wars & Modern America",
-                description: "Evaluate America's role in WWI, WWII, and the Cold War era.",
-                minutes: 65,
-                level: 3,
-              },
-              {
-                name: "Social Movements of the 20th Century",
-                description: "Analyse the civil rights, women's rights, and labor movements.",
-                minutes: 50,
-                level: 3,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Economics",
-        weight: 15,
-        topics: [
-          {
-            name: "Economic Principles",
-            subtopics: [
-              {
-                name: "Supply, Demand & Markets",
-                description: "Apply supply and demand principles to real-world economic scenarios.",
-                minutes: 55,
-                level: 3,
-              },
-              {
-                name: "Personal Finance",
-                description: "Understand budgeting, credit, taxes, and basic personal financial planning.",
-                minutes: 50,
-                level: 2,
-              },
-              {
-                name: "Macro & Microeconomics",
-                description: "Distinguish macro and microeconomic concepts including GDP, inflation, and competition.",
-                minutes: 60,
-                level: 4,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Geography & the World",
-        weight: 15,
-        topics: [
-          {
-            name: "World Geography & Cultures",
-            subtopics: [
-              {
-                name: "Map Skills & Geographic Tools",
-                description: "Read and interpret maps, charts, and geographic data.",
-                minutes: 40,
-                level: 1,
-              },
-              {
-                name: "Human Geography & Migration",
-                description: "Examine how geography shapes human societies, culture, and migration patterns.",
-                minutes: 50,
-                level: 2,
-              },
-              {
-                name: "Global Interdependence",
-                description: "Analyze trade, environmental, and political connections between nations.",
-                minutes: 45,
-                level: 3,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    // From the curriculum sheets — see curriculum.generated.ts.
+    categories: GENERATED_CURRICULUM.SS,
   },
 ];
 
@@ -649,6 +267,27 @@ export function subtopicCount(subject: LandingSubject): number {
 /** Topics (the mid level) in one subject. */
 export function topicCount(subject: LandingSubject): number {
   return subject.categories.reduce((sum, c) => sum + c.topics.length, 0);
+}
+
+/**
+ * Study time for display: "45 min", "3 h", "7 h 10 min". Sheet-built lessons run
+ * from minutes to several hours, and "430 min" is harder to read than "7 h 10 min".
+ */
+export function formatStudyTime(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h} h ${m} min` : `${h} h`;
+}
+
+/**
+ * A real lesson that fits in one sitting, for mock-ups of a single study
+ * session. The first lessons of a sheet-built subject can run for hours (MATH
+ * opens with Fractions, 7 h), which no one session shows.
+ */
+export function sampleLesson(subject: LandingSubject, maxMinutes = 60): LandingSubtopic {
+  const all = allSubtopics(subject);
+  return all.find((s) => s.minutes <= maxMinutes) ?? all[0];
 }
 
 export function findSubject(slug: string): LandingSubject | undefined {

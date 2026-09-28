@@ -13,11 +13,20 @@
  * client with its own lifecycle.
  */
 
+import { createHash } from "node:crypto";
 import type { PrismaClient } from "@prisma/client";
 
-/** A clip as the importers know it, before it has a database identity. */
+/**
+ * An item as the importers know it, before it has a database identity.
+ *
+ * A video carries `youtubeId`; an article carries `url` and `wordCount`, with
+ * `durationSec` already turned into reading time by the caller.
+ */
 export interface ResourceInput {
-  youtubeId: string;
+  kind: "VIDEO" | "ARTICLE";
+  youtubeId: string | null;
+  url: string | null;
+  wordCount: number | null;
   title: string;
   channelTitle: string;
   durationSec: number;
@@ -34,16 +43,31 @@ export interface SaveResult {
 }
 
 /**
- * Resource IDs are derived from the video, never from its position.
+ * Resource IDs are derived from the content, never from its position.
  *
- * Numbering clips by position fails silently: insert one clip in the middle of
+ * Numbering items by position fails silently: insert one clip in the middle of
  * a subtopic and every later position shifts, so an ID that meant clip A now
- * means clip B. Watch progress does not disappear — it moves onto the wrong
- * video, no error anywhere, and the completion gate starts passing learners on
- * material they never opened.
+ * means clip B. Progress does not disappear — it moves onto the wrong item, no
+ * error anywhere, and the completion gate starts passing learners on material
+ * they never opened.
+ *
+ * Videos keep their original `<subtopicId>-<youtubeId>` form, so existing watch
+ * progress still matches. Articles hash their URL: a Khan path runs to 200
+ * characters, and the hash stays the same as long as the page does.
  */
-export function resourceId(subtopicId: string, youtubeId: string): string {
-  return `${subtopicId}-${youtubeId}`;
+export function resourceId(subtopicId: string, item: Pick<ResourceInput, "kind" | "youtubeId" | "url">): string {
+  if (item.kind === "VIDEO") {
+    if (!item.youtubeId) throw new Error(`Video in ${subtopicId} has no youtubeId`);
+    return `${subtopicId}-${item.youtubeId}`;
+  }
+  if (!item.url) throw new Error(`Article in ${subtopicId} has no url`);
+  return `${subtopicId}-a${createHash("sha1").update(normalizeUrl(item.url)).digest("hex").slice(0, 12)}`;
+}
+
+/** Scheme, host and path only: tracking parameters must not mint a new ID. */
+export function normalizeUrl(url: string): string {
+  const u = new URL(url);
+  return `${u.protocol}//${u.host.toLowerCase()}${u.pathname.replace(/\/+$/, "")}`;
 }
 
 /**
@@ -122,9 +146,12 @@ export async function saveSubtopicResources(
   const lessonIds = await syncStructure(db, subtopicId, clips);
 
   const rows = clips.map((c, order) => ({
-    id: resourceId(subtopicId, c.youtubeId),
+    id: resourceId(subtopicId, c),
     subtopicId,
+    kind: c.kind,
     youtubeId: c.youtubeId,
+    url: c.url,
+    wordCount: c.wordCount,
     title: c.title,
     channelTitle: c.channelTitle,
     durationSec: c.durationSec,
@@ -142,7 +169,10 @@ export async function saveSubtopicResources(
     const e = existingById.get(r.id);
     return (
       e !== undefined &&
-      (e.title !== r.title ||
+      (e.kind !== r.kind ||
+        e.url !== r.url ||
+        e.wordCount !== r.wordCount ||
+        e.title !== r.title ||
         e.channelTitle !== r.channelTitle ||
         e.durationSec !== r.durationSec ||
         e.lessonId !== r.lessonId ||

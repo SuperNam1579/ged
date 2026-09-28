@@ -70,6 +70,7 @@ export async function getSubtopicResourcesWithProgress(
           watchedSec: own.watchedSec,
           lastPosSec: own.lastPosSec,
           completedAt: own.completedAt?.toISOString() ?? null,
+          openedAt: own.openedAt?.toISOString() ?? null,
         }
       : null;
 

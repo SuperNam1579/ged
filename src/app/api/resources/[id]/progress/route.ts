@@ -79,6 +79,11 @@ export async function POST(
   if (!resource) {
     return NextResponse.json({ error: "Resource not found" }, { status: 404 });
   }
+  // Articles are read on Khan and finished through /read; a watch-time
+  // heartbeat for one would complete it without the reading timer.
+  if (resource.kind !== "VIDEO") {
+    return NextResponse.json({ error: "Not a video" }, { status: 409 });
+  }
 
   const lastPosSec = Math.min(parsed.data.lastPosSec, resource.durationSec);
 

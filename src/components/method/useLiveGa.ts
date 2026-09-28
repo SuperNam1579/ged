@@ -50,10 +50,13 @@ function buildSubtopics(): SubtopicData[] {
   const out: SubtopicData[] = [];
 
   for (const subject of LANDING_SUBJECTS) {
-    const flat = subject.categories
-      .flatMap((c) => c.topics)
-      .flatMap((t) => t.subtopics)
-      .slice(0, 3);
+    // The three shortest lessons, kept in curriculum order. The first lessons of
+    // a sheet-built subject can run for hours (Fractions is 7 h), longer than
+    // any of the demo's three-hour evenings, and the demo would show nothing
+    // but overflow.
+    const all = subject.categories.flatMap((c) => c.topics).flatMap((t) => t.subtopics);
+    const shortest = new Set([...all].sort((a, b) => a.minutes - b.minutes).slice(0, 3));
+    const flat = all.filter((s) => shortest.has(s));
 
     flat.forEach((sub, i) => {
       out.push({

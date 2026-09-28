@@ -4,7 +4,7 @@ import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
 import { getSessionResourceIds, getSubtopicResources } from "@/lib/resources";
-import { isComplete, requiredWatchSec } from "@/lib/resources/types";
+import { isComplete, requiredSecFor } from "@/lib/resources/types";
 
 /**
  * POST /api/sessions/:id/verify-completion
@@ -65,19 +65,27 @@ export async function POST(
 
   const rows = await db.userResourceProgress.findMany({
     where: { userId: authUser.id, resourceId: { in: resources.map((r) => r.id) } },
-    select: { resourceId: true, watchedSec: true },
+    select: { resourceId: true, watchedSec: true, completedAt: true },
   });
-  const watchedById = new Map(rows.map((r) => [r.resourceId, r.watchedSec]));
+  const progressById = new Map(rows.map((r) => [r.resourceId, r]));
 
   const breakdown = resources.map((r) => {
-    const watchedSec = watchedById.get(r.id) ?? 0;
+    const progress = progressById.get(r.id);
+    const requiredSec = requiredSecFor(r);
+    // A video is judged afresh from stored watch time. An article has none to
+    // judge: it is done when /read accepted it, which is itself a server check
+    // of time since opening.
+    const complete =
+      r.kind === "ARTICLE"
+        ? Boolean(progress?.completedAt)
+        : isComplete(progress?.watchedSec ?? 0, r.durationSec);
     return {
       resourceId: r.id,
       title: r.title,
-      watchedSec,
-      requiredSec: requiredWatchSec(r.durationSec),
+      watchedSec: r.kind === "ARTICLE" ? (complete ? requiredSec : 0) : (progress?.watchedSec ?? 0),
+      requiredSec,
       durationSec: r.durationSec,
-      complete: isComplete(watchedSec, r.durationSec),
+      complete,
     };
   });
 

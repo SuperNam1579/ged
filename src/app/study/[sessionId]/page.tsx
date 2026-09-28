@@ -165,7 +165,7 @@ function StudySessionPageInner() {
     <div className="flex min-h-screen flex-col bg-background">
       {/* ── Top bar ────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2">
             <Link
               href={returnTo}
@@ -200,7 +200,7 @@ function StudySessionPageInner() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-6">
         <motion.div
           variants={studyStagger}
           initial={reduceMotion ? false : "hidden"}
@@ -210,7 +210,7 @@ function StudySessionPageInner() {
           {/* ── Session meta ─────────────────────────────────────────── */}
           <motion.section
             variants={studySection}
-            className="rounded-2xl border border-border bg-card p-6"
+            className="rounded-2xl border border-border bg-card p-5 sm:p-6"
           >
             <div className="flex flex-wrap items-center gap-2.5">
               <Badge variant={SUBJECT_BADGE_VARIANT[session.subjectCode] ?? "default"}>
@@ -247,7 +247,7 @@ function StudySessionPageInner() {
               </p>
             )}
 
-            <div className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-4 border-t border-border pt-5 lg:grid-cols-4">
               <MetaItem icon={<GraduationCap className="h-4 w-4" />} label="Subject">
                 {session.subjectName}
               </MetaItem>

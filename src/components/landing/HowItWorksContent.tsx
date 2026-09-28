@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { ArrowRight, Check, RefreshCw, TrendingDown } from "lucide-react";
 import LandingNavbar from "@/components/layout/LandingNavbar";
 import LandingFooter from "@/components/layout/LandingFooter";
-import { LANDING_SUBJECTS, TOTAL_TOPICS } from "@/components/landing/subjects";
+import { LANDING_SUBJECTS, TOTAL_TOPICS, formatStudyTime, sampleLesson as pickSample } from "@/components/landing/subjects";
 import { DEFAULT_CONFIG } from "@/lib/ga/constants";
 import { WEIGHTS } from "@/lib/ga/fitness";
 
@@ -243,7 +243,13 @@ function GaCard() {
 
 export default function HowItWorksContent() {
   const [math, rla, science, social] = LANDING_SUBJECTS;
-  const sampleLesson = math.categories[0].topics[0].subtopics[1];
+  // The weak lesson the mock-ups follow through: scored low in the test, then
+  // picked for a session — so one that fits in a single sitting. The other two
+  // score rows are real MATH lessons too, never names the product doesn't teach.
+  const sampleLesson = pickSample(math);
+  const [otherA, otherB] = math.categories
+    .flatMap((c) => c.topics.flatMap((t) => t.subtopics))
+    .filter((st) => st.name !== sampleLesson.name);
 
   return (
     <>
@@ -394,9 +400,9 @@ export default function HowItWorksContent() {
               <Mock>
                 <div className="flex flex-col gap-2">
                   {[
-                    { name: "Integer Operations", score: 82 },
+                    { name: otherA.name, score: 82 },
                     { name: sampleLesson.name, score: 41 },
-                    { name: "Ratios & Rates", score: 58 },
+                    { name: otherB.name, score: 58 },
                   ].map((row, i) => (
                     <div key={row.name} className="flex items-center gap-2.5">
                       <span
@@ -452,7 +458,7 @@ export default function HowItWorksContent() {
                     className="shrink-0 rounded-full px-2.5 py-1"
                     style={{ background: social.iconBg, color: social.color, fontSize: 11, fontWeight: 700 }}
                   >
-                    {sampleLesson.minutes} min
+                    {formatStudyTime(sampleLesson.minutes)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-3">

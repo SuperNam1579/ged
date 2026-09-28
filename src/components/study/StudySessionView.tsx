@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, SkipForward } from "lucide-rea
 import { postJson } from "@/lib/csrf-client";
 import { cn } from "@/lib/utils/cn";
 import { VideoPlayer, type VideoProgress } from "./VideoPlayer";
+import { ArticleReader } from "./ArticleReader";
 import { ResourceList } from "./ResourceList";
 import { ProgressGate } from "./ProgressGate";
 import { clipVariants, studySection, studyStagger } from "./studyMotion";
@@ -169,6 +170,12 @@ export function StudySessionView({
     [activeId]
   );
 
+  // Articles report their own progress: opening starts the server's timer and
+  // an accepted "read" completes them. Both just patch the item in place.
+  const patchResource = useCallback((id: string, patch: Partial<StudyResource>) => {
+    setResources((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  }, []);
+
   if (loading) {
     return (
       <div className="flex h-72 items-center justify-center">
@@ -199,11 +206,14 @@ export function StudySessionView({
 
   return (
     <>
+      {/* minmax(0,1fr) on phones too, not the implicit auto column: a grid
+          item is at least as wide as its content, so a long clip title pushed
+          the player past the edge of the screen. */}
       <motion.div
         variants={studyStagger}
         initial={reduceMotion ? false : "hidden"}
         animate="visible"
-        className="grid gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]"
+        className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]"
       >
         {/* ── Player column ─────────────────────────────────────────────── */}
         <motion.div variants={studySection} className="flex flex-col gap-4">
@@ -214,33 +224,47 @@ export function StudySessionView({
                   {/* The lesson name is the learner's place in the subtopic;
                       without it "Video 34 of 91" says nothing about what they
                       are actually in the middle of. */}
+                  {/* Lesson and position on their own lines: run together, a long
+                      lesson name wrapped on a phone and left the separator
+                      stranded at the start of the next line. */}
+                  {active.lesson ? (
+                    <p className="truncate text-xs font-semibold text-primary">{active.lesson}</p>
+                  ) : null}
                   <p className="text-xs font-medium text-muted-foreground">
-                    {active.lesson ? (
-                      <>
-                        <span className="font-semibold text-primary">{active.lesson}</span>
-                        <span className="mx-1.5" aria-hidden>
-                          ·
-                        </span>
-                      </>
-                    ) : null}
-                    Video {activeIndex + 1} of {resources.length}
+                    {active.kind === "ARTICLE" ? "Article" : "Video"} · {activeIndex + 1} of{" "}
+                    {resources.length}
                   </p>
-                  <h2 className="mt-0.5 truncate text-lg font-bold text-foreground">
+                  {/* Two lines on a phone, where one cut most titles to a word or two. */}
+                  <h2 className="mt-0.5 line-clamp-2 text-lg font-bold text-foreground sm:line-clamp-1">
                     {active.title}
                   </h2>
                 </div>
                 <span className="shrink-0 rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary">
-                  {formatDuration(active.durationSec)}
+                  {active.kind === "ARTICLE"
+                    ? `${Math.max(1, Math.round(active.durationSec / 60))} min read`
+                    : formatDuration(active.durationSec)}
                 </span>
               </div>
 
+              {active.kind === "ARTICLE" ? (
+                <ArticleReader
+                  key={active.id}
+                  resource={active}
+                  onOpened={(openedAt) => patchResource(active.id, { openedAt })}
+                  onRead={(completedAt) =>
+                    // watchedSec mirrors what the server reports for a read
+                    // article, so the gate's running total moves with it.
+                    patchResource(active.id, { completedAt, watchedSec: active.requiredSec })
+                  }
+                />
+              ) : (
               <div className="px-5">
                 <VideoPlayer
                   // Keyed on the resource so switching clips remounts rather
                   // than mutating a live player — the teardown in VideoPlayer's
                   // effect is what stops the previous polling loop.
                   key={active.id}
-                  youtubeId={active.youtubeId}
+                  youtubeId={active.youtubeId ?? ""}
                   title={active.title}
                   initialWatchedSec={active.watchedSec}
                   startSeconds={active.lastPosSec}
@@ -248,6 +272,7 @@ export function StudySessionView({
                   onEnded={() => hasNext && goTo(activeIndex + 1)}
                 />
               </div>
+              )}
 
               {/* Clip navigation. The frame above holds still through a swap —
                   only this strip animates — because moving an iframe while it
@@ -260,7 +285,7 @@ export function StudySessionView({
                   className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <SkipForward className="h-3.5 w-3.5" aria-hidden />
-                  Skip this video
+                  Skip this {active.kind === "ARTICLE" ? "article" : "video"}
                 </button>
 
                 <div className="flex items-center gap-2">
@@ -284,7 +309,7 @@ export function StudySessionView({
                         : "cursor-not-allowed bg-muted text-muted-foreground"
                     )}
                   >
-                    Next video
+                    Next
                     <ChevronRight className="h-3.5 w-3.5" aria-hidden />
                   </button>
                 </div>
@@ -311,15 +336,20 @@ export function StudySessionView({
                   Content by{" "}
                   <span className="font-semibold text-foreground">{active.channelTitle}</span>
                 </p>
-                <a
-                  href={`https://www.youtube.com/watch?v=${active.youtubeId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                >
-                  Watch on YouTube
-                  <ExternalLink className="h-3 w-3" aria-hidden />
-                </a>
+                {/* Articles link out from the reader panel instead, where opening
+                    also starts the reading timer; a second link here would open
+                    the page without it. */}
+                {active.kind === "VIDEO" && (
+                  <a
+                    href={`https://www.youtube.com/watch?v=${active.youtubeId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    Watch on YouTube
+                    <ExternalLink className="h-3 w-3" aria-hidden />
+                  </a>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

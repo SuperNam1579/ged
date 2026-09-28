@@ -537,11 +537,15 @@ function toPicked(v: YtVideoItem): Picked {
 async function loadExisting(): Promise<Map<string, Picked[]>> {
   const bySubtopic = new Map<string, Picked[]>();
 
+  // Videos only: this script discovers clips by search and never writes
+  // articles, which come from the curriculum sheets.
   const rows = await db.resource.findMany({
+    where: { kind: "VIDEO" },
     orderBy: { order: "asc" },
     include: { lessonRef: { select: { name: true, unit: { select: { name: true } } } } },
   });
   for (const r of rows) {
+    if (!r.youtubeId) continue;
     const list = bySubtopic.get(r.subtopicId) ?? [];
     list.push({
       youtubeId: r.youtubeId,
@@ -636,7 +640,8 @@ async function commit(staged: Map<string, Picked[]>) {
 
   const totals = { created: 0, updated: 0, removed: 0 };
   for (const [subtopicId, clips] of staged) {
-    const result = await saveSubtopicResources(db, subtopicId, clips satisfies ResourceInput[]);
+    const items: ResourceInput[] = clips.map((c) => ({ ...c, kind: "VIDEO", url: null, wordCount: null }));
+    const result = await saveSubtopicResources(db, subtopicId, items);
     totals.created += result.created;
     totals.updated += result.updated;
     totals.removed += result.removed;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getSessionResourceIds, getSubtopicResourcesWithProgress } from "@/lib/resources";
-import { requiredWatchSec } from "@/lib/resources/types";
+import { requiredSecFor } from "@/lib/resources/types";
 
 /**
  * GET /api/subtopics/:id/resources
@@ -16,7 +16,8 @@ import { requiredWatchSec } from "@/lib/resources/types";
  * `requiredSec` is computed here rather than shipped as a threshold constant:
  * the client needs it to draw the progress gate, but it must not be in a
  * position to decide what the threshold is. The server sends the target; the
- * server also checks it later.
+ * server also checks it later. For an article it is the wait after opening
+ * before "read" is accepted.
  */
 export async function GET(
   req: NextRequest,
@@ -43,9 +44,15 @@ export async function GET(
   const resources = await getSubtopicResourcesWithProgress(authUser.id, subtopicId, onlyIds);
 
   return NextResponse.json({
-    resources: resources.map((r) => ({
+    resources: resources.map((r) => {
+      const requiredSec = requiredSecFor(r);
+      const completedAt = r.progress?.completedAt ?? null;
+      return {
       id: r.id,
+      kind: r.kind,
       youtubeId: r.youtubeId,
+      url: r.url,
+      wordCount: r.wordCount,
       title: r.title,
       channelTitle: r.channelTitle,
       durationSec: r.durationSec,
@@ -54,10 +61,14 @@ export async function GET(
       unit: r.placement?.unitName ?? "",
       unitId: r.placement?.unitId ?? null,
       order: r.order,
-      requiredSec: requiredWatchSec(r.durationSec),
-      watchedSec: r.progress?.watchedSec ?? 0,
+      requiredSec,
+      // The gate adds these up across the session. An article has no watch
+      // time, so it counts in full once read and not at all before.
+      watchedSec: r.kind === "ARTICLE" ? (completedAt ? requiredSec : 0) : (r.progress?.watchedSec ?? 0),
       lastPosSec: r.progress?.lastPosSec ?? 0,
-      completedAt: r.progress?.completedAt ?? null,
-    })),
+      completedAt,
+      openedAt: r.progress?.openedAt ?? null,
+      };
+    }),
   });
 }

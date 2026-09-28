@@ -25,6 +25,10 @@
 // Nothing is dropped. What doesn't fit this week comes back as leftovers, for
 // the caller to carry into the next week.
 
+// Relative, not "@/": this file is also loaded by scripts under tsx, which
+// doesn't resolve the app's path alias. types.ts has no imports of its own.
+import { READING_TIME_FACTOR } from "../resources/types";
+
 /** Minutes of study per minute of video: pausing, rewinding, notes. */
 export const STUDY_TIME_FACTOR = 1.3;
 
@@ -71,8 +75,9 @@ export interface Placement {
   resourceIds: string[];
 }
 
-export function clipMinutes(durationSec: number): number {
-  return (durationSec / 60) * STUDY_TIME_FACTOR;
+/** Study minutes for one item: a video's runtime or an article's reading time, plus slack. */
+export function clipMinutes(durationSec: number, kind: "VIDEO" | "ARTICLE" = "VIDEO"): number {
+  return (durationSec / 60) * (kind === "ARTICLE" ? READING_TIME_FACTOR : STUDY_TIME_FACTOR);
 }
 
 export function remainingMinutes(item: WorkItem): number {

@@ -426,15 +426,32 @@ model Resource {
   id         String @id
   subtopicId String
 
-  // The 11-character YouTube video ID — not a full URL.
-  youtubeId    String
+  // VIDEO plays in our embedded player. ARTICLE is a page on Khan that the
+  // learner opens in a new tab: Khan's login and progress don't survive being
+  // framed, and copying the text in isn't ours to do.
+  kind ResourceKind @default(VIDEO)
+
+  // The 11-character YouTube video ID — not a full URL. Null for articles.
+  youtubeId    String?
+  // Where an article lives. Null for videos, whose address is derived from
+  // youtubeId.
+  url          String?
   title        String
   channelTitle String
 
-  // Total length in whole seconds. Completion is decided on the server, and the
-  // server cannot ask the browser how long a video is without trusting the
-  // browser — duration has to be known independently of the player.
+  // VIDEO: total length in whole seconds. Completion is decided on the server,
+  // and the server cannot ask the browser how long a video is without trusting
+  // the browser — duration has to be known independently of the player.
+  //
+  // ARTICLE: plain reading time, wordCount at READING_WPM
+  // (src/lib/resources/types.ts). Stored in the same column so the scheduler,
+  // which packs sessions by duration, needs no second path for articles.
   durationSec Int
+
+  // Words on the page, counted by hand from Khan. What durationSec is derived
+  // from for articles; kept so the reading speed can be changed without
+  // re-counting. Null for videos.
+  wordCount Int?
 
   // The Lesson row this clip belongs to (the sheet's "หัวข้อหลัก" column, inside
   // its "Unit (Khan)"). Replaced a plain `lesson` name column, which could not
@@ -473,7 +490,13 @@ model UserResourceProgress {
   lastPosSec Int @default(0)
 
   completedAt DateTime?
-  createdAt   DateTime  @default(now())
+
+  // Articles only: when the learner first opened the page on Khan. The "read"
+  // button is checked against this on the server — time since opening, not a
+  // number the browser reports.
+  openedAt DateTime?
+
+  createdAt DateTime @default(now())
 
   // The clamp in the progress route reads this to work out how much wall-clock
   // time elapsed since the previous heartbeat.
@@ -552,6 +575,11 @@ model AuditLog {
 }
 
 // ─── ENUMS ─────────────────────────────────────────────────────────────────────
+
+enum ResourceKind {
+  VIDEO
+  ARTICLE
+}
 
 enum AssessmentType {
   PRE

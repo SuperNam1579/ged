@@ -264,7 +264,551 @@ const MATH: SubjectPlan = {
   ],
 };
 
-export const PLANS: SubjectPlan[] = [MATH];
+// ─── SOCIAL STUDIES ─────────────────────────────────────────────────────────
+//
+// From curriculum/Social Studies_wordcount.xlsx. Category weights are the GED
+// Social Studies blueprint. Six sheet names are Thai; the learner-facing UI is
+// English, so those get an English `name` — the sheet value stays in `csv`,
+// which is what the importer matches on. DRAFT: descriptions and difficulty
+// were written by Claude on 2026-09-27 for the team to review.
+
+const SS: SubjectPlan = {
+  code: "SS",
+  name: "Social Studies",
+  categories: [
+    {
+      name: "Civics & Government",
+      weight: 50,
+      topics: [
+        {
+          name: "Foundations of Government",
+          subtopics: [
+            {
+              csv: "ประเภทของรัฐบาล + หลักการรัฐธรรมนูญ (checks & balances, federalism)",
+              name: "Types of Government & Constitutional Principles",
+              description:
+                "Compare forms of government and explain the principles behind the US Constitution: popular sovereignty, separation of powers, checks and balances, and federalism.",
+              difficulty: 2,
+            },
+            {
+              csv: "เอกสารสำคัญ (Declaration, Constitution)",
+              name: "Founding Documents",
+              description:
+                "Read and interpret the Declaration of Independence, the Articles of Confederation and the Constitution as primary sources.",
+              difficulty: 3,
+            },
+            {
+              csv: "Branches of government",
+              description:
+                "Describe the powers of Congress, the presidency and the courts, and how each branch checks the others.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Rights & Civic Participation",
+          subtopics: [
+            {
+              csv: "Bill of Rights & amendments",
+              description:
+                "Explain the rights protected by the Bill of Rights and later amendments, and how courts have applied them.",
+              difficulty: 2,
+            },
+            {
+              csv: "Elections & political parties",
+              description:
+                "Explain how elections, campaigns and political parties work in the United States.",
+              difficulty: 2,
+            },
+            {
+              csv: "Citizenship & civic responsibilities",
+              description:
+                "Describe the rights and responsibilities of citizens and how citizenship is gained.",
+              difficulty: 1,
+            },
+            {
+              csv: "Contemporary public policy",
+              description:
+                "Analyze how political ideology, public opinion and government institutions shape current policy debates.",
+              difficulty: 3,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "U.S. History",
+      weight: 20,
+      topics: [
+        {
+          name: "Founding to Reconstruction",
+          subtopics: [
+            {
+              csv: "Colonial America + Revolutionary Era",
+              description:
+                "Trace colonial settlement, the causes of the American Revolution and the founding of the new nation.",
+              difficulty: 2,
+            },
+            {
+              csv: "Civil War & Reconstruction",
+              description:
+                "Explain the causes, major events and outcomes of the Civil War and Reconstruction.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Modern America",
+          subtopics: [
+            {
+              csv: "สงครามโลก 1 + 2 (WWI, WWII)",
+              name: "World Wars I & II",
+              description:
+                "Explain US involvement in World War I and World War II and their effects at home and abroad.",
+              difficulty: 2,
+            },
+            {
+              csv: "Cold War",
+              description:
+                "Describe the rivalry between the US and the Soviet Union and its major conflicts and policies.",
+              difficulty: 3,
+            },
+            {
+              csv: "Civil Rights Movement",
+              description:
+                "Explain the goals, strategies and key events of the civil rights movement.",
+              difficulty: 2,
+            },
+            {
+              csv: "นโยบายต่างประเทศหลัง 9/11",
+              name: "Foreign Policy after 9/11",
+              description:
+                "Analyze US foreign policy from the late Cold War through the September 11 attacks and the war on terror.",
+              difficulty: 3,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Economics",
+      weight: 15,
+      topics: [
+        {
+          name: "Microeconomics",
+          subtopics: [
+            {
+              csv: "Supply, demand, market equilibrium",
+              description:
+                "Use supply and demand to explain prices, shortages, surpluses and market equilibrium.",
+              difficulty: 2,
+            },
+            {
+              // The sheet flags 19 rows from Khan's "Forms of competition" unit as
+              // possibly beyond GED scope. Imported as the sheet has them until the team
+              // decides; to cut them, list their lesson names in `dropLessons`.
+              csv: "แนวคิดพื้นฐาน (opportunity cost, monopoly)",
+              name: "Basic Economic Concepts",
+              description:
+                "Apply scarcity, opportunity cost and market structures such as monopoly to economic decisions.",
+              difficulty: 3,
+            },
+          ],
+        },
+        {
+          name: "Macroeconomics",
+          subtopics: [
+            {
+              csv: "Banking & financial sector",
+              description:
+                "Explain how banks, money, interest and financial markets work.",
+              difficulty: 3,
+            },
+            {
+              csv: "Fiscal policy & government spending",
+              description:
+                "Explain how taxes and government spending affect aggregate demand and the economy.",
+              difficulty: 4,
+            },
+            {
+              csv: "GDP/inflation/unemployment",
+              description:
+                "Measure economic performance with GDP, inflation and unemployment, and describe the business cycle.",
+              difficulty: 3,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Geography & the World",
+      weight: 15,
+      topics: [
+        {
+          name: "World History",
+          subtopics: [
+            {
+              // The sheet asks whether to keep Khan's Unit 4 (world religions and ancient
+              // empires) or stop at Units 1-3. Imported whole until the team decides.
+              csv: "World history beginnings",
+              description:
+                "Trace early humans, the rise of agrarian societies and the first empires and belief systems.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Geography",
+          subtopics: [
+            {
+              // Same Khan unit as "World history beginnings" Unit 3, per the sheet's
+              // GED mapping. Progress is per subtopic, so a learner assigned both
+              // works through that material twice.
+              csv: "Resources and society",
+              description:
+                "Explain how natural resources and the environment shaped early agrarian societies.",
+              difficulty: 2,
+            },
+            {
+              csv: "การอพยพ (migration)",
+              name: "Migration",
+              description:
+                "Explain why people migrate and how population growth and urbanization change places.",
+              difficulty: 2,
+            },
+            {
+              csv: "พรมแดน/ภูมิภาค/เครื่องมือภูมิศาสตร์",
+              name: "Borders, Regions & Geographic Tools",
+              description:
+                "Use maps and geographic tools, and explain how regions and borders are defined and contested.",
+              difficulty: 2,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+// ─── SCIENCE ────────────────────────────────────────────────────────────────
+//
+// From curriculum/Science_wordcount.xlsx. Category weights are the GED Science
+// blueprint. The sheet numbers its subtopics ("1. Cell parts…"); the number is
+// kept in `csv` for matching and dropped from the learner-facing `name`.
+// DRAFT: descriptions and difficulty were written by Claude on 2026-09-27 for
+// the team to review.
+
+const SCI: SubjectPlan = {
+  code: "SCI",
+  name: "Science",
+  categories: [
+    {
+      name: "Life Science",
+      weight: 40,
+      topics: [
+        {
+          name: "Cells & Energy",
+          subtopics: [
+            {
+              csv: "1. Cell parts and their functions",
+              name: "Cell Parts and Their Functions",
+              description:
+                "Identify the organelles of plant and animal cells and describe what each does.",
+              difficulty: 1,
+            },
+            {
+              csv: "2. Photosynthesis",
+              name: "Photosynthesis",
+              description:
+                "Explain how plants turn light, water and carbon dioxide into glucose and oxygen.",
+              difficulty: 2,
+            },
+            {
+              csv: "3. Cellular respiration",
+              name: "Cellular Respiration",
+              description:
+                "Explain how cells release energy from glucose, with and without oxygen.",
+              difficulty: 2,
+            },
+            {
+              csv: "4. Cell theory",
+              name: "Cell Theory",
+              description:
+                "State the principles of cell theory and compare prokaryotic and eukaryotic cells.",
+              difficulty: 1,
+            },
+            {
+              csv: "5. Mitosis & meiosis",
+              name: "Mitosis & Meiosis",
+              description:
+                "Compare how cells divide by mitosis and meiosis and why each matters.",
+              difficulty: 3,
+            },
+          ],
+        },
+        {
+          name: "Human Body & Health",
+          subtopics: [
+            {
+              csv: "6. Digestive, respiratory, nervous, immune systems",
+              name: "Human Body Systems",
+              description:
+                "Describe how the digestive, respiratory, nervous and immune systems work and interact.",
+              difficulty: 2,
+            },
+            {
+              csv: "7. Homeostasis",
+              name: "Homeostasis",
+              description:
+                "Explain how the body keeps conditions such as temperature and blood sugar stable.",
+              difficulty: 2,
+            },
+            {
+              csv: "8. Nutrition",
+              name: "Nutrition",
+              description:
+                "Describe the nutrients the body needs and how diet affects health.",
+              difficulty: 1,
+            },
+            {
+              csv: "9. Disease & pathogens",
+              name: "Disease & Pathogens",
+              description:
+                "Explain how bacteria, viruses and other pathogens cause disease and how the body and medicine fight them.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Heredity & Evolution",
+          subtopics: [
+            {
+              csv: "10. DNA structure and heredity (Punnett squares)",
+              name: "DNA & Heredity",
+              description:
+                "Describe DNA's structure and predict inheritance with Punnett squares.",
+              difficulty: 3,
+            },
+            {
+              csv: "11. Evolution and natural selection",
+              name: "Evolution & Natural Selection",
+              description:
+                "Explain how natural selection drives evolution and the evidence for it.",
+              difficulty: 3,
+            },
+          ],
+        },
+        {
+          name: "Ecosystems",
+          subtopics: [
+            {
+              csv: "12. Food webs and energy flow",
+              name: "Food Webs & Energy Flow",
+              description:
+                "Trace energy through food chains, food webs and trophic levels.",
+              difficulty: 2,
+            },
+            {
+              csv: "13. Human impact on environment",
+              name: "Human Impact on the Environment",
+              description:
+                "Analyze how human activity affects ecosystems, biodiversity and resources.",
+              difficulty: 2,
+            },
+            {
+              csv: "14. Carrying capacity",
+              name: "Carrying Capacity",
+              description:
+                "Explain how limiting factors set the carrying capacity of a population.",
+              difficulty: 2,
+            },
+            {
+              csv: "15. Symbiosis (mutualism, parasitism)",
+              name: "Symbiosis",
+              description:
+                "Distinguish mutualism, commensalism and parasitism with examples.",
+              difficulty: 1,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Physical Science",
+      weight: 40,
+      topics: [
+        {
+          name: "Chemistry",
+          subtopics: [
+            {
+              csv: "16. Atomic structure and properties of matter",
+              name: "Atomic Structure & Properties of Matter",
+              description:
+                "Describe atoms, the periodic table and how structure determines a substance's properties.",
+              difficulty: 3,
+            },
+            {
+              csv: "17. States of matter",
+              name: "States of Matter",
+              description:
+                "Explain solids, liquids and gases and the changes between them in terms of particle motion.",
+              difficulty: 1,
+            },
+            {
+              csv: "18. Solutions & solubility",
+              name: "Solutions & Solubility",
+              description:
+                "Describe solutions and concentration, and what affects how much of a substance dissolves.",
+              difficulty: 2,
+            },
+            {
+              csv: "19. Balancing equations, exothermic vs endothermic",
+              name: "Chemical Equations & Energy Changes",
+              description:
+                "Balance chemical equations and classify reactions as exothermic or endothermic.",
+              difficulty: 3,
+            },
+          ],
+        },
+        {
+          name: "Physics",
+          subtopics: [
+            {
+              csv: "20. Speed, velocity, Newton's Laws of Motion",
+              name: "Motion & Newton's Laws",
+              description:
+                "Calculate speed, velocity and acceleration, and apply Newton's three laws of motion.",
+              difficulty: 3,
+            },
+            {
+              csv: "21. Types & transformation of energy",
+              name: "Types & Transformations of Energy",
+              description:
+                "Identify forms of energy and describe how energy changes form while being conserved.",
+              difficulty: 2,
+            },
+            {
+              csv: "22. Energy sources (fossil fuel, nuclear, renewable)",
+              name: "Energy Sources",
+              description:
+                "Compare fossil, nuclear and renewable energy sources and their trade-offs.",
+              difficulty: 2,
+            },
+            {
+              csv: "23. Heat, temperature & heat transfer",
+              name: "Heat & Heat Transfer",
+              description:
+                "Distinguish heat from temperature and explain conduction, convection and radiation.",
+              difficulty: 2,
+            },
+            {
+              csv: "24. Work & simple machines",
+              name: "Work & Simple Machines",
+              description:
+                "Calculate work and explain how simple machines trade force for distance.",
+              difficulty: 2,
+            },
+            {
+              csv: "25. Wave theory and sound",
+              name: "Waves & Sound",
+              description:
+                "Describe wave properties and how sound travels.",
+              difficulty: 2,
+            },
+            {
+              csv: "26. Light",
+              name: "Light",
+              description:
+                "Explain the electromagnetic spectrum, reflection and refraction.",
+              difficulty: 2,
+            },
+            {
+              csv: "27. Magnetism",
+              name: "Magnetism",
+              description:
+                "Describe magnetic fields and how electricity and magnetism produce each other.",
+              difficulty: 3,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Earth & Space Science",
+      weight: 20,
+      topics: [
+        {
+          name: "Earth Systems",
+          subtopics: [
+            {
+              csv: "28. Plate tectonics, volcanoes, earthquakes",
+              name: "Plate Tectonics, Volcanoes & Earthquakes",
+              description:
+                "Explain plate movement and how it causes earthquakes, volcanoes and mountains.",
+              difficulty: 2,
+            },
+            {
+              csv: "29. Weather and climate change",
+              name: "Weather & Climate Change",
+              description:
+                "Distinguish weather from climate and explain the causes and effects of climate change.",
+              difficulty: 2,
+            },
+            {
+              csv: "30. Oceans & currents",
+              name: "Oceans & Currents",
+              description:
+                "Explain what drives ocean currents and how they affect climate.",
+              difficulty: 2,
+            },
+            {
+              csv: "31. Cycles of matter",
+              name: "Cycles of Matter",
+              description:
+                "Trace the water, carbon and nitrogen cycles through Earth's systems.",
+              difficulty: 2,
+            },
+            {
+              csv: "32. Natural hazards",
+              name: "Natural Hazards",
+              description:
+                "Describe natural hazards and how people predict and reduce their impact.",
+              difficulty: 1,
+            },
+            {
+              csv: "33. Renewable/nonrenewable resources & sustainability",
+              name: "Natural Resources & Sustainability",
+              description:
+                "Compare renewable and nonrenewable resources and how they can be managed sustainably.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Space & Earth History",
+          subtopics: [
+            {
+              csv: "34. Solar system and stars",
+              name: "The Solar System & Stars",
+              description:
+                "Describe the solar system and the life cycle of stars.",
+              difficulty: 2,
+            },
+            {
+              csv: "35. Earth's age, rock layers & fossils",
+              name: "Earth's Age, Rock Layers & Fossils",
+              description:
+                "Use rock layers and fossils to reason about Earth's age and history.",
+              difficulty: 2,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+export const PLANS: SubjectPlan[] = [MATH, SS, SCI];
 
 /**
  * Clips that Khan teaches inside an in-scope unit but the GED does not test.

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
-  Check, ChevronDown, Divide, Hash, Percent, Play, Ruler, Shapes,
+  Check, ChevronDown, Divide, FileText, Hash, Percent, Play, Ruler, Shapes,
   Sigma, Spline, SquareRadical, Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -67,7 +67,7 @@ function groupByLesson(resources: StudyResource[]): LessonGroup[] {
     if (!group || group.key !== key) {
       group = {
         key: groups.some((g) => g.key === key) ? `${key}#${i}` : key,
-        name: r.lesson?.trim() || "Other videos",
+        name: r.lesson?.trim() || "Other",
         unit: r.unit ?? "",
         resources: [],
         completed: 0,
@@ -127,7 +127,7 @@ export function ResourceList({ resources, activeResourceId, onSelect }: Resource
     return (
       <div className="rounded-2xl border border-dashed border-border p-6 text-center">
         <p className="text-sm text-muted-foreground">
-          No videos are attached to this subtopic yet.
+          Nothing is attached to this subtopic yet.
         </p>
       </div>
     );
@@ -238,7 +238,7 @@ export function ResourceList({ resources, activeResourceId, onSelect }: Resource
 
                     <span className="mt-1 block text-[11px] text-muted-foreground">
                       {group.resources.length}{" "}
-                      {group.resources.length === 1 ? "video" : "videos"} ·{" "}
+                      {group.resources.length === 1 ? "item" : "items"} ·{" "}
                       {formatDuration(group.totalSec)}
                     </span>
                   </span>
@@ -342,7 +342,11 @@ function ClipRow({
           {isComplete ? (
             <Check className="h-3.5 w-3.5" aria-hidden />
           ) : isActive ? (
-            <Play className="h-3 w-3 fill-current" aria-hidden />
+            resource.kind === "ARTICLE" ? (
+              <FileText className="h-3 w-3" aria-hidden />
+            ) : (
+              <Play className="h-3 w-3 fill-current" aria-hidden />
+            )
           ) : (
             position
           )}
@@ -357,8 +361,15 @@ function ClipRow({
           >
             {resource.title}
           </span>
-          <span className="mt-0.5 block text-[11px] tabular-nums text-muted-foreground">
-            {formatDuration(resource.durationSec)}
+          <span className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums text-muted-foreground">
+            {resource.kind === "ARTICLE" ? (
+              <>
+                <FileText className="h-3 w-3" aria-hidden />
+                Article · {Math.max(1, Math.round(resource.durationSec / 60))} min read
+              </>
+            ) : (
+              formatDuration(resource.durationSec)
+            )}
           </span>
 
           {/* Only drawn once there is progress, so untouched rows stay quiet. */}

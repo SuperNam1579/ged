@@ -41,6 +41,7 @@ export async function loadWorkItems(
       select: {
         id: true,
         subtopicId: true,
+        kind: true,
         durationSec: true,
         lessonId: true,
         lessonRef: { select: { unitId: true } },
@@ -89,7 +90,7 @@ export async function loadWorkItems(
         resourceId: r.id,
         unitKey: r.lessonRef?.unitId ?? null,
         lessonKey: r.lessonId,
-        minutes: clipMinutes(r.durationSec),
+        minutes: clipMinutes(r.durationSec, r.kind),
       })),
       atomicMinutes: all.length === 0 ? s.estimatedMinutes : 0,
       started: remaining.length < all.length,

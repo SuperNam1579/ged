@@ -4,7 +4,14 @@ import Reveal from "@/components/ui/Reveal";
 import LandingNavbar from "@/components/layout/LandingNavbar";
 import LandingFooter from "@/components/layout/LandingFooter";
 import LiveGaDemo from "@/components/method/LiveGaDemo";
-import { LANDING_SUBJECTS, TOTAL_TOPICS, findSubject, subtopicCount } from "@/components/landing/subjects";
+import {
+  LANDING_SUBJECTS,
+  TOTAL_TOPICS,
+  findSubject,
+  formatStudyTime,
+  sampleLesson,
+  subtopicCount,
+} from "@/components/landing/subjects";
 
 /* ─── Hero ───────────────────────────────────────────────────── */
 
@@ -12,14 +19,8 @@ function HeroSection() {
   const mathSubject = findSubject("math");
   const mathLessonCount = mathSubject ? subtopicCount(mathSubject) : 0;
   // A real lesson from the curriculum, so the mock-up card can't quote a topic
-  // the product doesn't teach.
-  // subtopics[0] rather than [1]: "Integer Operations" fits on one line, where
-  // "Fractions, Decimals & Percents" wrapped and made the card tall enough to
-  // collide with the illustration.
-  const sampleLesson = mathSubject?.categories[0].topics[0].subtopics[0] ?? {
-    name: "Integer Operations",
-    minutes: 45,
-  };
+  // the product doesn't teach — and one short enough to be a single session.
+  const sample = mathSubject ? sampleLesson(mathSubject) : { name: "Percentages", minutes: 40 };
 
   return (
     <section
@@ -211,10 +212,10 @@ function HeroSection() {
               Today&apos;s session
             </div>
             <div style={{ fontFamily: "var(--font-feather)", fontSize: 14, fontWeight: 700, color: "#0f2748", lineHeight: 1.25 }}>
-              {sampleLesson.name}
+              {sample.name}
             </div>
             <div style={{ fontSize: 10, color: "#5b769a", marginTop: 3 }}>
-              {sampleLesson.minutes} min · picked for you
+              {formatStudyTime(sample.minutes)} · picked for you
             </div>
           </div>
 

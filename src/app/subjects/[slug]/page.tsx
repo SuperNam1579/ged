@@ -47,6 +47,13 @@ export default async function SubjectDetailPage({
 
   const others = LANDING_SUBJECTS.filter((x) => x.slug !== subject.slug);
 
+  // Totals for the header. Only sheet-built subjects know their item counts.
+  // Study time is left off this page on purpose — lesson lengths run from
+  // minutes to many hours, and the team found the figures cluttered it.
+  const lessons = subject.categories.flatMap((c) => c.topics.flatMap((t) => t.subtopics));
+  const totalVideos = lessons.reduce((n, l) => n + (l.videos ?? 0), 0);
+  const totalArticles = lessons.reduce((n, l) => n + (l.articles ?? 0), 0);
+
   // Number every lesson up front rather than counting during render — the path
   // reads as one journey across the whole subject, not a count that restarts at
   // each category.
@@ -108,6 +115,12 @@ export default async function SubjectDetailPage({
               <p style={{ fontSize: 14, color: MUTED, marginTop: 4 }}>
                 {topicCount(subject)} topics · {subtopicCount(subject)} lessons
               </p>
+              {totalVideos + totalArticles > 0 && (
+                <p style={{ fontSize: 13, color: MUTED, marginTop: 2 }}>
+                  {totalVideos} videos
+                  {totalArticles > 0 ? ` · ${totalArticles} Khan Academy articles` : ""}
+                </p>
+              )}
             </div>
           </div>
 
@@ -301,9 +314,14 @@ export default async function SubjectDetailPage({
                               >
                                 {LEVEL_LABELS[subtopic.level] ?? `Level ${subtopic.level}`}
                               </span>
-                              <span style={{ fontSize: 11.5, color: MUTED, fontWeight: 600 }}>
-                                {subtopic.minutes} min
-                              </span>
+                              {subtopic.videos !== undefined && (
+                                <span style={{ fontSize: 11.5, color: MUTED, fontWeight: 600 }}>
+                                  {subtopic.videos} {subtopic.videos === 1 ? "video" : "videos"}
+                                  {subtopic.articles
+                                    ? ` · ${subtopic.articles} ${subtopic.articles === 1 ? "article" : "articles"}`
+                                    : ""}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>

@@ -70,6 +70,18 @@ export function ProgressGate({
   const looksReady = requiredTotal > 0 && watchedTotal >= requiredTotal;
   const remaining = Math.max(0, 100 - percent);
 
+  // What the learner has to do, in words that match what is in the session.
+  const hasArticles = resources.some((r) => r.kind === "ARTICLE");
+  const hasVideos = resources.some((r) => r.kind !== "ARTICLE");
+  const work = hasArticles ? (hasVideos ? "watching and reading" : "reading") : "watching";
+  const lockedLabel = hasArticles
+    ? hasVideos
+      ? "Finish videos & articles"
+      : "Read every article"
+    : isLastPart
+      ? "Watch 80% to unlock"
+      : "Watch 80% to finish";
+
   async function verify() {
     setVerifying(true);
     setRejection(null);
@@ -101,8 +113,10 @@ export function ProgressGate({
 
   return (
     <div className="sticky bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-6 py-3.5">
-        <div className="flex items-center gap-2.5 text-sm">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5 sm:gap-4 sm:px-6 sm:py-3.5">
+        {/* The page header already shows this timer; on a phone the second copy
+            only cost the bar a row that sat on top of the video. */}
+        <div className="hidden items-center gap-2.5 text-sm sm:flex">
           <Clock className="h-4 w-4 text-muted-foreground" aria-hidden />
           <div className="leading-tight">
             <p className="font-mono text-sm font-semibold text-foreground">
@@ -117,10 +131,11 @@ export function ProgressGate({
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <ProgressRing value={percent} />
           <div className="min-w-0 leading-tight">
-            <p className="text-sm font-semibold text-foreground">
-              {Math.round(percent)}% of the required watching done
+            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+              {Math.round(percent)}%<span className="hidden sm:inline"> of the required {work}</span> done
             </p>
-            <p className="truncate text-xs text-muted-foreground">
+            {/* No room beside the button on a phone; the button says what's left. */}
+            <p className="hidden truncate text-xs text-muted-foreground sm:block">
               {isCompleted
                 ? isLastPart
                   ? "Session complete — the quiz is unlocked."
@@ -136,7 +151,7 @@ export function ProgressGate({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <AnimatePresence mode="wait" initial={false}>
             {isCompleted ? (
               <motion.div
@@ -178,7 +193,7 @@ export function ProgressGate({
                 initial={reduceMotion ? false : "hidden"}
                 animate="visible"
                 className={cn(
-                  "flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors",
+                  "flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors sm:px-5",
                   looksReady
                     ? "bg-primary text-white hover:bg-primary-dark"
                     : "cursor-not-allowed bg-muted text-muted-foreground"
@@ -189,9 +204,7 @@ export function ProgressGate({
                   ? "Checking…"
                   : looksReady
                     ? "Complete session"
-                    : isLastPart
-                      ? "Watch 80% to unlock"
-                      : "Watch 80% to finish"}
+                    : lockedLabel}
               </motion.button>
             )}
           </AnimatePresence>

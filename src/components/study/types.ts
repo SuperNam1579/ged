@@ -8,7 +8,13 @@
  */
 export interface StudyResource {
   id: string;
-  youtubeId: string;
+  kind: "VIDEO" | "ARTICLE";
+  /** Null for articles. */
+  youtubeId: string | null;
+  /** The article's page on Khan. Null for videos. */
+  url: string | null;
+  /** Null for videos. */
+  wordCount: number | null;
   title: string;
   channelTitle: string;
   durationSec: number;
@@ -19,10 +25,14 @@ export interface StudyResource {
   unit: string;
   unitId: string | null;
   order: number;
+  /** VIDEO: seconds to watch. ARTICLE: seconds after opening before "read" is accepted. */
   requiredSec: number;
+  /** ARTICLE: requiredSec once read, 0 before — so the gate can sum every item alike. */
   watchedSec: number;
   lastPosSec: number;
   completedAt: string | null;
+  /** ARTICLE: when the learner first opened it. Null for videos and unopened articles. */
+  openedAt: string | null;
 }
 
 /** Per-resource breakdown returned by POST /api/sessions/:id/verify-completion. */
