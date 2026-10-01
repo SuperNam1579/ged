@@ -1,7 +1,7 @@
 import type { Chromosome, GASubtopicGene, SubtopicData, ProficiencyMap, AvailabilitySlotInput } from "@/types";
 import { recommendOrder } from "./ordering";
 
-function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string): number {
+export function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string): number {
   const dow = new Date(date).getDay(); //แปลงเลขวัน 0 = อาทิตย์ ... 6 = เสาร์
   return slots
     .filter((s) => s.dayOfWeek === dow) //เก็บช่วงว่างว่าตรงกับวันไหนของสัปดาห์

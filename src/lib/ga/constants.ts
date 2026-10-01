@@ -14,6 +14,9 @@ export const DEFAULT_CONFIG: GAConfig = {
   mutationRate: 0.15,
   elitismCount: 2,
   tournamentSize: 5,
+  // ── ค่าสำหรับ early stopping (ตรวจจับ convergence) ──
+  convergencePatience: 15,    // ถ้า best ไม่ดีขึ้นติดกันครบกี่รุ่น = หยุด
+  convergenceEpsilon: 0.001,  // ดีขึ้นน้อยกว่านี้ ถือว่า "ไม่ขยับ"
 };
 
 // วิชาที่ถือว่า "หนัก" เชิงการคำนวณ/วิเคราะห์ (heavy/analytical)
