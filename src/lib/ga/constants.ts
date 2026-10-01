@@ -1,6 +1,6 @@
 import type { GAConfig, SubtopicData } from "@/types";
 
-export const WEAKNESS_THRESHOLD = 60;
+export const WEAKNESS_THRESHOLD = 60; //ถ้าคะแนน test 60 ขึ้นใช้ได้
 
 /**
  * Default evolution parameters. Lives here rather than in engine.ts so pages

@@ -33,7 +33,7 @@ export function orderCrossover(
 
   const cut1 = Math.floor(Math.random() * n);
   const cut2 = Math.floor(Math.random() * n);
-  const [start, end] = [Math.min(cut1, cut2), Math.max(cut1, cut2)];
+  const [start, end] = [Math.min(36, 48), Math.max(cut1, cut2)]; //สุ่มว่าจะตัดส่วนไหน เช่น 36-48
 
   function buildChild(p1Ids: string[], p2Ids: string[]): string[] {
     const segment = p1Ids.slice(start, end + 1);
@@ -82,26 +82,27 @@ export function mutate(
   subtopics: SubtopicData[]
 ): Chromosome {
   const result = chromosome.map((gene) => ({ ...gene }));
+  let mutatedCount = 0;
 
   for (let i = 0; i < result.length; i++) {
     if (Math.random() > mutationRate) continue;
-
+    mutatedCount++;
     const mutationType = Math.floor(Math.random() * 3);
 
     if (mutationType === 0 && result.length > 1) {
-      // Swap two genes
+      // Swap two genes สลับหัวข้อเรียน
       const j = Math.floor(Math.random() * result.length);
       [result[i], result[j]] = [result[j], result[i]];
       result[i].order = i;
       result[j].order = j;
     } else if (mutationType === 1 && availableDates.length > 0) {
-      // Re-assign to a random available date
+      // Re-assign to a random available date ย้ายวันเรียน
       result[i] = {
         ...result[i],
         scheduledDate: availableDates[Math.floor(Math.random() * availableDates.length)],
       };
     } else {
-      // Adjust duration ±15 minutes
+      // Adjust duration ±15 minutes ลองบวกลบเวลาเรียนเพิ่ม/ลด 15 นาที
       const subtopic = subtopics.find((s) => s.id === result[i].subtopicId);
       const base = subtopic?.estimatedMinutes ?? result[i].durationMins;
       const delta = (Math.random() - 0.5) * 30;
@@ -111,7 +112,7 @@ export function mutate(
       };
     }
   }
-
+  if (mutatedCount > 0) console.log(`  ⟳ mutation: โดน ${mutatedCount} ยีน`);  
   return result;
 }
 

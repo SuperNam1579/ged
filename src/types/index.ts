@@ -123,6 +123,8 @@ export interface GAConfig {
   mutationRate: number;
   elitismCount: number;
   tournamentSize: number;
+  convergencePatience: number;   // ★ เพิ่ม
+  convergenceEpsilon: number;    // ★ เพิ่ม
 }
 
 export interface GAInput {
