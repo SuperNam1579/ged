@@ -1,14 +1,8 @@
 import type { Chromosome, GASubtopicGene, SubtopicData, ProficiencyMap, AvailabilitySlotInput } from "@/types";
 import { recommendOrder } from "./ordering";
 
-<<<<<<< Updated upstream
-/** Minutes of availability on a calendar date ("YYYY-MM-DD"). */
-export function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string): number {
-  const dow = new Date(date).getDay();
-=======
 function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string): number {
   const dow = new Date(date).getDay(); //แปลงเลขวัน 0 = อาทิตย์ ... 6 = เสาร์
->>>>>>> Stashed changes
   return slots
     .filter((s) => s.dayOfWeek === dow) //เก็บช่วงว่างว่าตรงกับวันไหนของสัปดาห์
     .reduce((sum, s) => { //แปลงช่วงเป็นเวลานาที เช่น 1800 - 2000 = 120 นาที (2 ชม)
