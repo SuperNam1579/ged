@@ -30,7 +30,9 @@ export type CoverageMode = "regenerate" | "append";
 export async function loadWorkItems(
   userId: string,
   subtopics: (SubtopicData & { estimatedMinutes: number })[],
-  mode: CoverageMode
+  mode: CoverageMode,
+  /** Also covered: this plan's sessions dated before `before`, whatever their status. */
+  keep?: { studyPlanId: string; before: Date }
 ): Promise<WorkItem[]> {
   const ids = subtopics.map((s) => s.id);
 
@@ -51,9 +53,12 @@ export async function loadWorkItems(
       where: {
         subtopicId: { in: ids },
         studyPlan: { userId },
+        // A review goes back over content; it never covers it.
+        kind: "STUDY",
         OR: [
           { status: "COMPLETED" },
           ...(mode === "append" ? [{ studyPlan: { userId, isActive: true } }] : []),
+          ...(keep ? [{ studyPlanId: keep.studyPlanId, scheduledDate: { lt: keep.before } }] : []),
         ],
       },
       select: { subtopicId: true, resources: { select: { resourceId: true } } },
@@ -138,7 +143,9 @@ export async function refreshPartNumbers(userId: string, studyPlanId: string): P
   ]);
   const totalBySubtopic = new Map(clipCounts.map((c) => [c.subtopicId, c._count._all]));
 
-  const updates: ReturnType<typeof db.studySession.update>[] = [];
+  // Sessions grouped by the numbers they get, so a plan of hundreds of sessions
+  // is a few dozen statements rather than one per session.
+  const idsByNumbers = new Map<string, { partIndex: number | null; partCount: number | null; ids: string[] }>();
   for (const subtopicId of subtopicIds) {
     // A completed session from an old plan and its re-planned twin can't both
     // exist — regeneration only re-plans uncovered clips — but de-duplicate on
@@ -154,16 +161,16 @@ export async function refreshPartNumbers(userId: string, studyPlanId: string): P
 
     parts.forEach((p, i) => {
       if (p.studyPlanId !== studyPlanId) return;
-      updates.push(
-        db.studySession.update({
-          where: { id: p.id },
-          data: {
-            partIndex: single ? null : i + 1,
-            partCount: single || !complete ? null : parts.length,
-          },
-        })
-      );
+      const partIndex = single ? null : i + 1;
+      const partCount = single || !complete ? null : parts.length;
+      const key = `${partIndex}/${partCount}`;
+      const group = idsByNumbers.get(key) ?? { partIndex, partCount, ids: [] };
+      group.ids.push(p.id);
+      idsByNumbers.set(key, group);
     });
   }
+  const updates = [...idsByNumbers.values()].map(({ partIndex, partCount, ids }) =>
+    db.studySession.updateMany({ where: { id: { in: ids } }, data: { partIndex, partCount } })
+  );
   if (updates.length) await db.$transaction(updates);
 }

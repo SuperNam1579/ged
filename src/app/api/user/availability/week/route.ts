@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
+import { addDaysStr, bangkokDateStr, dayOfWeekOf } from "@/lib/schedule/calendar";
 
 // Resolve the availability for a given week WITHOUT writing anything.
 //
@@ -26,18 +27,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "weekStartDate must be a valid Monday" }, { status: 400 });
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // "Today" is the learner's — Bangkok — date, not the server's.
+  const today = bangkokDateStr();
 
   // The seven dates of this week, each tagged with whether it has already passed.
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate() + i);
-    return {
-      date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
-      dayOfWeek: d.getDay(),
-      isPast: d < today,
-    };
+    const date = addDaysStr(weekStartStr, i);
+    return { date, dayOfWeek: dayOfWeekOf(date), isPast: date < today };
   });
 
   // 1) Already-generated week → return the frozen snapshot.

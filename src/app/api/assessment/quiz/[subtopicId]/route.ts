@@ -26,8 +26,12 @@ export async function GET(
   });
   if (!subtopic) return NextResponse.json({ error: "Subtopic not found" }, { status: 404 });
 
+  // Newest first: the placeholder below is only ever created when a subtopic
+  // has no quiz at all, so a quiz added later — real questions — takes over
+  // from it without the placeholder having to be deleted.
   let assessment = await db.assessment.findFirst({
     where: { type: "QUIZ", subtopicId },
+    orderBy: { createdAt: "desc" },
     include: {
       questions: {
         select: {

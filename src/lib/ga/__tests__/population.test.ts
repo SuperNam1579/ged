@@ -159,9 +159,9 @@ describe("timeFeasibility — sessions on no-slot days", () => {
     expect(timeFeasibility).toBeLessThan(1);
   });
 
-  it("scores 1 when session is on a valid slot day and within capacity", () => {
+  it("scores 1 when session is on a valid slot day and fills its capacity", () => {
     const slots = [slot(1, "08:00", "12:00")]; // Mon, 240 min
-    const gene = { subtopicId: "a", scheduledDate: MON, order: 0, durationMins: 120 };
+    const gene = { subtopicId: "a", scheduledDate: MON, order: 0, durationMins: 240 };
     const { timeFeasibility } = computeFitness([gene], fitnessCtx(slots, [MON]));
     expect(timeFeasibility).toBe(1);
   });

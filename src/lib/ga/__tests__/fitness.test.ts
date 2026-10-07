@@ -177,12 +177,21 @@ describe("weaknessFocus", () => {
 describe("timeFeasibility", () => {
   const subs = [makeSub("a", "MATH", 3)];
 
-  it("= 1 when sessions are on valid dates and within the daily time limit", () => {
+  it("= 1 when sessions are on valid dates and fill the days they use", () => {
+    const { timeFeasibility } = computeFitness(
+      [makeGene("a", D1, 0, 240)],
+      ctx(subs, {}, { hoursPerDay: 4, availableDates: [D1] })
+    );
+    expect(timeFeasibility).toBe(1);
+  });
+
+  it("gives half marks for using only part of the free time — within the limit, but wasteful", () => {
     const { timeFeasibility } = computeFitness(
       [makeGene("a", D1, 0, 60)],
       ctx(subs, {}, { hoursPerDay: 4, availableDates: [D1] })
     );
-    expect(timeFeasibility).toBe(1);
+    // feasible (1) × (0.5 + 0.5 × 60/240)
+    expect(timeFeasibility).toBeCloseTo(0.625);
   });
 
   it("penalises sessions scheduled on unavailable dates", () => {
@@ -388,5 +397,60 @@ describe("variety", () => {
     ).variety;
 
     expect(mixed).toBeGreaterThan(single);
+  });
+});
+
+// ─── plans that run for weeks ─────────────────────────────────────────────────
+// Over a long plan everything usually fits, so what is scheduled is the same
+// whatever the order. These check that the order still changes the score.
+
+describe("long plans — the order matters", () => {
+  // Two weeks, Mon–Fri, 2 h a day.
+  const W1 = ["2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09"];
+  const W2 = ["2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16"];
+  const DATES = [...W1, ...W2];
+  const longCtx = (subtopics: SubtopicData[], proficiencies: ProficiencyMap = {}) => ({
+    subtopics,
+    proficiencies,
+    slots: [],
+    availableDates: DATES,
+    dayCapacity: new Map(DATES.map((d) => [d, 120])),
+    subjectCodes: [...new Set(subtopics.map((s) => s.subjectCode))],
+  });
+
+  it("weaknessFocus rewards studying weak topics first, with the same topics either way", () => {
+    const subs = [makeSub("weak", "MATH", 3), makeSub("strong", "MATH", 3)];
+    const c = longCtx(subs, { weak: 10, strong: 90 });
+    const weakFirst = computeFitness([makeGene("weak", W1[0], 0, 120), makeGene("strong", W2[4], 1, 120)], c);
+    const weakLast = computeFitness([makeGene("strong", W1[0], 0, 120), makeGene("weak", W2[4], 1, 120)], c);
+    expect(weakFirst.coverage).toBe(weakLast.coverage);
+    expect(weakFirst.weaknessFocus).toBeGreaterThan(weakLast.weaknessFocus);
+  });
+
+  it("timeFeasibility rewards finishing sooner by leaving fewer gaps", () => {
+    const subs = [makeSub("a", "MATH", 3), makeSub("b", "MATH", 3)];
+    const c = longCtx(subs);
+    const packed = computeFitness([makeGene("a", W1[0], 0, 120), makeGene("b", W1[1], 1, 120)], c);
+    const gappy = computeFitness([makeGene("a", W1[0], 0, 120), makeGene("b", W1[4], 1, 120)], c);
+    expect(packed.timeFeasibility).toBe(1);
+    expect(gappy.timeFeasibility).toBeLessThan(packed.timeFeasibility);
+  });
+
+  it("variety prefers every week mixed over one subject per week", () => {
+    const subs = [
+      ...[0, 1, 2, 3, 4].map((i) => makeSub(`m${i}`, "MATH", 3)),
+      ...[0, 1, 2, 3, 4].map((i) => makeSub(`s${i}`, "SCI", 3)),
+    ];
+    const c = longCtx(subs);
+    // Same ten sessions, same one-per-day layout: only which week each subject lands in differs.
+    const blocked = computeFitness(
+      [...W1.map((d, i) => makeGene(`m${i}`, d, i, 120)), ...W2.map((d, i) => makeGene(`s${i}`, d, 5 + i, 120))],
+      c
+    );
+    const mixed = computeFitness(
+      DATES.map((d, i) => makeGene(i % 2 === 0 ? `m${i >> 1}` : `s${i >> 1}`, d, i, 120)),
+      c
+    );
+    expect(mixed.variety).toBeGreaterThan(blocked.variety);
   });
 });

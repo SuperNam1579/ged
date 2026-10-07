@@ -1,5 +1,6 @@
 import type { Chromosome, GASubtopicGene, SubtopicData, ProficiencyMap, AvailabilitySlotInput } from "@/types";
 import { recommendOrder } from "./ordering";
+import { random as nextRandom } from "./random";
 
 export function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string): number {
   const dow = new Date(date).getDay(); //แปลงเลขวัน 0 = อาทิตย์ ... 6 = เสาร์
@@ -46,7 +47,7 @@ export function createIndividual(
   if (availableDates.length === 0) return []; //ตรวจสอบว่ามีวันว่างจริงไหม ถ้าไม่มีก็คืนว่าว่าง
 
   const sorted = random //**ไปดูมา**
-    ? [...subtopics].sort(() => Math.random() - 0.5) //ใช้ -0.5(50%)เพื่อให้ได้ค่าลบ และบวกที่เท่าๆกัน
+    ? [...subtopics].sort(() => nextRandom() - 0.5) //ใช้ -0.5(50%)เพื่อให้ได้ค่าลบ และบวกที่เท่าๆกัน
     : recommendOrder({ subtopics, proficiencies }); 
 
   const chromosome: Chromosome = []; //สร้าง chromosome เอาไว้ใช้กับ gene

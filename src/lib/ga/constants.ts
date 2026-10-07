@@ -10,8 +10,8 @@ export const WEAKNESS_THRESHOLD = 60;
 export const DEFAULT_CONFIG: GAConfig = {
   populationSize: 50,
   generations: 100,
-  crossoverRate: 0.85,
-  mutationRate: 0.15,
+  crossoverRate: 0.9,
+  mutationRate: 0.015,
   elitismCount: 2,
   tournamentSize: 5,
   // ── ค่าสำหรับ early stopping (ตรวจจับ convergence) ──

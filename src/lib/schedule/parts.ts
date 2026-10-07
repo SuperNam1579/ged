@@ -185,10 +185,27 @@ export function packDays(items: WorkItem[], days: Day[]): PackResult {
   const done = new Set<string>();
   const planned = new Set(work.map((w) => w.subtopicId));
   // Started items, in the order they started: they continue in that order.
-  const inProgress = work.filter((w) => w.started);
+  let inProgress = work.filter((w) => w.started);
+  // Items not started yet, in priority order.
+  let fresh = work.filter((w) => !w.started);
   const placements: Placement[] = [];
 
   const isDone = (w: WorkItem) => (w.clips.length === 0 && w.atomicMinutes <= 0) || done.has(w.subtopicId);
+
+  // The least room a not-yet-started item needs to begin in a day that already
+  // has something in it: its first whole unit (it may not be cut there), or
+  // all of a video-less subtopic. Its clips are untouched until it starts, so
+  // this is worked out once — the fill loop below asks on every day, and over
+  // a plan that runs to the exam that is most of the packer's time.
+  const startNeeds = new Map<WorkItem, number>();
+  const startNeed = (w: WorkItem): number => {
+    let need = startNeeds.get(w);
+    if (need === undefined) {
+      need = w.clips.length ? runs(w.clips, (c) => c.unitKey)[0].minutes : w.atomicMinutes;
+      startNeeds.set(w, need);
+    }
+    return need;
+  };
 
   for (const day of days) {
     let room = day.capacity;
@@ -235,9 +252,11 @@ export function packDays(items: WorkItem[], days: Day[]): PackResult {
     }
 
     // 2. Fill what is left with new subtopics, in priority order.
-    for (const w of work) {
+    for (const w of fresh) {
       if (room <= EPS) break;
       if (w.started || isDone(w)) continue;
+      // Same answer place() would give, without cutting the clips into runs.
+      if (order > 0 && startNeed(w) > room + EPS) continue;
       // Starting a subtopic before one of its prerequisites is finished would
       // invert the order the curriculum teaches them in. Prerequisites outside
       // this batch are the caller's concern.
@@ -245,6 +264,11 @@ export function packDays(items: WorkItem[], days: Day[]): PackResult {
       if (blocked) continue;
       place(w);
     }
+
+    // Drop what is finished or has moved on, so later days don't walk past it.
+    // Order is kept, so this changes nothing but the time a long plan takes.
+    inProgress = inProgress.filter((w) => !isDone(w));
+    fresh = fresh.filter((w) => !w.started && !isDone(w));
   }
 
   const leftovers = work.filter((w) => !isDone(w));

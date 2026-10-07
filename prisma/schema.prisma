@@ -333,6 +333,10 @@ model StudySession {
   durationMins  Int
   order         Int // position in plan sequence
   status        SessionStatus @default(PENDING)
+  // STUDY learns new content; REVIEW goes back over a subtopic already studied
+  // (the days before the exam once the content is done). A REVIEW never counts
+  // as covering content, so it never stops a subtopic being planned.
+  kind          SessionKind   @default(STUDY)
   completedAt   DateTime?
   createdAt     DateTime      @default(now())
 
@@ -598,6 +602,11 @@ enum TriggerReason {
   MOCK_TEST_LOW
   SCHEDULE_CHANGE
   MANUAL_REQUEST
+}
+
+enum SessionKind {
+  STUDY
+  REVIEW
 }
 
 enum SessionStatus {

@@ -6,6 +6,7 @@ import type {
   AvailabilitySlotInput,
 } from "@/types";
 import { WEAKNESS_THRESHOLD, isHeavy } from "./constants";
+import { mondayOf } from "../schedule/calendar";
 
 // ============================================================================
 // FITNESS WEIGHTS  (ปรับใหม่ตามงานวิจัย — รวม Variety/Rotation เข้ามา)
@@ -28,6 +29,12 @@ interface FitnessContext {
   slots: AvailabilitySlotInput[];
   availableDates: string[];
   subjectCodes: string[];
+  /**
+   * Minutes available on each date. When given it replaces `slots`, which can
+   * only describe a day by its weekday — a plan that runs to the exam may have
+   * a different week for every week.
+   */
+  dayCapacity?: Map<string, number>;
 }
 
 function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string): number {
@@ -58,6 +65,80 @@ function groupByDay(
   return days;
 }
 
+// ─── helper: สิ่งที่คำนวณจาก ctx ได้ครั้งเดียว ───────────────────────────────
+//  computeFitness ถูกเรียก ~5,000 ครั้งต่อการจัดแผนด้วย ctx ตัวเดิม จึง cache ไว้
+interface Derived {
+  subtopicMap: Map<string, SubtopicData>;
+  /** ลำดับของวันที่เรียนได้ 0..n-1 — ใช้วัดว่า gene อยู่ "ต้น" หรือ "ท้าย" แผน */
+  dateIndex: Map<string, number>;
+  /** สัปดาห์ (วันจันทร์) ทั้งหมดที่มีวันเรียน เรียงตามเวลา */
+  weeks: string[];
+  /** จำนวนวันเรียนในแต่ละสัปดาห์ */
+  studyDaysInWeek: Map<string, number>;
+  weekOf: (date: string) => string;
+  /** สัดส่วน "ความจำเป็น" ของแต่ละวิชา (รวม = 1) */
+  target: Map<string, number>;
+}
+
+const derivedCache = new WeakMap<FitnessContext, Derived>();
+
+function derive(ctx: FitnessContext): Derived {
+  const cached = derivedCache.get(ctx);
+  if (cached) return cached;
+
+  const weekMemo = new Map<string, string>();
+  const weekOf = (date: string) => {
+    let w = weekMemo.get(date);
+    if (w === undefined) {
+      w = mondayOf(date);
+      weekMemo.set(date, w);
+    }
+    return w;
+  };
+
+  const dates = [...ctx.availableDates].sort();
+  const studyDaysInWeek = new Map<string, number>();
+  for (const date of dates) studyDaysInWeek.set(weekOf(date), (studyDaysInWeek.get(weekOf(date)) ?? 0) + 1);
+
+  const derived: Derived = {
+    subtopicMap: new Map(ctx.subtopics.map((s) => [s.id, s])),
+    dateIndex: new Map(dates.map((date, i) => [date, i])),
+    weeks: [...studyDaysInWeek.keys()].sort(),
+    studyDaysInWeek,
+    weekOf,
+    target: buildTargetDistribution(ctx.subtopics, ctx.proficiencies, ctx.subjectCodes),
+  };
+  derivedCache.set(ctx, derived);
+  return derived;
+}
+
+/** 1 = วันแรกของแผน, 0 = วันสุดท้าย */
+function earliness(date: string, d: Derived): number {
+  const n = d.dateIndex.size;
+  if (n <= 1) return 1;
+  const i = d.dateIndex.get(date) ?? n - 1;
+  return 1 - i / (n - 1);
+}
+
+/**
+ * ช่วงสัปดาห์ที่แต่ละวิชา "ยังเรียนไม่จบ": ตั้งแต่สัปดาห์แรกของแผนถึงสัปดาห์
+ * สุดท้ายที่มีวิชานั้น — วิชาที่ยังมีเนื้อหาเหลือควรได้เรียนทุกสัปดาห์ แต่เรียน
+ * จบแล้วก็ไม่ต้องคาดหวังให้โผล่อีก
+ */
+function subjectSpans(chromosome: Chromosome, d: Derived): Map<string, [string, string]> {
+  const first = d.weeks[0];
+  const spans = new Map<string, [string, string]>();
+  for (const gene of chromosome) {
+    const s = d.subtopicMap.get(gene.subtopicId);
+    if (!s) continue;
+    const w = d.weekOf(gene.scheduledDate);
+    const span = spans.get(s.subjectCode);
+    if (!span) spans.set(s.subjectCode, [first !== undefined && first < w ? first : w, w]);
+    else if (w > span[1]) span[1] = w;
+  }
+  return spans;
+}
+
 // ============================================================================
 // 1) COVERAGE  (คงเดิม)
 // ============================================================================
@@ -79,32 +160,55 @@ function coverageScore(
 }
 
 // ============================================================================
-// 2) WEAKNESS FOCUS  (คงเดิม)
+// 2) WEAKNESS FOCUS  (ปรับ — ดูทั้ง "ให้เวลามาก" และ "ได้เรียนก่อน")
+// ----------------------------------------------------------------------------
+//   (a) share  — สัดส่วนเวลาที่ให้หัวข้ออ่อน (แบบเดิม)
+//   (b) timing — หัวข้ออ่อนอยู่ต้นแผนกว่าค่าเฉลี่ยของทั้งแผนแค่ไหน
+//  แผนที่ยาวถึงวันสอบมักใส่เนื้อหาได้ครบ (a) จึงเท่ากันทุกลำดับ — (b) คือส่วนที่
+//  ให้รางวัล GA เมื่อเอาหัวข้ออ่อนขึ้นก่อน
 // ============================================================================
 function weaknessFocusScore(
   chromosome: Chromosome,
-  proficiencies: ProficiencyMap
+  proficiencies: ProficiencyMap,
+  d: Derived
 ): number {
   if (chromosome.length === 0) return 0;
-  let totalWeight = 0;
-  let weakWeight = 0;
+  let total = 0;
+  let weak = 0;
+  let weakEarly = 0;
+  let allEarly = 0;
   for (const gene of chromosome) {
     const prof = proficiencies[gene.subtopicId] ?? 0;
     const weakness = Math.max(0, WEAKNESS_THRESHOLD - prof) / WEAKNESS_THRESHOLD;
-    const geneWeight = gene.durationMins;
-    totalWeight += geneWeight;
-    weakWeight += geneWeight * weakness;
+    const m = gene.durationMins;
+    const e = earliness(gene.scheduledDate, d);
+    total += m;
+    weak += m * weakness;
+    weakEarly += m * weakness * e;
+    allEarly += m * e;
   }
-  return totalWeight === 0 ? 0 : weakWeight / totalWeight;
+  if (total === 0) return 0;
+  const share = weak / total;
+  if (weak === 0) return share;
+  // earliness เฉลี่ยของเวลาหัวข้ออ่อน เทียบกับของทั้งแผน: 0.5 = ไม่ต่างกัน
+  const timing = Math.min(1, Math.max(0, 0.5 + (weakEarly / weak - allEarly / total)));
+  return 0.5 * share + 0.5 * timing;
 }
 
 // ============================================================================
-// 3) TIME FEASIBILITY  (คงเดิม)
+// 3) TIME FEASIBILITY  (ปรับ — ไม่เกินเวลาว่าง และใช้เวลาว่างคุ้ม)
+// ----------------------------------------------------------------------------
+//   (a) feasible    — สัดส่วนวันที่ไม่ได้ยัดเกินเวลาว่าง (แบบเดิม)
+//   (b) utilization — ตั้งแต่วันแรกถึงวันสุดท้ายที่มีเรียน ใช้เวลาว่างไปกี่ %
+//  packDays ไม่ยัดเกินอยู่แล้ว (a) จึงมักได้ 1 ทุกลำดับ; (b) แยกลำดับที่วางแล้ว
+//  เหลือช่องว่างเป็นเศษ ๆ (จบช้า) ออกจากลำดับที่เติมวันได้เต็ม (จบเร็ว)
 // ============================================================================
 function timeFeasibilityScore(
   chromosome: Chromosome,
   slots: AvailabilitySlotInput[],
-  availableDates: string[]
+  availableDates: string[],
+  d: Derived,
+  dayCapacity?: Map<string, number>
 ): number {
   if (chromosome.length === 0) return 0;
   const dateGroups = new Map<string, number>();
@@ -112,13 +216,36 @@ function timeFeasibilityScore(
     const current = dateGroups.get(gene.scheduledDate) ?? 0;
     dateGroups.set(gene.scheduledDate, current + gene.durationMins);
   }
+  const capacityOf = (date: string) => dayCapacity?.get(date) ?? slotMinutesForDate(slots, date);
+
   let violations = 0;
-  const totalDays = dateGroups.size;
+  let first = Infinity;
+  let last = -Infinity;
   for (const [date, totalMins] of dateGroups) {
-    if (!availableDates.includes(date)) violations++;
-    else if (totalMins > slotMinutesForDate(slots, date) * 1.2) violations++;
+    const i = d.dateIndex.get(date);
+    if (i === undefined) {
+      violations++;
+      continue;
+    }
+    if (totalMins > capacityOf(date) * 1.2) violations++;
+    first = Math.min(first, i);
+    last = Math.max(last, i);
   }
-  return totalDays === 0 ? 0 : Math.max(0, 1 - violations / totalDays);
+  const feasible = Math.max(0, 1 - violations / dateGroups.size);
+  if (first === Infinity) return 0;
+
+  let used = 0;
+  let capacity = 0;
+  for (const date of availableDates) {
+    const i = d.dateIndex.get(date)!;
+    if (i < first || i > last) continue;
+    const cap = capacityOf(date);
+    capacity += cap;
+    used += Math.min(cap, dateGroups.get(date) ?? 0);
+  }
+  const utilization = capacity === 0 ? 0 : used / capacity;
+
+  return feasible * (0.5 + 0.5 * utilization);
 }
 
 // ============================================================================
@@ -153,9 +280,9 @@ function prerequisiteOrderScore(
 //  รวม 3 องค์ประกอบตามงานวิจัย แล้วแก้ปัญหา entropy ขัด weakness ด้วย
 //  KL-divergence เทียบ target ที่ derive จาก proficiency (แบบ B: weakness นำ)
 //
-//   (a) D1 — KL-divergence จาก target distribution  → กระจายเทียบ "ความจำเป็น"
+//   (a) D1 — KL-divergence จาก target distribution  → กระจายเทียบ "ความจำเป็น" (รายสัปดาห์)
 //   (b) D2 — distinct-subjects-per-day              → แต่ละวันแตะ 2-3 วิชา
-//   (c) D4 — weekly-presence                        → ทุกวิชาควรโผล่หลายวัน
+//   (c) D4 — weekly-presence                        → ทุกวิชาควรโผล่หลายวันในทุกสัปดาห์
 // ============================================================================
 
 const DAY_SUBJECTS_MIN = 2;
@@ -188,38 +315,39 @@ function buildTargetDistribution(
   return target;
 }
 
-function distributionScore(
-  chromosome: Chromosome,
-  subtopics: SubtopicData[],
-  proficiencies: ProficiencyMap,
-  subjectCodes: string[]
-): number {
-  const subtopicMap = new Map(subtopics.map((s) => [s.id, s]));
-  const minutesBySubject = new Map<string, number>();
-  for (const code of subjectCodes) minutesBySubject.set(code, 0);
-
-  let totalMins = 0;
+// (a) รายสัปดาห์: แต่ละสัปดาห์ควรแบ่งเวลาตามความจำเป็นของวิชาที่ยังเรียนอยู่
+//     ในสัปดาห์นั้น — วัดรวมทั้งแผนจะปล่อยให้ "MATH ล้วน 3 สัปดาห์ แล้ว SCI ล้วน"
+//     ได้คะแนนดี ทั้งที่ไม่มีสัปดาห์ไหนสมดุลเลย
+function distributionScore(chromosome: Chromosome, d: Derived): number {
+  const spans = subjectSpans(chromosome, d);
+  const minutes = new Map<string, Map<string, number>>(); // week → subject → minutes
   for (const gene of chromosome) {
-    const s = subtopicMap.get(gene.subtopicId);
-    if (!s || !minutesBySubject.has(s.subjectCode)) continue;
-    minutesBySubject.set(
-      s.subjectCode,
-      (minutesBySubject.get(s.subjectCode) ?? 0) + gene.durationMins
-    );
-    totalMins += gene.durationMins;
+    const s = d.subtopicMap.get(gene.subtopicId);
+    if (!s || !d.target.has(s.subjectCode)) continue;
+    const w = d.weekOf(gene.scheduledDate);
+    const bySubject = minutes.get(w) ?? new Map<string, number>();
+    bySubject.set(s.subjectCode, (bySubject.get(s.subjectCode) ?? 0) + gene.durationMins);
+    minutes.set(w, bySubject);
   }
-  if (totalMins === 0) return 0;
-
-  const target = buildTargetDistribution(subtopics, proficiencies, subjectCodes);
 
   const eps = 1e-6;
-  let kl = 0;
-  for (const code of subjectCodes) {
-    const p = (minutesBySubject.get(code) ?? 0) / totalMins + eps;
-    const q = (target.get(code) ?? 0) + eps;
-    kl += p * Math.log(p / q);
+  let weighted = 0;
+  let totalMins = 0;
+  for (const [week, bySubject] of minutes) {
+    const active = [...spans].filter(([, [a, b]]) => a <= week && week <= b).map(([code]) => code);
+    const weekMins = active.reduce((a, c) => a + (bySubject.get(c) ?? 0), 0);
+    const targetSum = active.reduce((a, c) => a + (d.target.get(c) ?? 0), 0);
+    if (weekMins === 0 || targetSum === 0) continue;
+    let kl = 0;
+    for (const code of active) {
+      const p = (bySubject.get(code) ?? 0) / weekMins + eps;
+      const q = (d.target.get(code) ?? 0) / targetSum + eps;
+      kl += p * Math.log(p / q);
+    }
+    weighted += weekMins / (1 + Math.max(0, kl));
+    totalMins += weekMins;
   }
-  return 1 / (1 + Math.max(0, kl));
+  return totalMins === 0 ? 0 : weighted / totalMins;
 }
 
 function dayVarietyScore(
@@ -249,51 +377,44 @@ function dayVarietyScore(
   return sum / days.size;
 }
 
-function weeklyPresenceScore(
-  chromosome: Chromosome,
-  subtopics: SubtopicData[],
-  subjectCodes: string[]
-): number {
-  const subtopicMap = new Map(subtopics.map((s) => [s.id, s]));
-  const daysBySubject = new Map<string, Set<string>>();
-  for (const code of subjectCodes) daysBySubject.set(code, new Set());
-
+// (c) รายสัปดาห์: ทุกวิชาที่ยังเรียนไม่จบควรโผล่อย่างน้อย 3 วันในทุกสัปดาห์
+//     (หรือทุกวันเรียน ถ้าสัปดาห์นั้นมีไม่ถึง 3 วัน) — นับรวมทั้งแผน 50 วัน
+//     ผ่านเกณฑ์เสมอ จึงไม่ได้วัดอะไร
+function weeklyPresenceScore(chromosome: Chromosome, d: Derived): number {
+  const spans = subjectSpans(chromosome, d);
+  const days = new Map<string, Set<string>>(); // `${subject}|${week}` → dates
   for (const gene of chromosome) {
-    const s = subtopicMap.get(gene.subtopicId);
-    if (!s || !daysBySubject.has(s.subjectCode)) continue;
-    daysBySubject.get(s.subjectCode)!.add(gene.scheduledDate);
+    const s = d.subtopicMap.get(gene.subtopicId);
+    if (!s) continue;
+    const key = `${s.subjectCode}|${d.weekOf(gene.scheduledDate)}`;
+    const set = days.get(key) ?? new Set<string>();
+    set.add(gene.scheduledDate);
+    days.set(key, set);
   }
 
-  const activeSubjects = subjectCodes.filter(
-    (c) => (daysBySubject.get(c)?.size ?? 0) > 0
-  );
-  if (activeSubjects.length === 0) return 0;
-
-  let score = 0;
-  for (const code of activeSubjects) {
-    const d = daysBySubject.get(code)!.size;
-    score += Math.min(1, d / MIN_DAYS_PER_SUBJECT);
+  let sum = 0;
+  let n = 0;
+  for (const [code, [from, to]] of spans) {
+    for (const week of d.weeks) {
+      if (week < from || week > to) continue;
+      const need = Math.min(MIN_DAYS_PER_SUBJECT, d.studyDaysInWeek.get(week) ?? 0);
+      if (need === 0) continue;
+      sum += Math.min(1, (days.get(`${code}|${week}`)?.size ?? 0) / need);
+      n++;
+    }
   }
-  return score / activeSubjects.length;
+  return n === 0 ? 0 : sum / n;
 }
 
 function varietyScore(
   chromosome: Chromosome,
-  ctx: FitnessContext
+  ctx: FitnessContext,
+  d: Derived
 ): number {
   if (chromosome.length === 0) return 0;
-  const dist = distributionScore(
-    chromosome,
-    ctx.subtopics,
-    ctx.proficiencies,
-    ctx.subjectCodes
-  );
+  const dist = distributionScore(chromosome, d);
   const dayVar = dayVarietyScore(chromosome, ctx.subtopics);
-  const presence = weeklyPresenceScore(
-    chromosome,
-    ctx.subtopics,
-    ctx.subjectCodes
-  );
+  const presence = weeklyPresenceScore(chromosome, d);
   return 0.5 * dist + 0.3 * dayVar + 0.2 * presence;
 }
 
@@ -357,15 +478,18 @@ export function computeFitness(
   chromosome: Chromosome,
   ctx: FitnessContext
 ): FitnessBreakdown {
+  const d = derive(ctx);
   const coverage = coverageScore(chromosome, ctx.subtopics, ctx.proficiencies);
-  const weaknessFocus = weaknessFocusScore(chromosome, ctx.proficiencies);
+  const weaknessFocus = weaknessFocusScore(chromosome, ctx.proficiencies, d);
   const timeFeasibility = timeFeasibilityScore(
     chromosome,
     ctx.slots,
-    ctx.availableDates
+    ctx.availableDates,
+    d,
+    ctx.dayCapacity
   );
   const prerequisiteOrder = prerequisiteOrderScore(chromosome, ctx.subtopics);
-  const variety = varietyScore(chromosome, ctx);
+  const variety = varietyScore(chromosome, ctx, d);
   const balance = balanceScore(chromosome, ctx.subtopics);
 
   const total =

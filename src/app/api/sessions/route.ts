@@ -58,6 +58,8 @@ export async function GET(req: NextRequest) {
     durationMins: s.durationMins,
     order: s.order,
     status: s.status,
+    /** STUDY = new content; REVIEW = going back over a subtopic before the exam. */
+    kind: s.kind,
     learningUrl: s.subtopic.learningUrl,
     difficultyLevel: s.subtopic.difficultyLevel,
     partIndex: s.partIndex,

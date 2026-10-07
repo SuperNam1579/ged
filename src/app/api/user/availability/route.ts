@@ -4,8 +4,8 @@ import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { planWeek, savePlan } from "@/lib/ga/engine";
-import { loadWorkItems } from "@/lib/schedule/work-items";
+import { bangkokDateStr, mondayOf } from "@/lib/schedule/calendar";
+import { planSummary, regeneratePlan, WEEK_LOCKED_MESSAGE } from "@/lib/schedule/regenerate";
 import type { TriggerReason } from "@/types";
 
 const SlotSchema = z.object({
@@ -17,21 +17,47 @@ const SlotSchema = z.object({
   { message: "startTime must be before endTime" }
 );
 
-const AvailabilitySchema = z.object({
-  weekStartDate: z.string().refine((d) => {
-    const date = new Date(d);
-    if (isNaN(date.getTime())) return false;
-    return date.getDay() === 1; // must be Monday
-  }, "weekStartDate must be a valid Monday (ISO date)"),
+const isMonday = (d: string) => {
+  const date = new Date(d);
+  return !isNaN(date.getTime()) && date.getUTCDay() === 1;
+};
+const MondaySchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD")
+  .refine(isMonday, "weekStartDate must be a valid Monday (ISO date)");
+
+// One week, as the onboarding and the weekly confirm form send it.
+const SingleWeekSchema = z.object({
+  weekStartDate: MondaySchema,
   slots: z.array(SlotSchema).min(1, "At least one time slot is required"),
   // "Apply these changes to future weeks" — also save the edited slots as the
   // recurring template, so later weeks pre-fill with them.
   applyToFutureWeeks: z.boolean().optional(),
 });
 
-/** Saving availability plans the coming week with the GA; see ga/generate. */
+// Any number of weeks at once, for setting up the whole run to the exam.
+//   slots: []   → a week off
+//   slots: null → the week goes back to the learner's usual availability
+const ManyWeeksSchema = z.object({
+  weeks: z
+    .array(z.object({ weekStartDate: MondaySchema, slots: z.array(SlotSchema).nullable() }))
+    .min(1)
+    .max(104)
+    .refine((ws) => new Set(ws.map((w) => w.weekStartDate)).size === ws.length, "Each week may appear once"),
+});
+
+const AvailabilitySchema = z.union([SingleWeekSchema, ManyWeeksSchema]);
+
+type Slot = z.infer<typeof SlotSchema>;
+
+/** Saving availability re-plans everything to the exam with the GA; see lib/schedule/regenerate. */
 export const maxDuration = 60;
 
+/**
+ * Saves the availability of one or more weeks, then plans again from today to
+ * the exam with every week's availability — the weeks saved here and the
+ * learner's usual week for the rest.
+ */
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req);
   if (csrfError) return csrfError;
@@ -48,8 +74,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { weekStartDate: weekStartStr, slots, applyToFutureWeeks } = parsed.data;
-  const weekStart = new Date(weekStartStr);
+  const weeks: { weekStartDate: string; slots: Slot[] | null }[] =
+    "weeks" in parsed.data ? parsed.data.weeks : [{ weekStartDate: parsed.data.weekStartDate, slots: parsed.data.slots }];
+  const template = "weeks" in parsed.data ? null : parsed.data.applyToFutureWeeks ? parsed.data.slots : null;
+
+  // Weeks already over can't be studied any more; refuse rather than drop them.
+  const currentMonday = mondayOf(bangkokDateStr());
+  const past = weeks.find((w) => w.weekStartDate < currentMonday);
+  if (past) {
+    return NextResponse.json({ error: `The week of ${past.weekStartDate} is already over.` }, { status: 400 });
+  }
 
   const preferences = await db.userPreferences.findUnique({
     where: { userId: authUser.id },
@@ -61,156 +95,76 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Save WeeklyAvailability + replace slots in a single transaction
-  const weeklyAvail = await db.$transaction(async (tx) => {
-    const avail = await tx.weeklyAvailability.upsert({
-      where: { userId_weekStartDate: { userId: authUser.id, weekStartDate: weekStart } },
-      create: { userId: authUser.id, weekStartDate: weekStart },
-      update: {},
-    });
+  const saved = await db.$transaction(
+    async (tx) => {
+      const ids: string[] = [];
+      for (const week of weeks) {
+        const weekStart = new Date(`${week.weekStartDate}T00:00:00Z`);
+        const key = { userId_weekStartDate: { userId: authUser.id, weekStartDate: weekStart } };
 
-    await tx.availabilitySlot.deleteMany({ where: { weeklyAvailabilityId: avail.id } });
-    await tx.availabilitySlot.createMany({
-      data: slots.map((s) => ({
-        weeklyAvailabilityId: avail.id,
-        dayOfWeek: s.dayOfWeek,
-        startTime: s.startTime,
-        endTime: s.endTime,
-      })),
-    });
+        if (week.slots === null) {
+          await tx.weeklyAvailability.deleteMany({ where: { userId: authUser.id, weekStartDate: weekStart } });
+          continue;
+        }
 
-    // "Apply to future weeks" → also persist these slots as the recurring
-    // template so upcoming weeks pre-fill with them. Past snapshots are untouched.
-    if (applyToFutureWeeks) {
-      const template = await tx.weeklyAvailabilityTemplate.upsert({
-        where: { userId: authUser.id },
-        create: { userId: authUser.id },
-        update: {},
-      });
-      await tx.weeklyAvailabilityTemplateSlot.deleteMany({ where: { templateId: template.id } });
-      await tx.weeklyAvailabilityTemplateSlot.createMany({
-        data: slots.map((s) => ({
-          templateId: template.id,
-          dayOfWeek: s.dayOfWeek,
-          startTime: s.startTime,
-          endTime: s.endTime,
-        })),
-      });
-    }
+        const avail = await tx.weeklyAvailability.upsert({
+          where: key,
+          create: { userId: authUser.id, weekStartDate: weekStart },
+          update: {},
+        });
+        await tx.availabilitySlot.deleteMany({ where: { weeklyAvailabilityId: avail.id } });
+        if (week.slots.length > 0) {
+          await tx.availabilitySlot.createMany({
+            data: week.slots.map((s) => ({
+              weeklyAvailabilityId: avail.id,
+              dayOfWeek: s.dayOfWeek,
+              startTime: s.startTime,
+              endTime: s.endTime,
+            })),
+          });
+        }
+        ids.push(avail.id);
+      }
 
-    return avail;
-  });
+      // "Apply to future weeks" → also persist these slots as the recurring
+      // template, which every week not set on its own follows.
+      if (template) {
+        const t = await tx.weeklyAvailabilityTemplate.upsert({
+          where: { userId: authUser.id },
+          create: { userId: authUser.id },
+          update: {},
+        });
+        await tx.weeklyAvailabilityTemplateSlot.deleteMany({ where: { templateId: t.id } });
+        await tx.weeklyAvailabilityTemplateSlot.createMany({
+          data: template.map((s) => ({
+            templateId: t.id,
+            dayOfWeek: s.dayOfWeek,
+            startTime: s.startTime,
+            endTime: s.endTime,
+          })),
+        });
+      }
 
-  // Load subtopics
-  const subtopics = await db.subtopic.findMany({
-    include: {
-      prerequisites: { select: { prerequisiteId: true } },
-      topic: {
-        include: { category: { include: { subject: { select: { code: true } } } } },
-      },
+      return ids;
     },
-  });
-
-  const allSubtopicData = subtopics.map((s: typeof subtopics[0]) => ({
-    id: s.id,
-    name: s.name,
-    topicId: s.topicId,
-    subjectCode: s.topic.category.subject.code,
-    estimatedMinutes: s.estimatedMinutes,
-    difficultyLevel: s.difficultyLevel,
-    prerequisiteIds: s.prerequisites.map((p) => p.prerequisiteId),
-  }));
-
-  // Restrict the plan to the subjects the user chose in onboarding. Legacy
-  // accounts with no saved selection fall back to all subjects so their plan
-  // isn't left empty.
-  const selectedCodes = preferences.selectedSubjectCodes?.length
-    ? new Set(preferences.selectedSubjectCodes)
-    : null;
-  const subtopicData = selectedCodes
-    ? allSubtopicData.filter((s) => selectedCodes.has(s.subjectCode))
-    : allSubtopicData;
-
-  // Load proficiency scores
-  const proficiencies = await db.userSubtopicProficiency.findMany({
-    where: { userId: authUser.id },
-    select: { subtopicId: true, score: true },
-  });
-  const profMap = Object.fromEntries(
-    proficiencies.map((p: { subtopicId: string; score: number }) => [p.subtopicId, p.score])
+    { timeout: 30000 }
   );
-
-  // ── Generation window ─────────────────────────────────────────────────────
-  // Plan only the days of THIS week that haven't passed yet. If the current
-  // week has no study days left, roll forward to next week so onboarding still
-  // gets a plan. (planWeek clamps the start to today and sizes the week from
-  // each remaining day's own length.)
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const hasDaysLeft = (anchor: Date) => {
-    const end = new Date(anchor.getTime() + 7 * DAY_MS);
-    for (const cur = new Date(anchor < today ? today : anchor); cur < end; cur.setDate(cur.getDate() + 1)) {
-      if (slots.some((s) => s.dayOfWeek === cur.getDay())) return true;
-    }
-    return false;
-  };
-  const genAnchor = hasDaysLeft(weekStart) ? weekStart : new Date(weekStart.getTime() + 7 * DAY_MS);
-
-  // ── What is left to schedule ─────────────────────────────────────────────
-  // Per clip: anything already in the active plan (pending or done) or
-  // completed under an earlier plan is covered. A subtopic whose earlier parts
-  // are planned continues with its next part instead of being skipped whole.
-  const pending = await loadWorkItems(authUser.id, subtopicData, "append");
-
-  if (pending.length === 0) {
-    return NextResponse.json({
-      message: "All subtopics have been scheduled. Great work!",
-      weeklyAvailabilityId: weeklyAvail.id,
-    });
-  }
-
-  const GA_TIMEOUT_MS = 25000;
+  // The single-week form reads this back.
+  const weeklyAvailabilityId = saved.length === 1 ? saved[0] : undefined;
 
   try {
-    const plan = await Promise.race([
-      Promise.resolve().then(() =>
-        planWeek({
-          items: pending,
-          subtopics: subtopicData,
-          proficiencies: profMap,
-          slots,
-          weekStartDate: genAnchor,
-        })
-      ),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Study plan generation timed out. Please try again.")),
-          GA_TIMEOUT_MS
-        )
-      ),
-    ]);
+    const result = await regeneratePlan(authUser.id, "SCHEDULE_CHANGE" as TriggerReason);
 
-    if (!plan) {
-      return NextResponse.json({ weeklyAvailabilityId: weeklyAvail.id, message: "No study days left this week." });
+    if (result.status === "all-done") {
+      return NextResponse.json({ message: "All subtopics have been scheduled. Great work!", weeklyAvailabilityId });
     }
-
-    const saved = await savePlan({
-      userId: authUser.id,
-      sessions: plan.sessions,
-      fitness: plan.fitness,
-      logs: plan.logs,
-      cfg: plan.cfg,
-      triggerReason: "SCHEDULE_CHANGE" as TriggerReason,
-      weeklyAvailabilityId: weeklyAvail.id,
-      append: true,
-    });
-
-    return NextResponse.json({
-      weeklyAvailabilityId: weeklyAvail.id,
-      studyPlanId: saved.studyPlanId,
-      bestFitness: plan.fitness.total,
-    });
+    if (result.status === "week-locked") {
+      return NextResponse.json({ message: WEEK_LOCKED_MESSAGE, weeklyAvailabilityId });
+    }
+    if (result.status !== "planned") {
+      return NextResponse.json({ message: "No study time between now and your exam.", weeklyAvailabilityId });
+    }
+    return NextResponse.json({ weeklyAvailabilityId, ...planSummary(result) });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to generate study plan";
     return NextResponse.json({ error: message }, { status: 500 });

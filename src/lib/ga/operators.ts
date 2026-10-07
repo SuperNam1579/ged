@@ -1,4 +1,5 @@
 import type { Chromosome, GASubtopicGene, SubtopicData } from "@/types";
+import { random } from "./random";
 
 // ─── Selection ─────────────────────────────────────────────────────────────────
 
@@ -6,9 +7,9 @@ export function tournamentSelect(
   population: { chromosome: Chromosome; fitness: number }[],
   tournamentSize: number
 ): Chromosome {
-  let best = population[Math.floor(Math.random() * population.length)];
+  let best = population[Math.floor(random() * population.length)];
   for (let i = 1; i < tournamentSize; i++) {
-    const candidate = population[Math.floor(Math.random() * population.length)];
+    const candidate = population[Math.floor(random() * population.length)];
     if (candidate.fitness > best.fitness) best = candidate;
   }
   return best.chromosome;
@@ -31,9 +32,9 @@ export function orderCrossover(
   const allIds = Array.from(new Set([...ids1, ...ids2]));
   const n = allIds.length;
 
-  const cut1 = Math.floor(Math.random() * n);
-  const cut2 = Math.floor(Math.random() * n);
-  const [start, end] = [Math.min(36, 48), Math.max(cut1, cut2)]; //สุ่มว่าจะตัดส่วนไหน เช่น 36-48
+  const cut1 = Math.floor(random() * n);
+  const cut2 = Math.floor(random() * n);
+  const [start, end] = [Math.min(cut1, cut2), Math.max(cut1, cut2)]; //สุ่มว่าจะตัดส่วนไหน เช่น 36-48
 
   function buildChild(p1Ids: string[], p2Ids: string[]): string[] {
     const segment = p1Ids.slice(start, end + 1);
@@ -85,13 +86,13 @@ export function mutate(
   let mutatedCount = 0;
 
   for (let i = 0; i < result.length; i++) {
-    if (Math.random() > mutationRate) continue;
+    if (random() > mutationRate) continue;
     mutatedCount++;
-    const mutationType = Math.floor(Math.random() * 3);
+    const mutationType = Math.floor(random() * 3);
 
     if (mutationType === 0 && result.length > 1) {
       // Swap two genes สลับหัวข้อเรียน
-      const j = Math.floor(Math.random() * result.length);
+      const j = Math.floor(random() * result.length);
       [result[i], result[j]] = [result[j], result[i]];
       result[i].order = i;
       result[j].order = j;
@@ -99,13 +100,13 @@ export function mutate(
       // Re-assign to a random available date ย้ายวันเรียน
       result[i] = {
         ...result[i],
-        scheduledDate: availableDates[Math.floor(Math.random() * availableDates.length)],
+        scheduledDate: availableDates[Math.floor(random() * availableDates.length)],
       };
     } else {
       // Adjust duration ±15 minutes ลองบวกลบเวลาเรียนเพิ่ม/ลด 15 นาที
       const subtopic = subtopics.find((s) => s.id === result[i].subtopicId);
       const base = subtopic?.estimatedMinutes ?? result[i].durationMins;
-      const delta = (Math.random() - 0.5) * 30;
+      const delta = (random() - 0.5) * 30;
       result[i] = {
         ...result[i],
         durationMins: Math.max(15, Math.round(base + delta)),
