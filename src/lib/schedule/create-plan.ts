@@ -1,20 +1,11 @@
-// Plans everything from today to the exam in one run. Server-only.
+// Makes the learner's study plan: one GA run, once. Server-only.
 //
-// Used whenever the plan has to change — onboarding, a changed week, a failed
-// quiz, a manual rebuild. The new plan replaces the active one, but:
-//
-//   - This week is locked. Once a week has sessions, they stay as they are
-//     until Sunday — the learner is meant to finish them — and changes start
-//     next Monday. A week with nothing planned from today on (onboarding, or
-//     a week the learner has already finished) is planned from today.
-//   - Missed days stay missed. A session whose day passed without being done
-//     stays on that day for the learner to catch up in their own free time;
-//     it is not moved forward.
-//   - Completed sessions stay where they were done.
-//   - The last few study days before the exam, and any days left once the
-//     content is done, are review days (./review.ts).
-//
-// Everything else is planned again onto the study calendar (./calendar.ts).
+// The GA plans every day from today to the day before the exam onto the study
+// calendar (./calendar.ts): content first, then review days (./review.ts) - the
+// last few study days, and any left once the content is done. That happens
+// once, when the learner has no plan. Afterwards the learner edits the plan by
+// hand (./manual.ts) and nothing re-plans; the GA's sessions are kept in the
+// plan's metadata as `original`, so the learner can always go back to them.
 
 import { db } from "@/lib/db";
 import { DEFAULT_CONFIG } from "@/lib/ga/constants";
@@ -34,11 +25,6 @@ const NO_FITNESS: FitnessBreakdown = {
   balance: 0,
   total: 0,
 };
-
-/** Midnight UTC of a "YYYY-MM-DD" date — how StudySession.scheduledDate is stored. */
-function utcDate(date: string): Date {
-  return new Date(`${date}T00:00:00Z`);
-}
 
 /** Loads the learner's study calendar from today to their exam. */
 export async function loadStudyCalendar(userId: string, examDate: Date): Promise<StudyCalendar> {
@@ -77,7 +63,7 @@ export async function loadStudyCalendar(userId: string, examDate: Date): Promise
  * The curriculum the learner studies: the subjects chosen in onboarding, or
  * every subject for legacy accounts with no selection saved.
  */
-async function loadSubtopics(selectedSubjectCodes: string[]): Promise<SubtopicData[]> {
+export async function loadSubtopics(selectedSubjectCodes: string[]): Promise<SubtopicData[]> {
   const subtopics = await db.subtopic.findMany({
     include: {
       prerequisites: { select: { prerequisiteId: true } },
@@ -108,17 +94,14 @@ async function loadSubtopics(selectedSubjectCodes: string[]): Promise<SubtopicDa
  */
 const GA_TIME_BUDGET_MS = 25_000;
 
-export const WEEK_LOCKED_MESSAGE =
-  "This week's plan stays as it is, and your exam comes before next week — there is nothing left to re-plan.";
-
-export type RegenerateResult =
+export type CreatePlanResult =
   | { status: "no-preferences" }
+  /** The learner has a plan already: edit it, or reset it to the GA's original. */
+  | { status: "exists"; studyPlanId: string }
   /** Everything has been completed. */
   | { status: "all-done" }
   /** No study time between today and the exam. */
   | { status: "no-study-days"; calendar: StudyCalendar }
-  /** This week is locked and the exam comes before next week: nothing to change. */
-  | { status: "week-locked"; calendar: StudyCalendar }
   | {
       status: "planned";
       studyPlanId: string;
@@ -130,8 +113,6 @@ export type RegenerateResult =
       /** All content is done: the plan is review only, with no GA run behind it. */
       reviewOnly: boolean;
       calendar: StudyCalendar;
-      /** First day of new sessions; earlier days kept their sessions (this week's lock). */
-      plannedFrom: string;
       /** Fitness of the same plan without the GA, and the seed that reproduces it (null when review only). */
       baselineFitness: number | null;
       seed: number | null;
@@ -140,10 +121,16 @@ export type RegenerateResult =
       unscheduledMinutes: number;
     };
 
-/** Replaces the active plan with one that runs from today to the exam. */
-export async function regeneratePlan(userId: string, triggerReason: TriggerReason): Promise<RegenerateResult> {
+/** The GA's sessions as first planned, kept in StudyPlan.metadata.original for "reset". */
+export type OriginalSessions = PlannedSession[];
+
+/** Makes the learner's plan with the GA — only when they have none. */
+export async function createInitialPlan(userId: string, triggerReason: TriggerReason): Promise<CreatePlanResult> {
   const preferences = await db.userPreferences.findUnique({ where: { userId } });
   if (!preferences) return { status: "no-preferences" };
+
+  const existing = await db.studyPlan.findFirst({ where: { userId, isActive: true }, select: { id: true } });
+  if (existing) return { status: "exists", studyPlanId: existing.id };
 
   const [calendar, subtopics, proficiencies] = await Promise.all([
     loadStudyCalendar(userId, preferences.targetExamDate),
@@ -152,40 +139,13 @@ export async function regeneratePlan(userId: string, triggerReason: TriggerReaso
   ]);
   const profMap = Object.fromEntries(proficiencies.map((p) => [p.subtopicId, p.score]));
 
-  // This week's lock: if the active plan has anything from today to Sunday,
-  // keep the whole week (and every earlier day) and plan from next Monday.
-  const today = calendar.from;
-  const nextMonday = addDaysStr(mondayOf(today), 7);
-  const active = await db.studyPlan.findFirst({
-    where: { userId, isActive: true },
-    orderBy: { version: "desc" },
-    select: { id: true },
-  });
-  const weekHasSessions =
-    !!active &&
-    (await db.studySession.count({
-      where: { studyPlanId: active.id, scheduledDate: { gte: utcDate(today), lt: utcDate(nextMonday) } },
-    })) > 0;
-  const plannedFrom = weekHasSessions ? nextMonday : today;
-  const keepBefore = utcDate(plannedFrom);
+  // What is left to learn, per clip: everything not completed under an earlier plan.
+  const pending = await loadWorkItems(userId, subtopics, "regenerate");
 
-  // What is left to learn, per clip: not completed, and not on a kept day. A
-  // subtopic with one completed part still has its other parts planned.
-  const pending = await loadWorkItems(
-    userId,
-    subtopics,
-    "regenerate",
-    active ? { studyPlanId: active.id, before: keepBefore } : undefined
-  );
+  const days = calendar.days.filter((d) => d.capacity > 0);
+  if (days.length === 0) return pending.length ? { status: "no-study-days", calendar } : { status: "all-done" };
 
-  const days = calendar.days.filter((d) => d.date >= plannedFrom && d.capacity > 0);
-  if (days.length === 0) {
-    if (pending.length === 0) return { status: "all-done" };
-    return { status: weekHasSessions ? "week-locked" : "no-study-days", calendar };
-  }
-
-  // The last few study days are kept for review (./review.ts); content is
-  // planned onto the rest.
+  // The last few study days are kept for review; content is planned onto the rest.
   const reserved = new Set(days.slice(days.length - finalReviewDayCount(days.length)).map((d) => d.date));
   const plan = pending.length
     ? planDays({
@@ -202,14 +162,7 @@ export async function regeneratePlan(userId: string, triggerReason: TriggerReaso
   const lastStudy = studySessions.reduce<string | null>((a, s) => (a && a > s.scheduledDate ? a : s.scheduledDate), null);
   const reviewDays = days.filter((d) => reserved.has(d.date) || !lastStudy || d.date > lastStudy);
   const earlier = await db.studySession.findMany({
-    where: {
-      studyPlan: { userId },
-      kind: "STUDY",
-      OR: [
-        { status: "COMPLETED" },
-        ...(active ? [{ studyPlanId: active.id, scheduledDate: { lt: keepBefore } }] : []),
-      ],
-    },
+    where: { studyPlan: { userId }, kind: "STUDY", status: "COMPLETED" },
     select: { subtopicId: true, scheduledDate: true },
   });
   const reviews = planReviews({
@@ -231,26 +184,23 @@ export async function regeneratePlan(userId: string, triggerReason: TriggerReaso
     kind: "REVIEW",
   }));
 
-  if (studySessions.length + reviewSessions.length === 0) {
-    if (pending.length === 0) return { status: "all-done" };
-    return { status: weekHasSessions ? "week-locked" : "no-study-days", calendar };
-  }
+  const sessions = [...studySessions, ...reviewSessions];
+  if (sessions.length === 0) return pending.length ? { status: "no-study-days", calendar } : { status: "all-done" };
 
   // With all content done there is no GA run: a plan of reviews only.
   const fitness = plan?.fitness ?? NO_FITNESS;
+  const original: OriginalSessions = sessions;
   const saved = await savePlan({
     userId,
-    sessions: [...studySessions, ...reviewSessions],
+    sessions,
     fitness,
     logs: plan?.logs ?? [],
     cfg: plan?.cfg ?? DEFAULT_CONFIG,
     triggerReason,
-    append: false,
-    keepBefore,
     extraMetadata: {
       ...(plan ? { seed: plan.seed, baselineFitness: plan.baseline.total, baselineBreakdown: plan.baseline } : {}),
-      plannedFrom,
       reviewDays: reviewDays.map((d) => d.date),
+      original,
     },
   });
 
@@ -263,7 +213,6 @@ export async function regeneratePlan(userId: string, triggerReason: TriggerReaso
     reviewDays: reviewDays.length,
     reviewOnly: !plan,
     calendar,
-    plannedFrom,
     baselineFitness: plan?.baseline.total ?? null,
     seed: plan?.seed ?? null,
     unscheduledSubtopics: plan?.leftovers.length ?? 0,
@@ -272,7 +221,7 @@ export async function regeneratePlan(userId: string, triggerReason: TriggerReaso
 }
 
 /** What the routes send back about a new plan. */
-export function planSummary(result: Extract<RegenerateResult, { status: "planned" }>) {
+export function planSummary(result: Extract<CreatePlanResult, { status: "planned" }>) {
   const { calendar } = result;
   return {
     studyPlanId: result.studyPlanId,
@@ -280,8 +229,6 @@ export function planSummary(result: Extract<RegenerateResult, { status: "planned
     /** The same plan's fitness without the GA (recommendOrder alone). */
     baselineFitness: result.baselineFitness,
     seed: result.seed,
-    /** New sessions start here; this week up to it is locked. */
-    plannedFrom: result.plannedFrom,
     /** Kept for callers written against the weekly planner. */
     bestFitness: result.fitnessScore,
     sessions: result.sessionCount,

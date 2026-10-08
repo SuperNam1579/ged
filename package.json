@@ -13,6 +13,7 @@
     "db:migrate": "tsx scripts/db/no-migrate.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:smoke": "vitest run --config vitest.smoke.config.ts",
     "test:coverage": "vitest run --coverage",
     "db:rls": "tsx scripts/db/enable-rls.ts",
     "db:rls:check": "tsx scripts/db/enable-rls.ts --check"

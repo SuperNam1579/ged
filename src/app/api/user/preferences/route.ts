@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { dropSubjects } from "@/lib/schedule/manual";
 import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
@@ -39,6 +40,11 @@ export async function POST(req: NextRequest) {
 
   const { targetExamDate, targetScore, selectedSubjectCodes } = parsed.data;
 
+  const before = await db.userPreferences.findUnique({
+    where: { userId: authUser.id },
+    select: { selectedSubjectCodes: true },
+  });
+
   const prefs = await db.userPreferences.upsert({
     where: { userId: authUser.id },
     update: {
@@ -57,6 +63,15 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // A subject dropped takes its not-yet-done sessions out of the plan. One
+  // added shows up in the backlog (GET /api/plans/backlog) for the learner to
+  // place — nothing re-plans.
+  const dropped =
+    selectedSubjectCodes && before?.selectedSubjectCodes.length
+      ? before.selectedSubjectCodes.filter((c) => !selectedSubjectCodes.includes(c as (typeof selectedSubjectCodes)[number]))
+      : [];
+  const removedSessions = await dropSubjects(authUser.id, dropped);
+
   const ctx = extractRequestContext(req);
   audit({
     action: "USER_PREFERENCES_UPDATED",
@@ -69,7 +84,7 @@ export async function POST(req: NextRequest) {
     success: true,
   });
 
-  return NextResponse.json({ preferences: prefs });
+  return NextResponse.json({ preferences: prefs, removedSessions });
 }
 
 export async function GET(req: NextRequest) {

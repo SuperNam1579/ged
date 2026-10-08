@@ -5,7 +5,7 @@ import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { bangkokDateStr, mondayOf } from "@/lib/schedule/calendar";
-import { planSummary, regeneratePlan, WEEK_LOCKED_MESSAGE } from "@/lib/schedule/regenerate";
+import { createInitialPlan, planSummary } from "@/lib/schedule/create-plan";
 import type { TriggerReason } from "@/types";
 
 const SlotSchema = z.object({
@@ -50,13 +50,16 @@ const AvailabilitySchema = z.union([SingleWeekSchema, ManyWeeksSchema]);
 
 type Slot = z.infer<typeof SlotSchema>;
 
-/** Saving availability re-plans everything to the exam with the GA; see lib/schedule/regenerate. */
+/** The first save (onboarding) makes the plan with the GA; see lib/schedule/create-plan. */
 export const maxDuration = 60;
 
 /**
- * Saves the availability of one or more weeks, then plans again from today to
- * the exam with every week's availability — the weeks saved here and the
- * learner's usual week for the rest.
+ * Saves the availability of one or more weeks.
+ *
+ * Nothing re-plans: a learner with a plan edits it by hand, and the days where
+ * the timetable no longer fits their free time come back as `conflicts` from
+ * GET /api/plans/active. Only a learner with no plan yet — onboarding — gets
+ * one made by the GA, from this availability.
  */
 export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req);
@@ -153,18 +156,18 @@ export async function POST(req: NextRequest) {
   const weeklyAvailabilityId = saved.length === 1 ? saved[0] : undefined;
 
   try {
-    const result = await regeneratePlan(authUser.id, "SCHEDULE_CHANGE" as TriggerReason);
+    const result = await createInitialPlan(authUser.id, "INITIAL" as TriggerReason);
 
-    if (result.status === "all-done") {
-      return NextResponse.json({ message: "All subtopics have been scheduled. Great work!", weeklyAvailabilityId });
+    if (result.status === "exists") {
+      return NextResponse.json({ weeklyAvailabilityId, planCreated: false });
     }
-    if (result.status === "week-locked") {
-      return NextResponse.json({ message: WEEK_LOCKED_MESSAGE, weeklyAvailabilityId });
+    if (result.status === "all-done") {
+      return NextResponse.json({ message: "All subtopics have been scheduled. Great work!", weeklyAvailabilityId, planCreated: false });
     }
     if (result.status !== "planned") {
-      return NextResponse.json({ message: "No study time between now and your exam.", weeklyAvailabilityId });
+      return NextResponse.json({ message: "No study time between now and your exam.", weeklyAvailabilityId, planCreated: false });
     }
-    return NextResponse.json({ weeklyAvailabilityId, ...planSummary(result) });
+    return NextResponse.json({ weeklyAvailabilityId, planCreated: true, ...planSummary(result) });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to generate study plan";
     return NextResponse.json({ error: message }, { status: 500 });

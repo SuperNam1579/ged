@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { db } from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
+import { checkCsrf } from "@/lib/csrf";
+import { deleteSession, PlanEditError, updateSession } from "@/lib/schedule/manual";
 
 export async function GET(
   req: NextRequest,
@@ -103,4 +106,62 @@ export async function GET(
       nextPart,
     },
   });
+}
+
+const UpdateSchema = z
+  .object({
+    scheduledDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD").optional(),
+    order: z.number().int().min(-100000).max(100000).optional(),
+    durationMins: z.number().int().min(5).max(600).optional(),
+    subtopicId: z.string().min(1).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, "Nothing to change");
+
+/**
+ * PATCH /api/sessions/:id — changes a session by hand: move it to another day
+ * or position, change its length, or put another subtopic in its place.
+ * Completed sessions can't be changed. See lib/schedule/manual.
+ */
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const csrfError = checkCsrf(req);
+  if (csrfError) return csrfError;
+  const authUser = await getAuthUserStrict(req);
+  if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const parsed = UpdateSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
+  }
+
+  const { id } = await params;
+  try {
+    await updateSession(authUser.id, id, parsed.data);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    if (err instanceof PlanEditError) return NextResponse.json({ error: err.message }, { status: err.status });
+    throw err;
+  }
+}
+
+/** DELETE /api/sessions/:id — removes a session; its content goes back to the backlog. */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const csrfError = checkCsrf(req);
+  if (csrfError) return csrfError;
+  const authUser = await getAuthUserStrict(req);
+  if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+  try {
+    await deleteSession(authUser.id, id);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    if (err instanceof PlanEditError) return NextResponse.json({ error: err.message }, { status: err.status });
+    throw err;
+  }
 }

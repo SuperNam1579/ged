@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildAvailableDates, createIndividual } from "../population";
+import { createIndividual } from "../population";
 import { computeFitness } from "../fitness";
 import type { SubtopicData, ProficiencyMap, AvailabilitySlotInput } from "@/types";
 
@@ -20,58 +20,6 @@ const TUE = "2026-07-07";
 const WED = "2026-07-08";
 const SAT = "2026-07-11";
 const SUN = "2026-07-12";
-
-// date range covering the test week
-const WEEK_START = new Date("2026-07-06"); // Monday
-const WEEK_END   = new Date("2026-07-13"); // next Monday (exclusive = 7 days)
-const FAR_END    = new Date("2026-09-01"); // far future end for multi-week tests
-
-// ─── buildAvailableDates ──────────────────────────────────────────────────────
-
-describe("buildAvailableDates — no-slot days are excluded", () => {
-  it("never returns Saturday or Sunday when slots are Mon–Fri only", () => {
-    const slots = [1, 2, 3, 4, 5].map((d) => slot(d, "09:00", "12:00"));
-    const dates = buildAvailableDates(slots, WEEK_START, FAR_END);
-    for (const date of dates) {
-      const dow = new Date(date).getDay();
-      expect(dow, `${date} should not be Sat(6) or Sun(0)`).not.toBe(6);
-      expect(dow, `${date} should not be Sat(6) or Sun(0)`).not.toBe(0);
-    }
-  });
-
-  it("returns only the exact weekdays that have slots", () => {
-    const slots = [slot(1, "09:00", "11:00"), slot(3, "14:00", "16:00")];
-    const dates = buildAvailableDates(slots, WEEK_START, FAR_END);
-    for (const date of dates) {
-      const dow = new Date(date).getDay();
-      expect([1, 3]).toContain(dow);
-    }
-  });
-
-  it("returns empty array when slots is empty", () => {
-    expect(buildAvailableDates([], WEEK_START, FAR_END)).toHaveLength(0);
-  });
-
-  it("returns empty array when end date is before start date", () => {
-    const slots = [slot(1, "09:00", "11:00")];
-    expect(buildAvailableDates(slots, FAR_END, WEEK_START)).toHaveLength(0);
-  });
-
-  it("returns exactly 5 dates for a Mon–Fri week (7-day window, Mon–Fri slots)", () => {
-    const slots = [1, 2, 3, 4, 5].map((d) => slot(d, "09:00", "12:00"));
-    const dates = buildAvailableDates(slots, WEEK_START, WEEK_END);
-    expect(dates).toHaveLength(5);
-    expect(dates[0]).toBe(MON);
-    expect(dates[4]).toBe("2026-07-10"); // Friday
-  });
-
-  it("returns exactly the days of a single week that have slots", () => {
-    // Only Mon and Wed slots
-    const slots = [slot(1, "09:00", "11:00"), slot(3, "14:00", "16:00")];
-    const dates = buildAvailableDates(slots, WEEK_START, WEEK_END);
-    expect(dates).toEqual([MON, WED]);
-  });
-});
 
 // ─── createIndividual — no schedule on days without slots ──────────────────────
 

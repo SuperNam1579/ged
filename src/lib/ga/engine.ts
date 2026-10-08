@@ -10,13 +10,14 @@ import type {
 } from "@/types";
 import { computeFitness } from "./fitness";
 import { tournamentSelect, orderCrossover, mutate, selectElites } from "./operators";
-import { initPopulation, buildAvailableDates, slotMinutesForDate } from "./population";
+import { initPopulation } from "./population";
 import { recommendOrder } from "./ordering";
 import { DEFAULT_CONFIG } from "./constants";
 import { newSeed, random, withSeed } from "./random";
 import { packDays, remainingMinutes, type Day, type WorkItem } from "@/lib/schedule/parts";
 import { refreshPartNumbers } from "@/lib/schedule/work-items";
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 
 export interface GenerationLog {
   generation: number;
@@ -44,7 +45,7 @@ export interface PlannedSession {
  * Runs the genetic algorithm over whole subtopics and returns the best
  * individual. No database access.
  *
- * `score` replaces the default fitness. planWeek() passes one that first turns
+ * `score` replaces the default fitness. planDays() passes one that first turns
  * the chromosome into the real sessions it would produce, so the GA is judged
  * on the schedule the learner gets rather than on its own rough draft.
  *
@@ -143,7 +144,6 @@ export interface WeekPlan {
   baseline: FitnessBreakdown;
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Plans sessions from `items` (anything already started first, then in the
@@ -268,47 +268,40 @@ export function planDays(input: {
   return { sessions, leftovers: [...packed.leftovers, ...notCandidates], fitness, logs, cfg, seed, baseline };
 }
 
-/** planDays() over one week of a weekly slot pattern, skipping days already past. */
-export function planWeek(input: {
-  items: WorkItem[];
-  subtopics: SubtopicData[];
-  proficiencies: ProficiencyMap;
-  slots: AvailabilitySlotInput[];
-  weekStartDate: Date;
-  config?: Partial<GAConfig>;
-}): WeekPlan | null {
-  const { slots, weekStartDate, ...rest } = input;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  // Never schedule on days that have already passed.
-  const start = weekStartDate < today ? today : weekStartDate;
-  const end = new Date(weekStartDate.getTime() + 7 * DAY_MS);
-  const days = buildAvailableDates(slots, start, end).map((date) => ({ date, capacity: slotMinutesForDate(slots, date) }));
-
-  return planDays({ ...rest, days });
-}
-
 // ─── Persistence ────────────────────────────────────────────────────────────
 
-function sessionData(s: PlannedSession) {
-  return {
-    subtopicId: s.subtopicId,
-    scheduledDate: new Date(s.scheduledDate),
-    durationMins: s.durationMins,
-    order: s.order,
-    status: "PENDING" as const,
-    kind: s.kind ?? "STUDY",
-    ...(s.resourceIds.length
-      ? { resources: { create: s.resourceIds.map((resourceId) => ({ resourceId })) } }
-      : {}),
-  };
+/**
+ * Inserts sessions into a plan in bulk, clip links included. A plan that runs
+ * to the exam is hundreds of sessions, and a nested create writes them one
+ * statement each — about 50ms apiece through the pooler, enough to outlast a
+ * transaction. Orders must be unique within `sessions`.
+ */
+export async function insertSessions(
+  tx: Prisma.TransactionClient,
+  studyPlanId: string,
+  sessions: PlannedSession[]
+): Promise<void> {
+  if (sessions.length === 0) return;
+  const created = await tx.studySession.createManyAndReturn({
+    data: sessions.map((s) => ({
+      studyPlanId,
+      subtopicId: s.subtopicId,
+      scheduledDate: new Date(s.scheduledDate),
+      durationMins: s.durationMins,
+      order: s.order,
+      status: "PENDING" as const,
+      kind: s.kind ?? "STUDY",
+    })),
+    select: { id: true, order: true },
+  });
+  const idByOrder = new Map(created.map((c) => [c.order, c.id]));
+  const links = sessions.flatMap((s) =>
+    s.resourceIds.map((resourceId) => ({ sessionId: idByOrder.get(s.order)!, resourceId }))
+  );
+  if (links.length) await tx.studySessionResource.createMany({ data: links });
 }
 
-/**
- * Saves planned sessions: either as a new active plan (replacing the previous
- * one) or appended to the active plan. Then numbers the parts.
- */
+/** Saves a new plan as the learner's active one, with its GA log. Then numbers the parts. */
 export async function savePlan(input: {
   userId: string;
   sessions: PlannedSession[];
@@ -316,49 +309,19 @@ export async function savePlan(input: {
   logs: GenerationLog[];
   cfg: GAConfig;
   triggerReason: TriggerReason;
-  weeklyAvailabilityId?: string;
-  append: boolean;
-  /**
-   * Sessions of the replaced plan dated before this stay as they are, done or
-   * not: this week's locked timetable, and days the learner missed. The new
-   * sessions start on or after it. Left out, only completed sessions stay.
-   */
-  keepBefore?: Date;
-  /** Saved with the plan alongside its config and fitness — the seed and baseline. */
+  /** Saved with the plan alongside its config and fitness — seed, baseline, the original sessions. */
   extraMetadata?: Record<string, unknown>;
 }): Promise<{ studyPlanId: string }> {
-  const { userId, sessions, fitness, logs, cfg, triggerReason, weeklyAvailabilityId, append, keepBefore, extraMetadata } =
-    input;
-
-  if (append) {
-    const activePlan = await db.studyPlan.findFirst({
-      where: { userId, isActive: true },
-      orderBy: { version: "desc" },
-    });
-    if (activePlan) {
-      // Offset orders so appended sessions sort after the existing ones.
-      const last = await db.studySession.aggregate({ where: { studyPlanId: activePlan.id }, _max: { order: true } });
-      const base = (last._max.order ?? -1) + 1;
-      await db.$transaction(
-        sessions.map((s) =>
-          db.studySession.create({ data: { ...sessionData({ ...s, order: base + s.order }), studyPlanId: activePlan.id } })
-        )
-      );
-      await refreshPartNumbers(userId, activePlan.id);
-      return { studyPlanId: activePlan.id };
-    }
-    // No active plan to append to: fall through and create one.
-  }
+  const { userId, sessions, fitness, logs, cfg, triggerReason, extraMetadata } = input;
 
   const previous = await db.studyPlan.findFirst({
-    where: { userId, isActive: true },
+    where: { userId },
     orderBy: { version: "desc" },
     select: { version: true },
   });
 
   const studyPlan = await db.$transaction(
     async (tx) => {
-      const replaced = await tx.studyPlan.findMany({ where: { userId, isActive: true }, select: { id: true } });
       await tx.studyPlan.updateMany({
         where: { userId, isActive: true },
         data: { isActive: false, weeklyAvailabilityId: null },
@@ -371,48 +334,9 @@ export async function savePlan(input: {
           triggerReason,
           isActive: true,
           metadata: JSON.parse(JSON.stringify({ config: cfg, fitnessBreakdown: fitness, ...extraMetadata })),
-          ...(weeklyAvailabilityId ? { weeklyAvailabilityId } : {}),
         },
       });
-
-      // In bulk: a plan that runs to the exam is hundreds of sessions, and a
-      // nested create writes them one statement each — about 50ms apiece
-      // through the pooler, enough to outlast the transaction.
-      const created = await tx.studySession.createManyAndReturn({
-        data: sessions.map((s) => ({
-          studyPlanId: plan.id,
-          subtopicId: s.subtopicId,
-          scheduledDate: new Date(s.scheduledDate),
-          durationMins: s.durationMins,
-          order: s.order,
-          status: "PENDING" as const,
-          kind: s.kind ?? "STUDY",
-        })),
-        select: { id: true, order: true },
-      });
-      const idByOrder = new Map(created.map((c) => [c.order, c.id]));
-      const links = sessions.flatMap((s) =>
-        s.resourceIds.map((resourceId) => ({ sessionId: idByOrder.get(s.order)!, resourceId }))
-      );
-      if (links.length) await tx.studySessionResource.createMany({ data: links });
-
-      // What stays on the learner's calendar moves into the new plan, which
-      // only re-plans what is left: everything completed, and with keepBefore
-      // everything dated before it. Orders go negative so kept sessions come
-      // first within their day. Moved, not copied — a copy would count a
-      // finished part twice.
-      const kept = {
-        studyPlanId: { in: replaced.map((p) => p.id) },
-        OR: [{ status: "COMPLETED" as const }, ...(keepBefore ? [{ scheduledDate: { lt: keepBefore } }] : [])],
-      };
-      const keptOrders = await tx.studySession.aggregate({ where: kept, _max: { order: true } });
-      if (keptOrders._max.order !== null) {
-        await tx.studySession.updateMany({
-          where: kept,
-          data: { studyPlanId: plan.id, order: { decrement: keptOrders._max.order + 1 } },
-        });
-      }
-
+      await insertSessions(tx, plan.id, sessions);
       return plan;
     },
     { timeout: 30000 }
@@ -432,29 +356,4 @@ export async function savePlan(input: {
 
   await refreshPartNumbers(userId, studyPlan.id);
   return { studyPlanId: studyPlan.id };
-}
-
-/**
- * Whether an assessment result should re-plan. Called after every quiz attempt
- * and mock test.
- *
- * Only a low mock test does. A failed quiz no longer re-plans: this week is
- * locked anyway, and the learner's choice is theirs — retake the quiz, go back
- * over the material, or move on and come back (see /api/subtopics/[id]/readiness
- * for the warning on topics that build on it). The lower proficiency the quiz
- * leaves behind already moves the subtopic up when the plan is next made.
- */
-export async function checkAdaptiveTrigger(
-  _userId: string,
-  _subtopicId: string,
-  recentScore: number,
-  assessmentType: "QUIZ" | "MOCK"
-): Promise<{ triggered: boolean; reason?: string }> {
-  const MOCK_THRESHOLD = 70;
-
-  if (assessmentType === "MOCK" && recentScore < MOCK_THRESHOLD) {
-    return { triggered: true, reason: "MOCK_TEST_LOW" };
-  }
-
-  return { triggered: false };
 }

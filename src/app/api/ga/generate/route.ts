@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUserStrict } from "@/lib/auth";
-import { planSummary, regeneratePlan, WEEK_LOCKED_MESSAGE } from "@/lib/schedule/regenerate";
+import { createInitialPlan, planSummary } from "@/lib/schedule/create-plan";
 import { checkCsrf } from "@/lib/csrf";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { audit, extractRequestContext } from "@/lib/audit";
@@ -17,7 +17,7 @@ const GenerateSchema = z.object({
   ]),
 });
 
-/** Upper bound for the whole request; regeneratePlan() budgets the GA inside it. */
+/** Upper bound for the whole request; createInitialPlan() budgets the GA inside it. */
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
@@ -38,8 +38,9 @@ export async function POST(req: NextRequest) {
 
   const { triggerReason } = parsed.data;
 
-  // Everything not yet completed is planned again, from today to the exam.
-  const result = await regeneratePlan(authUser.id, triggerReason as TriggerReason);
+  // The GA plans once. A learner with a plan edits it by hand, or resets it to
+  // the GA's original (POST /api/plans/reset).
+  const result = await createInitialPlan(authUser.id, triggerReason as TriggerReason);
 
   if (result.status === "no-preferences") {
     return NextResponse.json(
@@ -47,11 +48,14 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  if (result.status === "exists") {
+    return NextResponse.json(
+      { error: "You already have a study plan. Edit it, or reset it to the original plan." },
+      { status: 409 }
+    );
+  }
   if (result.status === "all-done") {
     return NextResponse.json({ message: "All subtopics have been scheduled. Great work!" });
-  }
-  if (result.status === "week-locked") {
-    return NextResponse.json({ message: WEEK_LOCKED_MESSAGE });
   }
   if (result.status === "no-study-days") {
     return NextResponse.json(
