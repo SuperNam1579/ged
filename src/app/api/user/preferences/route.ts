@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { dropSubjects } from "@/lib/schedule/manual";
+import { addDaysStr, bangkokDateStr } from "@/lib/schedule/calendar";
 import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
@@ -8,12 +9,9 @@ import { z } from "zod";
 
 const PreferencesSchema = z.object({
   targetExamDate: z.string().refine((d) => {
-    const date = new Date(d);
-    if (isNaN(date.getTime())) return false;
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    return date >= tomorrow;
+    if (isNaN(new Date(d).getTime())) return false;
+    // Compared as dates in Bangkok, the learner's day — not the server's (UTC).
+    return d.slice(0, 10) >= addDaysStr(bangkokDateStr(), 1);
   }, "Exam date must be at least tomorrow"),
 
   targetScore: z.number()

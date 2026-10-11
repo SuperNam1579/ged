@@ -16,7 +16,7 @@ import type { SubtopicData } from "@/types";
 import { bangkokDateStr } from "./calendar";
 import { loadStudyCalendar, loadSubtopics, type OriginalSessions } from "./create-plan";
 import { findConflicts, pickClips, restorableSessions } from "./edits";
-import { remainingMinutes } from "./parts";
+import { clipMinutes, remainingMinutes } from "./parts";
 import { REVIEW_MINUTES } from "./review";
 import { loadWorkItems, refreshPartNumbers } from "./work-items";
 
@@ -348,7 +348,16 @@ export async function getBacklog(userId: string) {
   });
 }
 
-/** The active plan's state: whether it was edited, whether it can be reset, and its conflicts. */
+/**
+ * The active plan's state: whether it was edited, whether it can be reset, its
+ * conflicts, and sessions whose content has arrived since they were planned.
+ *
+ * A subtopic planned before its videos were imported got one session at its
+ * estimated length, covering the whole subtopic. It keeps working once the
+ * videos arrive — the session shows them all — but its length is the old
+ * guess. `contentUpdates` lists those sessions with the length the content now
+ * needs, so the learner can adjust them (PATCH durationMins) or split them.
+ */
 export async function getPlanStatus(userId: string) {
   const ctx = await loadContext(userId);
   const prefs = await db.userPreferences.findUnique({ where: { userId }, select: { targetExamDate: true } });
@@ -356,9 +365,39 @@ export async function getPlanStatus(userId: string) {
     loadStudyCalendar(userId, prefs!.targetExamDate),
     db.studySession.findMany({
       where: { studyPlanId: ctx.plan.id, status: { not: "COMPLETED" } },
-      select: { scheduledDate: true, durationMins: true },
+      select: {
+        id: true,
+        subtopicId: true,
+        kind: true,
+        scheduledDate: true,
+        durationMins: true,
+        _count: { select: { resources: true } },
+      },
     }),
   ]);
+
+  // Clip-less study sessions whose subtopic has clips now.
+  const estimated = open.filter((s) => s.kind === "STUDY" && s._count.resources === 0);
+  const clips = estimated.length
+    ? await db.resource.findMany({
+        where: { subtopicId: { in: [...new Set(estimated.map((s) => s.subtopicId))] } },
+        select: { subtopicId: true, durationSec: true, kind: true },
+      })
+    : [];
+  const contentMinutes = new Map<string, number>();
+  for (const c of clips) {
+    contentMinutes.set(c.subtopicId, (contentMinutes.get(c.subtopicId) ?? 0) + clipMinutes(c.durationSec, c.kind));
+  }
+  const contentUpdates = estimated
+    .filter((s) => contentMinutes.has(s.subtopicId))
+    .map((s) => ({
+      sessionId: s.id,
+      subtopicId: s.subtopicId,
+      scheduledDate: s.scheduledDate.toISOString().slice(0, 10),
+      plannedMinutes: s.durationMins,
+      /** What the subtopic's videos and articles now take, all of them. */
+      contentMinutes: Math.round(contentMinutes.get(s.subtopicId)!),
+    }));
   return {
     plan: {
       id: ctx.plan.id,
@@ -377,5 +416,6 @@ export async function getPlanStatus(userId: string) {
       today: ctx.today,
       examDate: ctx.examDate,
     }),
+    contentUpdates,
   };
 }

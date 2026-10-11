@@ -161,6 +161,10 @@ export async function POST(req: NextRequest) {
     if (result.status === "exists") {
       return NextResponse.json({ weeklyAvailabilityId, planCreated: false });
     }
+    if (result.status === "infeasible") {
+      // Saved, but the time doesn't fit the subjects: no plan until it does.
+      return NextResponse.json({ weeklyAvailabilityId, planCreated: false, feasibility: result.feasibility });
+    }
     if (result.status === "all-done") {
       return NextResponse.json({ message: "All subtopics have been scheduled. Great work!", weeklyAvailabilityId, planCreated: false });
     }

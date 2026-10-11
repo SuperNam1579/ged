@@ -301,7 +301,21 @@ export async function insertSessions(
   if (links.length) await tx.studySessionResource.createMany({ data: links });
 }
 
-/** Saves a new plan as the learner's active one, with its GA log. Then numbers the parts. */
+/** savePlan() found the learner already has an active plan — a request that raced this one made it. */
+export class PlanExistsError extends Error {
+  constructor(readonly studyPlanId: string) {
+    super("The learner already has an active plan.");
+  }
+}
+
+/**
+ * Saves the learner's first plan, with its GA log. Then numbers the parts.
+ *
+ * Two requests can both see "no plan yet" and both run the GA (a double click,
+ * two tabs). A per-learner lock taken inside the transaction makes the second
+ * wait for the first to commit; it then finds the plan and throws
+ * PlanExistsError instead of saving a second one.
+ */
 export async function savePlan(input: {
   userId: string;
   sessions: PlannedSession[];
@@ -322,10 +336,9 @@ export async function savePlan(input: {
 
   const studyPlan = await db.$transaction(
     async (tx) => {
-      await tx.studyPlan.updateMany({
-        where: { userId, isActive: true },
-        data: { isActive: false, weeklyAvailabilityId: null },
-      });
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
+      const existing = await tx.studyPlan.findFirst({ where: { userId, isActive: true }, select: { id: true } });
+      if (existing) throw new PlanExistsError(existing.id);
       const plan = await tx.studyPlan.create({
         data: {
           userId,

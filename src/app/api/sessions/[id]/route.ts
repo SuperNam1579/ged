@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
@@ -130,6 +131,8 @@ export async function PATCH(
   if (csrfError) return csrfError;
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = await checkRateLimit("plan-edit", req, authUser.id);
+  if (limited) return limited;
 
   const parsed = UpdateSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -155,6 +158,8 @@ export async function DELETE(
   if (csrfError) return csrfError;
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = await checkRateLimit("plan-edit", req, authUser.id);
+  if (limited) return limited;
 
   const { id } = await params;
   try {

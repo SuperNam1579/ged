@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
@@ -15,6 +16,8 @@ export async function POST(req: NextRequest) {
   if (csrfError) return csrfError;
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = await checkRateLimit("plan-edit", req, authUser.id);
+  if (limited) return limited;
 
   const parsed = SwapSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

@@ -167,6 +167,34 @@ function thisMonday(): string {
   return `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, "0")}-${String(mon.getDate()).padStart(2, "0")}`;
 }
 
+/** The parts of the server's fit check (lib/schedule/feasibility.ts) this page uses. */
+interface FeasibilityResult {
+  status: string;
+  canPlan: boolean;
+  shortfallMinutes: number;
+  suggestions: { extraMinutesPerWeek?: number; suggestedExamDate?: string; dropOneOf?: string[] };
+}
+
+const hours = (minutes: number) => {
+  const h = Math.round((minutes / 60) * 10) / 10;
+  return `${h} hour${h === 1 ? "" : "s"}`;
+};
+
+/** What to tell a learner whose free time doesn't fit their subjects. */
+function notEnoughTimeMessage(f: FeasibilityResult): string {
+  if (f.status === "exam-passed") return "Your exam date has passed. Pick a later exam date.";
+  if (f.status === "no-time") return "Your schedule has no study time before the exam. Add some free time.";
+
+  const ways: string[] = [];
+  if (f.suggestions.extraMinutesPerWeek) ways.push(`add about ${hours(f.suggestions.extraMinutesPerWeek)} a week`);
+  if (f.suggestions.suggestedExamDate) ways.push(`move your exam to ${f.suggestions.suggestedExamDate} or later`);
+  if (f.suggestions.dropOneOf?.length) ways.push(`study one subject fewer (${f.suggestions.dropOneOf.join(" or ")})`);
+  return (
+    `Your free time before the exam is about ${hours(f.shortfallMinutes)} short of what these subjects need, ` +
+    `so your plan wasn't made yet. To fit, ${ways.join(", or ")}. Edit your schedule or subjects, then finish again.`
+  );
+}
+
 // ─── Exam date picker (Month / Day / Year dropdowns) ───────────────────────
 
 const MONTHS = [
@@ -493,6 +521,18 @@ export default function OnboardingPage() {
         body: JSON.stringify({ weekStartDate: thisMonday(), slots, applyToFutureWeeks: true }),
       });
       if (!availRes.ok) throw new Error((await availRes.json()).error ?? "Failed to generate plan");
+
+      // The plan is only made when the free time fits the subjects. When it
+      // doesn't, stay on this step and say what to change; the learner edits
+      // their schedule or subjects and finishes again.
+      const avail = (await availRes.json().catch(() => ({}))) as {
+        planCreated?: boolean;
+        feasibility?: FeasibilityResult;
+      };
+      if (avail.planCreated === false && avail.feasibility && !avail.feasibility.canPlan) {
+        setError(notEnoughTimeMessage(avail.feasibility));
+        return;
+      }
 
       setStep(4);
     } catch (err) {

@@ -6,12 +6,17 @@
 // once, when the learner has no plan. Afterwards the learner edits the plan by
 // hand (./manual.ts) and nothing re-plans; the GA's sessions are kept in the
 // plan's metadata as `original`, so the learner can always go back to them.
+//
+// Before the GA runs, the learner's time and subjects are checked against each
+// other (./feasibility.ts). The GA only runs when the content fits; otherwise
+// the learner gets the check back, with what to change.
 
 import { db } from "@/lib/db";
 import { DEFAULT_CONFIG } from "@/lib/ga/constants";
-import { planDays, savePlan, type PlannedSession } from "@/lib/ga/engine";
-import type { FitnessBreakdown, SubtopicData, TriggerReason } from "@/types";
+import { PlanExistsError, planDays, savePlan, type PlannedSession } from "@/lib/ga/engine";
+import type { AvailabilitySlotInput, FitnessBreakdown, SubtopicData, TriggerReason } from "@/types";
 import { addDaysStr, buildStudyCalendar, bangkokDateStr, mondayOf, type StudyCalendar } from "./calendar";
+import { assessFeasibility, type Feasibility } from "./feasibility";
 import { remainingMinutes } from "./parts";
 import { finalReviewDayCount, planReviews } from "./review";
 import { loadWorkItems } from "./work-items";
@@ -26,12 +31,20 @@ const NO_FITNESS: FitnessBreakdown = {
   total: 0,
 };
 
-/** Loads the learner's study calendar from today to their exam. */
-export async function loadStudyCalendar(userId: string, examDate: Date): Promise<StudyCalendar> {
+/**
+ * Loads the learner's study calendar from today to their exam. `template`
+ * stands in for their saved usual week (a what-if check); weeks set on their
+ * own still apply.
+ */
+export async function loadStudyCalendar(
+  userId: string,
+  examDate: Date,
+  template?: AvailabilitySlotInput[]
+): Promise<StudyCalendar> {
   const from = bangkokDateStr();
   const exam = examDate.toISOString().slice(0, 10);
 
-  const [template, weeks] = await Promise.all([
+  const [savedTemplate, weeks] = await Promise.all([
     db.weeklyAvailabilityTemplate.findUnique({
       where: { userId },
       include: { slots: { orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }] } },
@@ -54,7 +67,7 @@ export async function loadStudyCalendar(userId: string, examDate: Date): Promise
   return buildStudyCalendar({
     from,
     examDate: exam,
-    template: (template?.slots ?? []).map(toSlot),
+    template: template ?? (savedTemplate?.slots ?? []).map(toSlot),
     weekOverrides: new Map(weeks.map((w) => [w.weekStartDate.toISOString().slice(0, 10), w.slots.map(toSlot)])),
   });
 }
@@ -102,8 +115,12 @@ export type CreatePlanResult =
   | { status: "all-done" }
   /** No study time between today and the exam. */
   | { status: "no-study-days"; calendar: StudyCalendar }
+  /** The content doesn't fit the time: the GA didn't run. What to change is in `feasibility`. */
+  | { status: "infeasible"; feasibility: Feasibility }
   | {
       status: "planned";
+      /** The check the GA ran after: tight, comfortable or light. */
+      feasibility: Feasibility;
       studyPlanId: string;
       fitnessScore: number;
       /** New-content sessions. */
@@ -121,26 +138,65 @@ export type CreatePlanResult =
       unscheduledMinutes: number;
     };
 
-/** The GA's sessions as first planned, kept in StudyPlan.metadata.original for "reset". */
-export type OriginalSessions = PlannedSession[];
+/** Settings to try without saving them: "would it fit if…". */
+export interface WhatIf {
+  examDate?: string;
+  /** Replaces the usual week. */
+  template?: AvailabilitySlotInput[];
+  subjectCodes?: string[];
+}
 
-/** Makes the learner's plan with the GA — only when they have none. */
-export async function createInitialPlan(userId: string, triggerReason: TriggerReason): Promise<CreatePlanResult> {
+/** Everything the check and the GA need, from saved settings or a what-if. */
+async function loadPlanInputs(userId: string, whatIf: WhatIf = {}) {
   const preferences = await db.userPreferences.findUnique({ where: { userId } });
-  if (!preferences) return { status: "no-preferences" };
-
-  const existing = await db.studyPlan.findFirst({ where: { userId, isActive: true }, select: { id: true } });
-  if (existing) return { status: "exists", studyPlanId: existing.id };
+  if (!preferences) return null;
+  const examDate = whatIf.examDate ? new Date(`${whatIf.examDate}T00:00:00Z`) : preferences.targetExamDate;
+  const subjectCodes = whatIf.subjectCodes ?? preferences.selectedSubjectCodes ?? [];
 
   const [calendar, subtopics, proficiencies] = await Promise.all([
-    loadStudyCalendar(userId, preferences.targetExamDate),
-    loadSubtopics(preferences.selectedSubjectCodes ?? []),
+    loadStudyCalendar(userId, examDate, whatIf.template),
+    loadSubtopics(subjectCodes),
     db.userSubtopicProficiency.findMany({ where: { userId }, select: { subtopicId: true, score: true } }),
   ]);
   const profMap = Object.fromEntries(proficiencies.map((p) => [p.subtopicId, p.score]));
-
   // What is left to learn, per clip: everything not completed under an earlier plan.
   const pending = await loadWorkItems(userId, subtopics, "regenerate");
+  const feasibility = assessFeasibility({
+    calendarDays: calendar.days,
+    from: calendar.from,
+    examDate: calendar.examDate,
+    items: pending,
+    subtopics,
+    proficiencies: profMap,
+    subjectCodes,
+  });
+  return { calendar, subtopics, profMap, pending, feasibility };
+}
+
+/**
+ * Whether the learner's free time and chosen subjects fit together — with
+ * their saved settings, or with `whatIf` in place of some of them. Writes nothing.
+ */
+export async function checkFeasibility(userId: string, whatIf: WhatIf = {}): Promise<Feasibility | null> {
+  return (await loadPlanInputs(userId, whatIf))?.feasibility ?? null;
+}
+
+/** The GA's sessions as first planned, kept in StudyPlan.metadata.original for "reset". */
+export type OriginalSessions = PlannedSession[];
+
+/**
+ * Makes the learner's plan with the GA — only when they have none, and only
+ * when their time and subjects fit (see checkFeasibility).
+ */
+export async function createInitialPlan(userId: string, triggerReason: TriggerReason): Promise<CreatePlanResult> {
+  const existing = await db.studyPlan.findFirst({ where: { userId, isActive: true }, select: { id: true } });
+  if (existing) return { status: "exists", studyPlanId: existing.id };
+
+  const inputs = await loadPlanInputs(userId);
+  if (!inputs) return { status: "no-preferences" };
+  const { calendar, subtopics, profMap, pending, feasibility } = inputs;
+
+  if (pending.length > 0 && !feasibility.canPlan) return { status: "infeasible", feasibility };
 
   const days = calendar.days.filter((d) => d.capacity > 0);
   if (days.length === 0) return pending.length ? { status: "no-study-days", calendar } : { status: "all-done" };
@@ -190,22 +246,30 @@ export async function createInitialPlan(userId: string, triggerReason: TriggerRe
   // With all content done there is no GA run: a plan of reviews only.
   const fitness = plan?.fitness ?? NO_FITNESS;
   const original: OriginalSessions = sessions;
-  const saved = await savePlan({
-    userId,
-    sessions,
-    fitness,
-    logs: plan?.logs ?? [],
-    cfg: plan?.cfg ?? DEFAULT_CONFIG,
-    triggerReason,
-    extraMetadata: {
-      ...(plan ? { seed: plan.seed, baselineFitness: plan.baseline.total, baselineBreakdown: plan.baseline } : {}),
-      reviewDays: reviewDays.map((d) => d.date),
-      original,
-    },
-  });
+  let saved: { studyPlanId: string };
+  try {
+    saved = await savePlan({
+      userId,
+      sessions,
+      fitness,
+      logs: plan?.logs ?? [],
+      cfg: plan?.cfg ?? DEFAULT_CONFIG,
+      triggerReason,
+      extraMetadata: {
+        ...(plan ? { seed: plan.seed, baselineFitness: plan.baseline.total, baselineBreakdown: plan.baseline } : {}),
+        feasibility: { status: feasibility.status, load: feasibility.load, requiredMinutes: feasibility.requiredMinutes, contentMinutes: feasibility.contentMinutes },
+        reviewDays: reviewDays.map((d) => d.date),
+        original,
+      },
+    });
+  } catch (err) {
+    if (err instanceof PlanExistsError) return { status: "exists", studyPlanId: err.studyPlanId };
+    throw err;
+  }
 
   return {
     status: "planned",
+    feasibility,
     studyPlanId: saved.studyPlanId,
     fitnessScore: fitness.total,
     sessionCount: studySessions.length,
@@ -242,6 +306,8 @@ export function planSummary(result: Extract<CreatePlanResult, { status: "planned
     totalStudyMinutes: calendar.totalMinutes,
     /** False when some content doesn't fit before the exam — the learner needs more time. */
     fitsBeforeExam: result.unscheduledSubtopics === 0,
+    /** The time-vs-content check the plan was made after. */
+    feasibility: result.feasibility,
     unscheduledSubtopics: result.unscheduledSubtopics,
     unscheduledMinutes: result.unscheduledMinutes,
   };

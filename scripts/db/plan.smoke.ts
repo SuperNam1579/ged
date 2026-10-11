@@ -11,7 +11,7 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
-import { createInitialPlan } from "@/lib/schedule/create-plan";
+import { checkFeasibility, createInitialPlan } from "@/lib/schedule/create-plan";
 import { addDaysStr, bangkokDateStr } from "@/lib/schedule/calendar";
 import {
   addSession,
@@ -31,7 +31,8 @@ if (isProductionDatabase()) throw new Error("Refusing to run smoke tests against
 const email = `smoke-${Date.now()}@example.test`;
 let userId = "";
 const today = bangkokDateStr();
-const exam = addDaysStr(today, 50);
+let exam = addDaysStr(today, 50);
+let droppedSubject: string | null = null;
 
 const sessionsOf = async (planId: string) =>
   db.studySession.findMany({
@@ -69,11 +70,47 @@ afterAll(async () => {
 describe("plan lifecycle", () => {
   let planId = "";
 
+  it("won't run the GA when the time doesn't fit the subjects, and says what to change", async () => {
+    // 50 days of evenings don't hold all of MATH and SCI.
+    const result = await createInitialPlan(userId, "INITIAL");
+    expect(result.status).toBe("infeasible");
+    if (result.status !== "infeasible") return;
+    const f = result.feasibility;
+    expect(f.canPlan).toBe(false);
+    expect(f.shortfallMinutes).toBeGreaterThan(0);
+    expect(f.suggestions.extraMinutesPerWeek).toBeGreaterThan(0);
+    expect(await db.studyPlan.count({ where: { userId } })).toBe(0);
+
+    // A what-if with far more time fits, and saves nothing.
+    const roomy = await checkFeasibility(userId, {
+      template: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({ dayOfWeek, startTime: "08:00", endTime: "20:00" })),
+    });
+    expect(roomy?.canPlan).toBe(true);
+    expect(await db.studyPlan.count({ where: { userId } })).toBe(0);
+
+    // Follow the advice: drop a subject it names, or move the exam to the date it gives.
+    if (f.suggestions.dropOneOf?.length) {
+      droppedSubject = f.suggestions.dropOneOf[0];
+      await db.userPreferences.update({
+        where: { userId },
+        data: { selectedSubjectCodes: ["MATH", "SCI"].filter((c) => c !== droppedSubject) },
+      });
+    } else {
+      await db.userPreferences.update({
+        where: { userId },
+        data: { targetExamDate: new Date(`${f.suggestions.suggestedExamDate}T00:00:00Z`) },
+      });
+      exam = f.suggestions.suggestedExamDate!;
+    }
+    expect((await checkFeasibility(userId))?.canPlan).toBe(true);
+  });
+
   it("the GA makes a plan to the exam, with review days, once", async () => {
     const result = await createInitialPlan(userId, "INITIAL");
     expect(result.status).toBe("planned");
     if (result.status !== "planned") return;
     planId = result.studyPlanId;
+    expect(result.feasibility.canPlan).toBe(true);
 
     const sessions = await sessionsOf(planId);
     expect(sessions.length).toBe(result.sessionCount + result.reviewSessionCount);
@@ -85,6 +122,11 @@ describe("plan lifecycle", () => {
 
     // Never twice.
     expect((await createInitialPlan(userId, "INITIAL")).status).toBe("exists");
+
+    // Bring the dropped subject back: its subtopics wait in the backlog, unplanned.
+    if (droppedSubject) {
+      await db.userPreferences.update({ where: { userId }, data: { selectedSubjectCodes: ["MATH", "SCI"] } });
+    }
   });
 
   it("starts unedited and resettable", async () => {
@@ -94,7 +136,7 @@ describe("plan lifecycle", () => {
 
   it("adds a session from the backlog and marks the plan edited", async () => {
     const backlog = await getBacklog(userId);
-    expect(backlog.length).toBeGreaterThan(0); // 50 days don't hold all of MATH + SCI
+    expect(backlog.length).toBeGreaterThan(0); // the subject dropped to make it fit, or what was left over
     const pick = backlog.find((b) => !b.partlyPlanned) ?? backlog[0];
 
     const day = addDaysStr(today, 3);

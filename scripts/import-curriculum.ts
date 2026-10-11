@@ -2,7 +2,10 @@
  * Turns the hand-built curriculum sheets into seedable curriculum data.
  *
  * MATH comes from `curriculum/MATH.csv`. SS and SCI come from the `_wordcount`
- * workbooks, read as .xlsx because an article's address only exists as the
+ * workbooks. RLA's sheet hasn't arrived: until `curriculum/RLA.xlsx` (columns
+ * found by their headers — see curriculum/sheet-layout.ts) or `RLA.csv` is
+ * there, a run over all subjects skips RLA and leaves its data as it is. The
+ * other workbooks are read as .xlsx because an article's address only exists as the
  * hyperlink under its title — a CSV export drops all of them. See SHEETS.
  *
  *   npx tsx scripts/import-curriculum.ts             # all subjects in the plan
@@ -46,11 +49,12 @@
 
 import { PrismaClient } from "@prisma/client";
 import ExcelJS from "exceljs";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseIsoDuration } from "../src/lib/youtube/duration";
 import { PLANS, type SubjectPlan, type SubtopicPlan } from "./curriculum/plan";
+import { detectSheetLayout } from "./curriculum/sheet-layout";
 import { normalizeUrl, saveSubtopicResources, type ResourceInput } from "./lib/resources";
 import { assertDatabaseWriteAllowed } from "./db/guard";
 import { READING_TIME_FACTOR, readingSec } from "../src/lib/resources/types";
@@ -164,9 +168,17 @@ interface SheetSource {
   sheet: string;
   /** First data row, 1-based. */
   firstRow: number;
-  /** 1-based column numbers. The two workbooks don't agree on the order. */
+  /** 1-based column numbers; 0 = no such column. The two workbooks don't agree on the order. */
   cols: { subtopic: number; unit: number; lesson: number; type: number; title: number; url: number; note: number; words: number };
 }
+
+/**
+ * Subjects whose workbook has no entry in SHEETS: the file is found by name in
+ * curriculum/ and its columns by their headers.
+ */
+const AUTO_SHEETS: Record<string, RegExp> = {
+  RLA: /^(rla|.*language[ _-]*arts).*\.xlsx$/i,
+};
 
 /** Subjects read from a workbook rather than a CSV. */
 const SHEETS: Record<string, SheetSource> = {
@@ -218,7 +230,7 @@ async function readSubjectSheet(code: string, src: SheetSource): Promise<CsvRow[
 
   for (let n = src.firstRow; n <= ws.rowCount; n++) {
     const row = ws.getRow(n);
-    const text = (col: number) => row.getCell(col).text.trim();
+    const text = (col: number) => (col ? row.getCell(col).text.trim() : "");
 
     if (text(c.subtopic)) subtopic = text(c.subtopic);
     if (text(c.unit)) unit = text(c.unit);
@@ -243,9 +255,23 @@ async function readSubjectSheet(code: string, src: SheetSource): Promise<CsvRow[
   return out;
 }
 
-function readSubjectRows(code: string): Promise<CsvRow[]> {
+/**
+ * A subject's rows, from its workbook (fixed in SHEETS, or found by name and
+ * read by its headers) or its CSV. Null when no file for it exists yet.
+ */
+async function readSubjectRows(code: string): Promise<CsvRow[] | null> {
   const sheet = SHEETS[code];
-  return sheet ? readSubjectSheet(code, sheet) : Promise.resolve(readSubjectCsv(code));
+  if (sheet) return readSubjectSheet(code, sheet);
+  if (existsSync(resolve(CURRICULUM_DIR, `${code}.csv`))) return readSubjectCsv(code);
+
+  const pattern = AUTO_SHEETS[code];
+  const file = pattern && existsSync(CURRICULUM_DIR) ? readdirSync(CURRICULUM_DIR).find((f) => pattern.test(f)) : undefined;
+  if (!file) return null;
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.readFile(resolve(CURRICULUM_DIR, file));
+  const layout = detectSheetLayout(wb, file);
+  console.log(`${code}: reading ${file}, sheet "${layout.sheet}" — columns ${JSON.stringify(layout.cols)}`);
+  return readSubjectSheet(code, { file, ...layout });
 }
 
 /** The 11-character video ID, from any of the URL shapes people paste. */
@@ -775,6 +801,7 @@ async function main() {
 
   const problems: Problem[] = [];
   const staged = new Map<string, Map<string, PlannedSubtopic>>();
+  const ready: SubjectPlan[] = [];
 
   for (const plan of plans) {
     const total = plan.categories.reduce((n, c) => n + c.weight, 0);
@@ -782,6 +809,15 @@ async function main() {
       problems.push({ kind: "plan", detail: `${plan.code} category weights total ${total}, not 100` });
     }
     const rows = await readSubjectRows(plan.code);
+    if (!rows) {
+      const where = `curriculum/${plan.code}.xlsx or curriculum/${plan.code}.csv`;
+      // Asked for by name: say so. Part of a run over everything: carry on —
+      // its existing data (or the seed's placeholders) stay as they are.
+      if (only) throw new Error(`No sheet for ${plan.code} yet — expected ${where}.`);
+      console.log(`${plan.code}: no sheet yet (${where}) — skipped; its current data is kept.`);
+      continue;
+    }
+    ready.push(plan);
     const planned = applyPlan(plan, rows, problems);
     staged.set(plan.code, planned);
 
@@ -828,7 +864,7 @@ async function main() {
   const rejected: string[] = [];
   const out: OutSubject[] = [];
 
-  for (const plan of plans) {
+  for (const plan of ready) {
     const planned = staged.get(plan.code)!;
     out.push({
       code: plan.code,

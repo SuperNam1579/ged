@@ -142,6 +142,26 @@ const RATE_LIMIT_CONFIGS = {
     requests: 8,
     window: "10 m" as Duration,
   },
+  // The fit check before planning lays the content out a few times — cheap,
+  // but a settings screen may re-check on every slider move. Per account.
+  "plan-check": {
+    algorithm: "sliding" as Algorithm,
+    requests: 60,
+    window: "1 m" as Duration,
+  },
+  // Hand edits to the plan: add, move, swap, delete. A learner rearranging a
+  // week makes a burst of them; this only stops a script. Per account.
+  "plan-edit": {
+    algorithm: "sliding" as Algorithm,
+    requests: 120,
+    window: "1 m" as Duration,
+  },
+  // Reset rewrites every not-done session of the plan. Per account.
+  "plan-reset": {
+    algorithm: "sliding" as Algorithm,
+    requests: 5,
+    window: "10 m" as Duration,
+  },
 } as const;
 
 export type RateLimitKey = keyof typeof RATE_LIMIT_CONFIGS;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
@@ -15,6 +16,8 @@ export async function POST(req: NextRequest) {
   if (csrfError) return csrfError;
   const authUser = await getAuthUserStrict(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = await checkRateLimit("plan-reset", req, authUser.id);
+  if (limited) return limited;
 
   try {
     const result = await resetPlan(authUser.id);

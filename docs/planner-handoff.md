@@ -15,16 +15,21 @@ npm install
 npx prisma generate     # picks up StudySession.kind
 npm run dev
 npm test                # unit tests, no database
-npm run test:smoke      # the whole plan lifecycle against the DEV database (~2 min)
+npm run test:smoke      # plan lifecycle, late content, racing requests — DEV database (~3 min)
+npm run verify          # typecheck + lint + tests + production build — run before every push
 ```
 
 ---
 
 ## 1. How planning works now
 
-1. **The GA plans once.** When a learner finishes onboarding (their first
-   availability save), one GA run plans every day from today to the day before
-   the exam. 50 days to the exam → 50 days planned.
+1. **The GA plans once — after a fit check.** When a learner finishes
+   onboarding (their first availability save), the backend first checks that
+   their free time to the exam fits the content of the subjects they chose
+   (`src/lib/schedule/feasibility.ts`). Only if it does, one GA run plans every
+   day from today to the day before the exam. If it doesn't, no plan is made:
+   the learner gets the check back with what to change (more time a week, a
+   later exam date, or fewer subjects), changes it, and then the plan is made.
 2. **Nothing re-plans after that.** Saving availability, failing a quiz, a low
    mock test, changing the exam date — none of them touch the plan.
 3. **The learner edits the plan by hand.** Add, remove, move, swap sessions,
@@ -53,7 +58,9 @@ Source: `src/lib/schedule/manual.ts` (edits), `src/lib/schedule/edits.ts` (rules
 
 ## 3. API
 
-Every mutating call needs the `x-csrf-token` header (`GET /api/csrf`). Errors
+Every mutating call needs the `x-csrf-token` header (`GET /api/csrf`). Edits,
+reset and the fit check are rate-limited per account (429 with a retry hint):
+120 edits/min, 60 checks/min, 5 resets/10 min. Errors
 are `{ "error": string }` with a status: 400 bad input, 404 not in your plan,
 409 not allowed (completed session, subject not chosen, nothing left to add,
 plan already exists, no original to reset to).
@@ -84,6 +91,14 @@ interface PlanStatus {
     reason: "no-time" | "over-time" | "after-exam";
     plannedMinutes: number;
     availableMinutes: number;
+  }[];
+  // Sessions planned at an estimate whose subtopic's videos have arrived since.
+  contentUpdates: {
+    sessionId: string;
+    subtopicId: string;
+    scheduledDate: string;
+    plannedMinutes: number;      // the estimate it was planned at
+    contentMinutes: number;      // what the videos/articles now take
   }[];
 }
 ```
@@ -133,6 +148,82 @@ interface Horizon {
 | `POST /api/sessions/swap` | `{ a, b }` (session ids) | Swaps the two sessions' days and positions ("study this here instead"). |
 | `POST /api/plans/reset` | — | Puts the GA's original sessions back. Removes every not-done session, restores the original ones less what was completed since and less dropped subjects. → `{ restored: number }` |
 
+### Before the plan: the fit check
+
+#### `GET /api/plans/feasibility` and `POST /api/plans/feasibility` — new
+
+`GET` checks the saved settings. `POST` checks with any of these in place of
+the saved ones, **saving nothing** — for showing the result live while the
+learner adjusts sliders:
+
+```jsonc
+{ "examDate": "2026-12-15", "template": [ { "dayOfWeek": 1, "startTime": "18:00", "endTime": "21:00" } ], "subjectCodes": ["MATH"] }
+```
+
+```ts
+interface Feasibility {
+  status: "exam-passed" | "no-time" | "not-enough" | "tight" | "comfortable" | "light";
+  canPlan: boolean;            // true for tight / comfortable / light — the GA may run
+  from: string; examDate: string; daysUntilExam: number;
+  studyDays: number;
+  reviewDays: number;          // last study days kept for review (not counted for content)
+  availableMinutes: number;    // all free time to the exam
+  contentMinutes: number;      // free time on the days content can go on
+  requiredMinutes: number;     // what the chosen subjects need
+  shortfallMinutes: number;    // content that doesn't fit; 0 when it all does
+  load: number;                // requiredMinutes / contentMinutes (>1 can't fit; >0.9 tight; <0.5 light)
+  averageDayMinutes: number;
+  subjects: {
+    subjectCode: string;
+    requiredMinutes: number;
+    subtopics: number;           // with content left to study
+    estimatedSubtopics: number;  // of those, counted at their estimate (no videos yet)
+    source: "clips" | "estimate" | "mixed" | "missing";
+  }[];
+  warnings: {
+    code: "long-days" | "no-review-days" | "estimated-time" | "no-content";
+    message: string;
+    subjects?: string[];         // for estimated-time / no-content
+  }[];
+  suggestions: {               // only for not-enough; any ONE of them is enough
+    extraMinutesPerWeek?: number;
+    extraDays?: number; suggestedExamDate?: string;
+    dropOneOf?: string[];      // dropping any one of these subjects makes the rest fit
+  };
+}
+```
+
+"Fits" is tested by laying the content out the way the plan will be made, so a
+day whose leftover minutes are too short for the next unit isn't counted.
+
+**Incomplete content is fine.** A subject can be checked and planned before all
+its content is in:
+
+| `source` | Meaning | UI |
+|---|---|---|
+| `clips` | Every subtopic has its videos/articles; the time is measured. | — |
+| `estimate` / `mixed` | Some subtopics have no videos yet (RLA today); they count at their estimated length. | Say the time is approximate (`estimated-time` warning). |
+| `missing` | Chosen, but no lessons exist yet; not counted (0 min). | Say it isn't counted yet (`no-content` warning). |
+
+Nothing about the check is stored, so when content is added later the next
+check counts it. After the plan exists:
+
+- **New videos for a subtopic already planned at its estimate** — the session
+  keeps working and shows all the new videos, but its length is the old guess.
+  `GET /api/plans/active` lists it under `contentUpdates`
+  (`{ sessionId, subtopicId, scheduledDate, plannedMinutes, contentMinutes }`);
+  offer to set the length (`PATCH /api/sessions/[id] { durationMins }`).
+- **New lessons (subtopics), or new videos in a subtopic planned from clips** —
+  they appear in `GET /api/plans/backlog`, ready to be added by hand.
+
+| status | Meaning | UI |
+|---|---|---|
+| `not-enough` | Content doesn't fit. GA won't run. | Show `shortfallMinutes` and the suggestions; let the learner change settings and re-check. |
+| `tight` | Fits with under 10% to spare. GA runs. | Warn: a missed day can't be caught up. |
+| `comfortable` | Fits with room. GA runs. | — |
+| `light` | Under half the time needed. GA runs; extra days become review. | Optionally suggest fewer hours or more subjects. |
+| `exam-passed` / `no-time` | Nothing to plan. | Ask for a new exam date / free time. |
+
 ### Free time and subjects
 
 #### `POST /api/user/availability`
@@ -151,10 +242,16 @@ Saves availability. **Never re-plans.** Two bodies:
 ] }
 ```
 
-Response: `{ weeklyAvailabilityId?, planCreated: boolean, ... }`. `planCreated`
-is true only when the learner had no plan (onboarding); then the GA's result
-follows (`studyPlanId`, `sessions`, `reviewSessions`, `fitsBeforeExam`,
-`unscheduledMinutes`, …). Otherwise check `GET /api/plans/active` for conflicts.
+Response: `{ weeklyAvailabilityId?, planCreated: boolean, ... }`. For a learner
+with no plan yet (onboarding):
+
+- fits → `planCreated: true` and the GA's result (`studyPlanId`, `sessions`,
+  `reviewSessions`, `fitsBeforeExam`, `unscheduledMinutes`, `feasibility`, …);
+- doesn't fit → `planCreated: false` and `feasibility` (status `not-enough`,
+  with suggestions). The availability **is** saved; no plan exists yet.
+
+For a learner with a plan, nothing re-plans; check `GET /api/plans/active` for
+conflicts.
 
 #### `POST /api/user/preferences` (existing)
 
@@ -164,9 +261,13 @@ subject's subtopics appear in the backlog.
 
 ### Plan creation
 
-`POST /api/ga/generate` makes the plan only when the learner has none (`{
-success: true, ...result }`); with a plan it answers **409**. Onboarding doesn't
-need it — the first availability save makes the plan.
+`POST /api/ga/generate` (body `{ "triggerReason": "INITIAL" }`) makes the plan
+only when the learner has none and the fit check passes: `{ success: true,
+...result }`. With a plan it answers **409**; when it doesn't fit, **422** with
+`{ error, feasibility }`. This is the call to make after the learner fixes their
+settings following a `not-enough` result (save the new usual week with `PUT
+/api/user/availability/template`, subjects / exam date with `POST
+/api/user/preferences`, then generate).
 
 ### Removed
 
@@ -179,6 +280,13 @@ need it — the first availability save makes the plan.
 
 ## 4. Frontend tasks
 
+0. **Onboarding "doesn't fit" — a minimal version is in; polish it.**
+   `src/app/onboarding/page.tsx` (`handleFinish`, `notEnoughTimeMessage`): when
+   the first save returns `planCreated: false` with `feasibility.canPlan ===
+   false`, the review step stays open with a message (hours short + the
+   suggestions); the learner edits and presses Finish again. Worth adding: a
+   live check while they adjust (`POST /api/plans/feasibility`), and showing
+   `tight` and the `warnings` without blocking.
 1. **Editable schedule.** `src/app/schedule/page.tsx`. Session cards render
    where `session.status === "COMPLETED"` is read (lines ~655, ~841, ~891,
    ~1043); `SessionEntry` (line ~25) needs `kind`. Add per-session actions:
@@ -216,7 +324,8 @@ need it — the first availability save makes the plan.
 
 | Concern | File |
 |---|---|
-| Making the plan once (GA + review days, keeps the original) | `src/lib/schedule/create-plan.ts` |
+| Making the plan once (fit check, GA, review days, keeps the original) | `src/lib/schedule/create-plan.ts` |
+| Fit check: time to the exam vs the chosen subjects | `src/lib/schedule/feasibility.ts` |
 | Hand edits, reset, backlog, conflicts | `src/lib/schedule/manual.ts` |
 | Edit rules (clip picking, what reset restores, conflicts) | `src/lib/schedule/edits.ts` |
 | Study calendar (today → exam, per-week availability) | `src/lib/schedule/calendar.ts` |
@@ -225,7 +334,7 @@ need it — the first availability save makes the plan.
 | Fitness | `src/lib/ga/fitness.ts` |
 | Cutting subtopics into sessions | `src/lib/schedule/parts.ts` |
 | What is left to study, part numbers | `src/lib/schedule/work-items.ts` |
-| Lifecycle smoke test (real DB) | `scripts/db/plan.smoke.ts` |
+| Smoke tests (real dev DB): plan lifecycle, content arriving later | `scripts/db/plan.smoke.ts`, `scripts/db/late-content.smoke.ts` |
 
 ## 6. Deploying
 

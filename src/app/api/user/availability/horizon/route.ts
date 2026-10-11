@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
-import { loadStudyCalendar } from "@/lib/schedule/regenerate";
+import { loadStudyCalendar } from "@/lib/schedule/create-plan";
 
 // Every week from this one to the exam, with the availability the planner will
 // use for it. Read-only.

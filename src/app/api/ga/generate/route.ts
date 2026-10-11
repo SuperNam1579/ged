@@ -54,6 +54,15 @@ export async function POST(req: NextRequest) {
       { status: 409 }
     );
   }
+  if (result.status === "infeasible") {
+    return NextResponse.json(
+      {
+        error: "Your free time before the exam doesn't fit the subjects you chose. Add time, move the exam date, or study fewer subjects.",
+        feasibility: result.feasibility,
+      },
+      { status: 422 }
+    );
+  }
   if (result.status === "all-done") {
     return NextResponse.json({ message: "All subtopics have been scheduled. Great work!" });
   }
