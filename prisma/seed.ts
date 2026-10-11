@@ -212,144 +212,151 @@ async function main() {
   }
 
   // ─── RLA Categories & Subtopics (14 total) ────────────────────────────────
+  //
+  // Placeholders until RLA's sheet is imported: estimated lengths, no clips.
+  // Once scripts/import-curriculum.ts writes RLA into curriculum.data.ts, the
+  // loop above seeds it from there and this block steps aside — running it too
+  // would put these estimates back over the measured lengths. The names match
+  // scripts/curriculum/plan.ts, so the same rows carry over.
+  if (!CURRICULUM.some((s) => s.code === "RLA")) {
+    const rlaReadCat = await upsertCategory({
+      data: { subjectId: rla.id, name: "Reading for Meaning", weight: 45 },
+    });
+    const rlaWriteCat = await upsertCategory({
+      data: { subjectId: rla.id, name: "Extended Writing", weight: 35 },
+    });
+    const rlaLangCat = await upsertCategory({
+      data: { subjectId: rla.id, name: "Language & Grammar", weight: 20 },
+    });
 
-  const rlaReadCat = await upsertCategory({
-    data: { subjectId: rla.id, name: "Reading for Meaning", weight: 45 },
-  });
-  const rlaWriteCat = await upsertCategory({
-    data: { subjectId: rla.id, name: "Extended Writing", weight: 35 },
-  });
-  const rlaLangCat = await upsertCategory({
-    data: { subjectId: rla.id, name: "Language & Grammar", weight: 20 },
-  });
+    const infoTopic = await upsertTopic({
+      data: { categoryId: rlaReadCat.id, name: "Informational Text" },
+    });
+    const litTopic = await upsertTopic({
+      data: { categoryId: rlaReadCat.id, name: "Literary Text" },
+    });
+    const argTopic = await upsertTopic({
+      data: { categoryId: rlaWriteCat.id, name: "Argument & Evidence Writing" },
+    });
+    const grammarTopic = await upsertTopic({
+      data: { categoryId: rlaLangCat.id, name: "Grammar & Usage" },
+    });
 
-  const infoTopic = await upsertTopic({
-    data: { categoryId: rlaReadCat.id, name: "Informational Text" },
-  });
-  const litTopic = await upsertTopic({
-    data: { categoryId: rlaReadCat.id, name: "Literary Text" },
-  });
-  const argTopic = await upsertTopic({
-    data: { categoryId: rlaWriteCat.id, name: "Argument & Evidence Writing" },
-  });
-  const grammarTopic = await upsertTopic({
-    data: { categoryId: rlaLangCat.id, name: "Grammar & Usage" },
-  });
-
-  await Promise.all([
-    upsertSubtopic({
-      data: {
-        topicId: infoTopic.id, name: "Main Idea & Supporting Details",
-        description: "Identify the central idea and how details support it in informational texts.",
-        learningUrl: "https://www.khanacademy.org/ela/cc-2nd-reading-informational/x3cdf5ef2:key-details",
-        estimatedMinutes: 40, difficultyLevel: 2,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: infoTopic.id, name: "Author's Purpose & Point of View",
-        description: "Determine the author's purpose and analyze bias in non-fiction texts.",
-        learningUrl: "https://www.khanacademy.org/ela/cc-4th-reading-informational/x3cdf5ef2:authors-purpose",
-        estimatedMinutes: 45, difficultyLevel: 3,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: infoTopic.id, name: "Text Structure & Features",
-        description: "Analyze how authors use text structure (cause-effect, compare-contrast) to convey meaning.",
-        learningUrl: "https://www.khanacademy.org/ela/cc-5th-reading-informational",
-        estimatedMinutes: 40, difficultyLevel: 2,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: infoTopic.id, name: "Argument Analysis",
-        description: "Evaluate claims, evidence, and reasoning in argumentative texts.",
-        learningUrl: "https://www.khanacademy.org/ela/cc-6th-reading-informational",
-        estimatedMinutes: 50, difficultyLevel: 4,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: litTopic.id, name: "Reading Fiction",
-        description: "Analyze plot, character, setting, and theme in literary texts.",
-        learningUrl: "https://www.khanacademy.org/ela/cc-6th-reading-literature",
-        estimatedMinutes: 45, difficultyLevel: 2,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: litTopic.id, name: "Figurative Language & Tone",
-        description: "Identify and interpret figurative language, mood, and tone in literature.",
-        learningUrl: "https://www.khanacademy.org/ela/cc-8th-reading-literature",
-        estimatedMinutes: 45, difficultyLevel: 3,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: litTopic.id, name: "Comparing Texts",
-        description: "Compare themes, arguments, and structures across multiple texts.",
-        learningUrl: "https://www.khanacademy.org/ela/cc-9th-reading-literature",
-        estimatedMinutes: 50, difficultyLevel: 4,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: argTopic.id, name: "Writing an Argument Essay",
-        description: "Structure and write a persuasive extended response using evidence.",
-        learningUrl: "https://www.khanacademy.org/college-careers-more/learnstorm-growth-mindset-activities-us",
-        estimatedMinutes: 90, difficultyLevel: 4,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: argTopic.id, name: "Using Evidence & Citations",
-        description: "Integrate and cite textual evidence effectively in written responses.",
-        learningUrl: "https://www.khanacademy.org/writing",
-        estimatedMinutes: 60, difficultyLevel: 3,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: grammarTopic.id, name: "Sentence Structure",
-        description: "Identify and correct run-ons, fragments, and complex sentence structures.",
-        learningUrl: "https://www.khanacademy.org/humanities/grammar/syntax-sentences-and-clauses",
-        estimatedMinutes: 45, difficultyLevel: 2,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: grammarTopic.id, name: "Punctuation & Capitalization",
-        description: "Apply correct punctuation (commas, semicolons, apostrophes) and capitalization rules.",
-        learningUrl: "https://www.khanacademy.org/humanities/grammar/punctuation-the-colon-semicolon-and-more",
-        estimatedMinutes: 40, difficultyLevel: 2,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: grammarTopic.id, name: "Vocabulary in Context",
-        description: "Use context clues and word parts to determine the meaning of unfamiliar words.",
-        learningUrl: "https://www.khanacademy.org/ela/cc-2nd-reading-vocab",
-        estimatedMinutes: 35, difficultyLevel: 2,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: grammarTopic.id, name: "Subject-Verb Agreement",
-        description: "Apply subject-verb and pronoun-antecedent agreement rules.",
-        learningUrl: "https://www.khanacademy.org/humanities/grammar/parts-of-speech-the-verb",
-        estimatedMinutes: 40, difficultyLevel: 2,
-      },
-    }),
-    upsertSubtopic({
-      data: {
-        topicId: grammarTopic.id, name: "Verb Tense & Modifiers",
-        description: "Use consistent verb tenses and correctly place modifiers in sentences.",
-        learningUrl: "https://www.khanacademy.org/humanities/grammar/parts-of-speech-the-verb/modal-verbs",
-        estimatedMinutes: 40, difficultyLevel: 3,
-      },
-    }),
-  ]);
+    await Promise.all([
+      upsertSubtopic({
+        data: {
+          topicId: infoTopic.id, name: "Main Idea & Supporting Details",
+          description: "Identify the central idea and how details support it in informational texts.",
+          learningUrl: "https://www.khanacademy.org/ela/cc-2nd-reading-informational/x3cdf5ef2:key-details",
+          estimatedMinutes: 40, difficultyLevel: 2,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: infoTopic.id, name: "Author's Purpose & Point of View",
+          description: "Determine the author's purpose and analyze bias in non-fiction texts.",
+          learningUrl: "https://www.khanacademy.org/ela/cc-4th-reading-informational/x3cdf5ef2:authors-purpose",
+          estimatedMinutes: 45, difficultyLevel: 3,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: infoTopic.id, name: "Text Structure & Features",
+          description: "Analyze how authors use text structure (cause-effect, compare-contrast) to convey meaning.",
+          learningUrl: "https://www.khanacademy.org/ela/cc-5th-reading-informational",
+          estimatedMinutes: 40, difficultyLevel: 2,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: infoTopic.id, name: "Argument Analysis",
+          description: "Evaluate claims, evidence, and reasoning in argumentative texts.",
+          learningUrl: "https://www.khanacademy.org/ela/cc-6th-reading-informational",
+          estimatedMinutes: 50, difficultyLevel: 4,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: litTopic.id, name: "Reading Fiction",
+          description: "Analyze plot, character, setting, and theme in literary texts.",
+          learningUrl: "https://www.khanacademy.org/ela/cc-6th-reading-literature",
+          estimatedMinutes: 45, difficultyLevel: 2,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: litTopic.id, name: "Figurative Language & Tone",
+          description: "Identify and interpret figurative language, mood, and tone in literature.",
+          learningUrl: "https://www.khanacademy.org/ela/cc-8th-reading-literature",
+          estimatedMinutes: 45, difficultyLevel: 3,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: litTopic.id, name: "Comparing Texts",
+          description: "Compare themes, arguments, and structures across multiple texts.",
+          learningUrl: "https://www.khanacademy.org/ela/cc-9th-reading-literature",
+          estimatedMinutes: 50, difficultyLevel: 4,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: argTopic.id, name: "Writing an Argument Essay",
+          description: "Structure and write a persuasive extended response using evidence.",
+          learningUrl: "https://www.khanacademy.org/college-careers-more/learnstorm-growth-mindset-activities-us",
+          estimatedMinutes: 90, difficultyLevel: 4,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: argTopic.id, name: "Using Evidence & Citations",
+          description: "Integrate and cite textual evidence effectively in written responses.",
+          learningUrl: "https://www.khanacademy.org/writing",
+          estimatedMinutes: 60, difficultyLevel: 3,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: grammarTopic.id, name: "Sentence Structure",
+          description: "Identify and correct run-ons, fragments, and complex sentence structures.",
+          learningUrl: "https://www.khanacademy.org/humanities/grammar/syntax-sentences-and-clauses",
+          estimatedMinutes: 45, difficultyLevel: 2,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: grammarTopic.id, name: "Punctuation & Capitalization",
+          description: "Apply correct punctuation (commas, semicolons, apostrophes) and capitalization rules.",
+          learningUrl: "https://www.khanacademy.org/humanities/grammar/punctuation-the-colon-semicolon-and-more",
+          estimatedMinutes: 40, difficultyLevel: 2,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: grammarTopic.id, name: "Vocabulary in Context",
+          description: "Use context clues and word parts to determine the meaning of unfamiliar words.",
+          learningUrl: "https://www.khanacademy.org/ela/cc-2nd-reading-vocab",
+          estimatedMinutes: 35, difficultyLevel: 2,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: grammarTopic.id, name: "Subject-Verb Agreement",
+          description: "Apply subject-verb and pronoun-antecedent agreement rules.",
+          learningUrl: "https://www.khanacademy.org/humanities/grammar/parts-of-speech-the-verb",
+          estimatedMinutes: 40, difficultyLevel: 2,
+        },
+      }),
+      upsertSubtopic({
+        data: {
+          topicId: grammarTopic.id, name: "Verb Tense & Modifiers",
+          description: "Use consistent verb tenses and correctly place modifiers in sentences.",
+          learningUrl: "https://www.khanacademy.org/humanities/grammar/parts-of-speech-the-verb/modal-verbs",
+          estimatedMinutes: 40, difficultyLevel: 3,
+        },
+      }),
+    ]);
+  }
 
   // ─── Seed subtopic prerequisites ─────────────────────────────────────────
 

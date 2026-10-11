@@ -808,7 +808,152 @@ const SCI: SubjectPlan = {
   ],
 };
 
-export const PLANS: SubjectPlan[] = [MATH, SS, SCI];
+// ─── RLA ────────────────────────────────────────────────────────────────────
+//
+// Ready for RLA's sheet, which hasn't arrived yet. Until it does, the importer
+// skips RLA and the seed keeps its hand-written placeholders (estimated
+// lengths, no clips) — the planner already works with those.
+//
+// The structure is the one RLA has in the database today, so the same rows
+// carry over when the sheet is imported: learners' sessions, attempts and
+// prerequisites stay attached. When the sheet arrives:
+//   - put it in curriculum/ as RLA.xlsx (any column order: columns are found
+//     by their headers), or RLA.csv in MATH's layout (videos only — articles
+//     need the word-count column only a workbook has);
+//   - set each `csv` below to the label the sheet uses in its Subtopic column.
+//     Keep `name`: it is the database name. A sheet subtopic no entry claims,
+//     or an entry the sheet lacks, stops the import and names it.
+
+const RLA: SubjectPlan = {
+  code: "RLA",
+  name: "Reasoning Through Language Arts",
+  categories: [
+    {
+      name: "Reading for Meaning",
+      weight: 45,
+      topics: [
+        {
+          name: "Informational Text",
+          subtopics: [
+            {
+              csv: "Main Idea & Supporting Details",
+              name: "Main Idea & Supporting Details",
+              description: "Identify the central idea and how details support it in informational texts.",
+              difficulty: 2,
+            },
+            {
+              csv: "Author's Purpose & Point of View",
+              name: "Author's Purpose & Point of View",
+              description: "Determine the author's purpose and analyze bias in non-fiction texts.",
+              difficulty: 3,
+            },
+            {
+              csv: "Text Structure & Features",
+              name: "Text Structure & Features",
+              description: "Analyze how authors use text structure (cause-effect, compare-contrast) to convey meaning.",
+              difficulty: 2,
+            },
+            {
+              csv: "Argument Analysis",
+              name: "Argument Analysis",
+              description: "Evaluate claims, evidence, and reasoning in argumentative texts.",
+              difficulty: 4,
+            },
+          ],
+        },
+        {
+          name: "Literary Text",
+          subtopics: [
+            {
+              csv: "Reading Fiction",
+              name: "Reading Fiction",
+              description: "Analyze plot, character, setting, and theme in literary texts.",
+              difficulty: 2,
+            },
+            {
+              csv: "Figurative Language & Tone",
+              name: "Figurative Language & Tone",
+              description: "Identify and interpret figurative language, mood, and tone in literature.",
+              difficulty: 3,
+            },
+            {
+              csv: "Comparing Texts",
+              name: "Comparing Texts",
+              description: "Compare themes, arguments, and structures across multiple texts.",
+              difficulty: 4,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Extended Writing",
+      weight: 35,
+      topics: [
+        {
+          name: "Argument & Evidence Writing",
+          subtopics: [
+            {
+              csv: "Writing an Argument Essay",
+              name: "Writing an Argument Essay",
+              description: "Structure and write a persuasive extended response using evidence.",
+              difficulty: 4,
+            },
+            {
+              csv: "Using Evidence & Citations",
+              name: "Using Evidence & Citations",
+              description: "Integrate and cite textual evidence effectively in written responses.",
+              difficulty: 3,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Language & Grammar",
+      weight: 20,
+      topics: [
+        {
+          name: "Grammar & Usage",
+          subtopics: [
+            {
+              csv: "Sentence Structure",
+              name: "Sentence Structure",
+              description: "Identify and correct run-ons, fragments, and complex sentence structures.",
+              difficulty: 2,
+            },
+            {
+              csv: "Punctuation & Capitalization",
+              name: "Punctuation & Capitalization",
+              description: "Apply correct punctuation (commas, semicolons, apostrophes) and capitalization rules.",
+              difficulty: 2,
+            },
+            {
+              csv: "Vocabulary in Context",
+              name: "Vocabulary in Context",
+              description: "Use context clues and word parts to determine the meaning of unfamiliar words.",
+              difficulty: 2,
+            },
+            {
+              csv: "Subject-Verb Agreement",
+              name: "Subject-Verb Agreement",
+              description: "Apply subject-verb and pronoun-antecedent agreement rules.",
+              difficulty: 2,
+            },
+            {
+              csv: "Verb Tense & Modifiers",
+              name: "Verb Tense & Modifiers",
+              description: "Use consistent verb tenses and correctly place modifiers in sentences.",
+              difficulty: 3,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+export const PLANS: SubjectPlan[] = [MATH, RLA, SS, SCI];
 
 /**
  * Clips that Khan teaches inside an in-scope unit but the GED does not test.

@@ -13,30 +13,6 @@ export function slotMinutesForDate(slots: AvailabilitySlotInput[], date: string)
     }, 0);
 } //ใช้แค่สำหรับไฟล์นี้สำหรับการจัดเวลา
 
-export function buildAvailableDates( //สร้างวันที่ผู้ใช้ว่างก่อน
-  slots: AvailabilitySlotInput[], //รับข้อมูลวันว่างของผู้ใช้งาน
-  startDate: Date, //วันที่เริ่ม
-  endDate: Date //วันสุดท้าย
-): string[] {
-  const availableDays = new Set(slots.map((s) => s.dayOfWeek)); //ดึงวันว่าว่างวันไหนแล้วจัดเรียง
-  const dates: string[] = [];
-  const start = new Date(startDate);
-  start.setHours(0, 0, 0, 0); //ปรับเวลาให้เปรียบเทียบเฉพาะวัน
-  const end = new Date(endDate);
-  end.setHours(0, 0, 0, 0); //ปรับเวลาให้เปรียบเทียบเฉพาะวัน
-  const current = new Date(start); //ให้มันค่อยๆทำไปทีละวัน
-  while (current < end) {
-    if (availableDays.has(current.getDay())) { //เช็ควันว่าตรงกับวันที่ผู้เรียนว่างไหม
-      const y = current.getFullYear();
-      const m = String(current.getMonth() + 1).padStart(2, "0");
-      const d = String(current.getDate()).padStart(2, "0");
-      dates.push(`${y}-${m}-${d}`); //ถ้าตรงก็เอาไปกลับไว้ใน dates เผื่อเอาไปใช้ในการคำนวณต่อ
-    }
-    current.setDate(current.getDate() + 1);
-  }
-  return dates;
-}
-
 export function createIndividual(
   subtopics: SubtopicData[],
   proficiencies: ProficiencyMap, //ระดับความเข้าใจของผู้เรียน

@@ -6,11 +6,10 @@ import type { SubtopicData } from "@/types";
 import { clipMinutes, type WorkItem } from "./parts";
 
 /**
- * - "regenerate": a fresh plan replaces the active one. Only content the
- *   learner has completed is considered done; everything pending is planned
- *   again.
- * - "append": sessions are added to the active plan. Anything already in it,
- *   pending or not, is done as far as this run is concerned.
+ * - "regenerate": a new plan is being made. Only content the learner has
+ *   completed is considered done.
+ * - "append": sessions are added to the active plan by hand. Anything already
+ *   in it, pending or not, is taken.
  */
 export type CoverageMode = "regenerate" | "append";
 
@@ -30,9 +29,7 @@ export type CoverageMode = "regenerate" | "append";
 export async function loadWorkItems(
   userId: string,
   subtopics: (SubtopicData & { estimatedMinutes: number })[],
-  mode: CoverageMode,
-  /** Also covered: this plan's sessions dated before `before`, whatever their status. */
-  keep?: { studyPlanId: string; before: Date }
+  mode: CoverageMode
 ): Promise<WorkItem[]> {
   const ids = subtopics.map((s) => s.id);
 
@@ -58,7 +55,6 @@ export async function loadWorkItems(
         OR: [
           { status: "COMPLETED" },
           ...(mode === "append" ? [{ studyPlan: { userId, isActive: true } }] : []),
-          ...(keep ? [{ studyPlanId: keep.studyPlanId, scheduledDate: { lt: keep.before } }] : []),
         ],
       },
       select: { subtopicId: true, resources: { select: { resourceId: true } } },

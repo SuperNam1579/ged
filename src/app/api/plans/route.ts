@@ -21,5 +21,11 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ plans });
+  // `original` (the GA's sessions, kept for reset) is large and only the server needs it.
+  return NextResponse.json({
+    plans: plans.map((p) => {
+      const { original: _original, ...metadata } = (p.metadata ?? {}) as Record<string, unknown>;
+      return { ...p, metadata, hasOriginal: Array.isArray(_original) };
+    }),
+  });
 }

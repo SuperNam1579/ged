@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAuthUserStrict } from "@/lib/auth";
 import { updateProficiency } from "@/lib/utils/proficiency";
-import { checkAdaptiveTrigger } from "@/lib/ga/engine";
 import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
 import { z } from "zod";
@@ -225,29 +224,9 @@ export async function POST(
 
   const [attempt] = await db.$transaction([createAttempt, ...proficiencyWrites]);
 
-  // Check adaptive triggers for QUIZ and MOCK
-  let triggered = null;
-  if (assessment.type === "QUIZ" && assessment.subtopicId) {
-    const trigger = await checkAdaptiveTrigger(
-      authUser.id,
-      assessment.subtopicId,
-      score,
-      "QUIZ"
-    );
-    if (trigger.triggered) {
-      triggered = { gaRerun: true, reason: trigger.reason };
-    }
-  } else if (assessment.type === "MOCK") {
-    const trigger = await checkAdaptiveTrigger(
-      authUser.id,
-      "",
-      score,
-      "MOCK"
-    );
-    if (trigger.triggered) {
-      triggered = { gaRerun: true, reason: trigger.reason };
-    }
-  }
+  // Results never re-plan: the plan is made once and edited by the learner.
+  // `triggered` stays in the response, always null, for older clients.
+  const triggered = null;
 
   // Identify weak subtopics from this attempt
   const weakSubtopics = Array.from(subtopicScores.entries())

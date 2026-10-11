@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { dropSubjects } from "@/lib/schedule/manual";
+import { addDaysStr, bangkokDateStr } from "@/lib/schedule/calendar";
 import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
@@ -7,12 +9,9 @@ import { z } from "zod";
 
 const PreferencesSchema = z.object({
   targetExamDate: z.string().refine((d) => {
-    const date = new Date(d);
-    if (isNaN(date.getTime())) return false;
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    return date >= tomorrow;
+    if (isNaN(new Date(d).getTime())) return false;
+    // Compared as dates in Bangkok, the learner's day — not the server's (UTC).
+    return d.slice(0, 10) >= addDaysStr(bangkokDateStr(), 1);
   }, "Exam date must be at least tomorrow"),
 
   targetScore: z.number()
@@ -39,6 +38,11 @@ export async function POST(req: NextRequest) {
 
   const { targetExamDate, targetScore, selectedSubjectCodes } = parsed.data;
 
+  const before = await db.userPreferences.findUnique({
+    where: { userId: authUser.id },
+    select: { selectedSubjectCodes: true },
+  });
+
   const prefs = await db.userPreferences.upsert({
     where: { userId: authUser.id },
     update: {
@@ -57,6 +61,15 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // A subject dropped takes its not-yet-done sessions out of the plan. One
+  // added shows up in the backlog (GET /api/plans/backlog) for the learner to
+  // place — nothing re-plans.
+  const dropped =
+    selectedSubjectCodes && before?.selectedSubjectCodes.length
+      ? before.selectedSubjectCodes.filter((c) => !selectedSubjectCodes.includes(c as (typeof selectedSubjectCodes)[number]))
+      : [];
+  const removedSessions = await dropSubjects(authUser.id, dropped);
+
   const ctx = extractRequestContext(req);
   audit({
     action: "USER_PREFERENCES_UPDATED",
@@ -69,7 +82,7 @@ export async function POST(req: NextRequest) {
     success: true,
   });
 
-  return NextResponse.json({ preferences: prefs });
+  return NextResponse.json({ preferences: prefs, removedSessions });
 }
 
 export async function GET(req: NextRequest) {

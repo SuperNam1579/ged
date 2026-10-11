@@ -3,15 +3,18 @@ import { db } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
 import { WEAKNESS_THRESHOLD } from "@/lib/ga/constants";
 import { differenceInDays } from "date-fns";
+import { addDaysStr, bangkokDateStr } from "@/lib/schedule/calendar";
 
 export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // The learner's day, not the server's: the server runs in UTC, so from
+  // midnight to 07:00 in Bangkok its "today" is still yesterday. Session dates
+  // are stored as midnight UTC of their day, so compare in UTC.
+  const todayStr = bangkokDateStr();
+  const today = new Date(`${todayStr}T00:00:00Z`);
+  const tomorrow = new Date(`${addDaysStr(todayStr, 1)}T00:00:00Z`);
   const ninetyDaysAgo = new Date(today);
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
@@ -151,17 +154,14 @@ export async function GET(req: NextRequest) {
     ? Math.max(0, differenceInDays(user.preferences.targetExamDate, today))
     : 0;
 
-  const completionDateSet = new Set(
-    recentCompletions.map((c) => c.completedAt!.toISOString().split("T")[0])
-  );
+  // Days the learner completed something, as Bangkok dates.
+  const completionDateSet = new Set(recentCompletions.map((c) => bangkokDateStr(c.completedAt!)));
 
   let streakDays = 0;
-  const streakCursor = new Date();
-  streakCursor.setHours(0, 0, 0, 0);
-
-  while (completionDateSet.has(streakCursor.toISOString().split("T")[0])) {
+  let streakCursor = todayStr;
+  while (completionDateSet.has(streakCursor)) {
     streakDays++;
-    streakCursor.setDate(streakCursor.getDate() - 1);
+    streakCursor = addDaysStr(streakCursor, -1);
   }
 
   // ── Has attempted work fallen behind? ────────────────────────────────────
