@@ -38,9 +38,15 @@ npm run verify          # typecheck + lint + tests + production build — run be
 4. **Reset brings the GA's plan back.** The GA's original sessions are kept with
    the plan. "Reset" undoes every edit; what the learner completed stays done.
 
-The GA's plan also includes **review sessions** (`kind: "REVIEW"`, 30 min): on
-the last 1–3 study days before the exam, and on every day left once the content
-is finished.
+The content is **spread over the whole run**: every day is loaded to the same
+share of its free time — the smallest share at which it all fits, plus 10%
+(`metadata.pace`, 1 = full days). A learner with lots of time gets light days
+up to the exam, not full days for three weeks and nothing after. Spare time is
+the learner's: nothing fills it.
+
+The GA's plan also includes **review sessions** (`kind: "REVIEW"`, 30 min, at
+most 2 a day) on the last 1–3 study days before the exam. More review or
+study is the learner's choice — add it with `POST /api/sessions`.
 
 ## 2. Rules the UI must reflect
 
@@ -49,6 +55,8 @@ Source: `src/lib/schedule/manual.ts` (edits), `src/lib/schedule/edits.ts` (rules
 | Rule | Behaviour | What the UI should do |
 |---|---|---|
 | Completed is history | A `COMPLETED` session can't be moved, changed or deleted (409). | Hide edit controls on completed sessions. |
+| Parts stay in order | A long subtopic is split into parts ("part 2 of 5", `partIndex`/`partCount`). No edit may put a later part before an earlier one — an earlier day, or earlier in the same day (409, message names the subtopic). | Limit where a part can be dropped; show the 409 message. |
+| Part 2 waits for part 1 | A part can't be completed while earlier content of its subtopic isn't done. `GET /api/sessions/[id]` returns `session.lockedBy` (`{ subtopicName, sessionId, scheduledDate, partIndex } \| null`; `sessionId: null` = that content is in the backlog). `verify-completion` answers 409 `reason: "earlier_part_pending"` with the same `lockedBy`. | On a locked part, keep the content closed and link to the part to do first. |
 | Days a session may go on | From today (Bangkok) up to the day before the exam (400 otherwise). | Limit date pickers / drop targets to that range. |
 | Missed sessions | Past and not done; stay where they are until the learner moves them. | Show as "missed / ไม่ได้เรียน"; allow moving to a day from today on. Swapping a missed session is refused — move it first. |
 | Free time is advisory | Editing availability never moves sessions. Days that no longer fit come back as `conflicts`. | Highlight conflict days; let the learner fix them. |
@@ -221,7 +229,7 @@ check counts it. After the plan exists:
 | `not-enough` | Content doesn't fit. GA won't run. | Show `shortfallMinutes` and the suggestions; let the learner change settings and re-check. |
 | `tight` | Fits with under 10% to spare. GA runs. | Warn: a missed day can't be caught up. |
 | `comfortable` | Fits with room. GA runs. | — |
-| `light` | Under half the time needed. GA runs; extra days become review. | Optionally suggest fewer hours or more subjects. |
+| `light` | Under half the time needed. GA runs; the content is spread thin over the run. | Optionally mention the spare time is theirs (review, or add study). |
 | `exam-passed` / `no-time` | Nothing to plan. | Ask for a new exam date / free time. |
 
 ### Free time and subjects
@@ -334,7 +342,8 @@ settings following a `not-enough` result (save the new usual week with `PUT
 | Fitness | `src/lib/ga/fitness.ts` |
 | Cutting subtopics into sessions | `src/lib/schedule/parts.ts` |
 | What is left to study, part numbers | `src/lib/schedule/work-items.ts` |
-| Smoke tests (real dev DB): plan lifecycle, content arriving later | `scripts/db/plan.smoke.ts`, `scripts/db/late-content.smoke.ts` |
+| Part 2 waits for part 1 (study time) | `src/lib/schedule/part-gate.ts` |
+| Smoke tests (real dev DB): plan lifecycle, content arriving later, racing requests, parts | `scripts/db/*.smoke.ts` |
 
 ## 6. Deploying
 

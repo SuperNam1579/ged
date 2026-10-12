@@ -38,7 +38,10 @@ export function pickClips(clips: Clip[], durationMins?: number): Clip[] {
  *     left with none is dropped;
  *   - a video-less study session goes when its subtopic was completed whole;
  *   - a review goes when the same subtopic was reviewed that day.
- * Sessions of subjects the learner no longer studies are left out.
+ * Sessions of subjects the learner no longer studies are left out, and so is
+ * content the curriculum has dropped since the plan was made (a re-import can
+ * remove or replace subtopics and clips): `allowed` holds only subtopics that
+ * still exist, and `existingClips` only clips that do.
  */
 export function restorableSessions(input: {
   original: PlannedSession[];
@@ -49,8 +52,10 @@ export function restorableSessions(input: {
   completedReviews: Set<string>;
   /** Subtopics of the subjects the learner studies now. */
   allowed: Set<string>;
+  /** Clips that still exist. Left out: all are assumed to. */
+  existingClips?: Set<string>;
 }): PlannedSession[] {
-  const { original, completedClips, completedWhole, completedReviews, allowed } = input;
+  const { original, completedClips, completedWhole, completedReviews, allowed, existingClips } = input;
   const restored: PlannedSession[] = [];
   for (const s of original) {
     if (!allowed.has(s.subtopicId)) continue;
@@ -62,7 +67,7 @@ export function restorableSessions(input: {
       if (!completedWhole.has(s.subtopicId)) restored.push(s);
       continue;
     }
-    const left = s.resourceIds.filter((id) => !completedClips.has(id));
+    const left = s.resourceIds.filter((id) => !completedClips.has(id) && (!existingClips || existingClips.has(id)));
     if (left.length > 0) restored.push({ ...s, resourceIds: left });
   }
   return restored;
@@ -108,4 +113,33 @@ export function findConflicts(input: {
     if (reason) conflicts.push({ date, reason, plannedMinutes: minutes, availableMinutes: available });
   }
   return conflicts;
+}
+
+/** One part of a split subtopic, as the order check sees it. */
+export interface PartPlacement {
+  id: string;
+  /** Curriculum position of the part's first clip — what makes it part 1, 2, 3… */
+  firstClip: number;
+  date: string;
+  /** Position within its day. */
+  order: number;
+}
+
+/**
+ * The first pair of a subtopic's parts placed out of order, or null.
+ *
+ * Parts are learned in sequence: part 2 builds on part 1. A hand edit may move
+ * a part anywhere, but never to before an earlier part — later in the same
+ * day is fine, an earlier day or slot is not.
+ */
+export function partOrderViolation(parts: PartPlacement[]): { earlier: PartPlacement; later: PartPlacement } | null {
+  const byClip = [...parts].sort((a, b) => a.firstClip - b.firstClip);
+  for (let i = 1; i < byClip.length; i++) {
+    const earlier = byClip[i - 1];
+    const later = byClip[i];
+    if (later.date < earlier.date || (later.date === earlier.date && later.order < earlier.order)) {
+      return { earlier, later };
+    }
+  }
+  return null;
 }

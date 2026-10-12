@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { deleteSession, PlanEditError, updateSession } from "@/lib/schedule/manual";
+import { earlierPartPending } from "@/lib/schedule/part-gate";
 
 export async function GET(
   req: NextRequest,
@@ -83,9 +84,14 @@ export async function GET(
   const isLastPart = !isPart || (session.partIndex !== null && session.partIndex === session.partCount) ||
     (session.partIndex === null && nextPart === null);
 
+  // An earlier part of this subtopic still to finish: the page keeps this
+  // part closed and points to that one. Null when nothing is in the way.
+  const lockedBy = session.status === "COMPLETED" ? null : await earlierPartPending(authUser.id, session.id);
+
   return NextResponse.json({
     session: {
       id: session.id,
+      lockedBy,
       subtopicId: session.subtopicId,
       subtopicName: session.subtopic.name,
       subtopicDescription: session.subtopic.description,

@@ -41,6 +41,16 @@ const sessionsOf = async (planId: string) =>
     select: { id: true, subtopicId: true, scheduledDate: true, durationMins: true, kind: true, status: true, resources: { select: { resourceId: true } } },
   });
 const dateOf = (d: Date) => d.toISOString().slice(0, 10);
+/**
+ * Study sessions that are a whole subtopic on their own — free to move
+ * anywhere. Parts of a split subtopic must stay in order (parts.smoke.ts).
+ */
+const singlesOf = async (planId: string) => {
+  const study = (await sessionsOf(planId)).filter((s) => s.kind === "STUDY");
+  const count = new Map<string, number>();
+  for (const s of study) count.set(s.subtopicId, (count.get(s.subtopicId) ?? 0) + 1);
+  return study.filter((s) => count.get(s.subtopicId) === 1);
+};
 
 beforeAll(async () => {
   const user = await db.user.create({ data: { email, name: "Smoke Test" } });
@@ -152,7 +162,7 @@ describe("plan lifecycle", () => {
   });
 
   it("moves, re-lengthens and swaps sessions", async () => {
-    const [a, b] = (await sessionsOf(planId)).filter((s) => s.kind === "STUDY");
+    const [a, b] = await singlesOf(planId);
     const target = addDaysStr(today, 10);
     await updateSession(userId, a.id, { scheduledDate: target, durationMins: 45 });
     let moved = (await sessionsOf(planId)).find((s) => s.id === a.id)!;
@@ -166,9 +176,10 @@ describe("plan lifecycle", () => {
   });
 
   it("puts another subtopic in a session's place, giving its clips back", async () => {
-    const session = (await sessionsOf(planId)).find((s) => s.kind === "STUDY" && s.resources.length > 0)!;
+    const session = (await singlesOf(planId)).find((s) => s.resources.length > 0)!;
     const backlog = await getBacklog(userId);
-    const other = backlog.find((b) => b.subtopicId !== session.subtopicId)!;
+    // One with nothing planned yet, so its first part has no later parts to keep order with.
+    const other = backlog.find((b) => b.subtopicId !== session.subtopicId && !b.partlyPlanned)!;
 
     await updateSession(userId, session.id, { subtopicId: other.subtopicId });
     const replaced = (await sessionsOf(planId)).find((s) => s.id === session.id)!;
@@ -189,7 +200,7 @@ describe("plan lifecycle", () => {
     // Sunday has no free time in this learner's week.
     let sunday = addDaysStr(today, 1);
     while (new Date(`${sunday}T00:00:00Z`).getUTCDay() !== 0) sunday = addDaysStr(sunday, 1);
-    const s = (await sessionsOf(planId)).find((x) => x.kind === "STUDY")!;
+    const [s] = await singlesOf(planId);
     await updateSession(userId, s.id, { scheduledDate: sunday });
     const { conflicts } = await getPlanStatus(userId);
     expect(conflicts.some((c) => c.date === sunday && c.reason === "no-time")).toBe(true);

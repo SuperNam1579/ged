@@ -1,12 +1,10 @@
 // Review days before the exam. Pure: no Prisma.
 //
-// The days before the exam go to review, in two ways:
-//
-//   - A few of the last study days are always kept for it (finalReviewDayCount):
-//     everyone should go back over what they learnt before an exam, whether or
-//     not the content filled the time.
-//   - When the content is done before the exam, every study day left after it
-//     is a review day too, so the learner isn't left with empty days.
+// A few of the last study days before the exam are kept for review
+// (finalReviewDayCount): everyone should go back over what they learnt before
+// an exam. Other spare time is not filled with reviews — the content is spread
+// over the run (./pace.ts), and what time remains is the learner's to review
+// or study more as they choose.
 //
 // What to review: the subtopics already studied, weakest first — the lowest
 // proficiency, which includes a failed quiz. When nothing is weak, the same
@@ -14,13 +12,22 @@
 // which is what is most likely to be forgotten. Each subtopic is reviewed once
 // before any is reviewed twice.
 //
-// The day before the exam is kept light: a single review.
+// At most two reviews a day (an hour), however long the day; the day before
+// the exam is kept light: a single review.
 
 import type { ProficiencyMap, SubtopicData } from "../../types";
 import type { Day } from "./parts";
 
 /** Length of one review session. */
 export const REVIEW_MINUTES = 30;
+
+/**
+ * At most this many reviews a day, whatever the free time. A learner with
+ * long days and a distant exam finishes the content early; filling every
+ * remaining hour with reviews made thousands of them (2,958 in one dev plan).
+ * An hour of review a day keeps what was learnt without crowding the calendar.
+ */
+export const MAX_REVIEWS_PER_DAY = 2;
 
 /** At most this many of the last study days are kept for review. */
 const MAX_FINAL_REVIEW_DAYS = 3;
@@ -67,7 +74,8 @@ export function planReviews(input: {
 
   for (const day of days) {
     if (day.capacity <= 0) continue;
-    const slots = day.date === lastDay ? 1 : Math.max(1, Math.floor(day.capacity / REVIEW_MINUTES));
+    const slots =
+      day.date === lastDay ? 1 : Math.min(MAX_REVIEWS_PER_DAY, Math.max(1, Math.floor(day.capacity / REVIEW_MINUTES)));
     const minutes = Math.min(REVIEW_MINUTES, day.capacity);
 
     const ready = [...lastStudied]

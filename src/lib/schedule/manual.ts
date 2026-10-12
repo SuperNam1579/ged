@@ -7,7 +7,8 @@
 //
 // Completed sessions are history: they can't be moved, changed or deleted.
 // Every other session can — including missed ones, which the learner can move
-// to a day they're free.
+// to a day they're free. A subtopic's parts stay in order: no edit may put
+// part 2 before part 1 (assertPartOrder).
 
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
@@ -15,7 +16,7 @@ import { insertSessions, type PlannedSession } from "@/lib/ga/engine";
 import type { SubtopicData } from "@/types";
 import { bangkokDateStr } from "./calendar";
 import { loadStudyCalendar, loadSubtopics, type OriginalSessions } from "./create-plan";
-import { findConflicts, pickClips, restorableSessions } from "./edits";
+import { findConflicts, partOrderViolation, pickClips, restorableSessions } from "./edits";
 import { clipMinutes, remainingMinutes } from "./parts";
 import { REVIEW_MINUTES } from "./review";
 import { loadWorkItems, refreshPartNumbers } from "./work-items";
@@ -118,6 +119,41 @@ async function afterEdit(userId: string, ctx: Context): Promise<void> {
   await refreshPartNumbers(userId, ctx.plan.id);
 }
 
+/**
+ * Refuses an edit that puts a later part of a subtopic before an earlier one —
+ * part 2 builds on part 1. Run inside the edit's transaction, after the change,
+ * so a refusal rolls it back.
+ */
+async function assertPartOrder(tx: Prisma.TransactionClient, planId: string, subtopicIds: string[]): Promise<void> {
+  for (const subtopicId of new Set(subtopicIds)) {
+    const parts = await tx.studySession.findMany({
+      where: { studyPlanId: planId, subtopicId, kind: "STUDY", resources: { some: {} } },
+      select: {
+        id: true,
+        scheduledDate: true,
+        order: true,
+        subtopic: { select: { name: true } },
+        resources: { select: { resource: { select: { order: true } } } },
+      },
+    });
+    const violation = partOrderViolation(
+      parts.map((p) => ({
+        id: p.id,
+        firstClip: Math.min(...p.resources.map((r) => r.resource.order)),
+        date: p.scheduledDate.toISOString().slice(0, 10),
+        order: p.order,
+      }))
+    );
+    if (violation) {
+      const name = parts[0].subtopic.name;
+      throw new PlanEditError(
+        409,
+        `${name}: a later part can't come before an earlier one. Keep its parts in order (earlier part on ${violation.earlier.date}).`
+      );
+    }
+  }
+}
+
 /** The clips of `subtopic` not yet in the plan nor completed. */
 async function remainingOf(userId: string, subtopic: SubtopicData) {
   const [item] = await loadWorkItems(userId, [subtopic], "append");
@@ -159,17 +195,22 @@ export async function addSession(
   }
 
   const order = await nextOrder(ctx.plan.id, input.scheduledDate);
-  const session = await db.studySession.create({
-    data: {
-      studyPlanId: ctx.plan.id,
-      subtopicId: subtopic.id,
-      scheduledDate: utcDate(input.scheduledDate),
-      durationMins,
-      order,
-      kind,
-      ...(resourceIds.length ? { resources: { create: resourceIds.map((resourceId) => ({ resourceId })) } } : {}),
-    },
-    select: { id: true },
+  const session = await db.$transaction(async (tx) => {
+    const created = await tx.studySession.create({
+      data: {
+        studyPlanId: ctx.plan.id,
+        subtopicId: subtopic.id,
+        scheduledDate: utcDate(input.scheduledDate),
+        durationMins,
+        order,
+        kind,
+        ...(resourceIds.length ? { resources: { create: resourceIds.map((resourceId) => ({ resourceId })) } } : {}),
+      },
+      select: { id: true },
+    });
+    // The part taken may come before parts already planned (part 1 removed, then added back).
+    if (resourceIds.length) await assertPartOrder(tx, ctx.plan.id, [subtopic.id]);
+    return created;
   });
   await afterEdit(userId, ctx);
   return { sessionId: session.id };
@@ -217,6 +258,7 @@ export async function updateSession(
       }
     }
     await tx.studySession.update({ where: { id: sessionId }, data });
+    await assertPartOrder(tx, ctx.plan.id, [session.subtopicId, ...(data.subtopicId ? [data.subtopicId as string] : [])]);
   });
   await afterEdit(userId, ctx);
 }
@@ -238,10 +280,11 @@ export async function swapSessions(userId: string, aId: string, bId: string): Pr
   const aDate = a.scheduledDate.toISOString().slice(0, 10);
   const bDate = b.scheduledDate.toISOString().slice(0, 10);
   if (aDate < ctx.today || bDate < ctx.today) throw new PlanEditError(400, "Move a missed session to a day first; past days can't take sessions.");
-  await db.$transaction([
-    db.studySession.update({ where: { id: a.id }, data: { scheduledDate: b.scheduledDate, order: b.order } }),
-    db.studySession.update({ where: { id: b.id }, data: { scheduledDate: a.scheduledDate, order: a.order } }),
-  ]);
+  await db.$transaction(async (tx) => {
+    await tx.studySession.update({ where: { id: a.id }, data: { scheduledDate: b.scheduledDate, order: b.order } });
+    await tx.studySession.update({ where: { id: b.id }, data: { scheduledDate: a.scheduledDate, order: a.order } });
+    await assertPartOrder(tx, ctx.plan.id, [a.subtopicId, b.subtopicId]);
+  });
   await afterEdit(userId, ctx);
 }
 
@@ -273,12 +316,24 @@ export async function resetPlan(userId: string): Promise<{ restored: number }> {
     else for (const r of s.resources) completedClips.add(r.resourceId);
   }
 
+  // The curriculum may have changed since the plan was made; only clips that
+  // still exist can come back.
+  const existingClips = new Set(
+    (
+      await db.resource.findMany({
+        where: { id: { in: [...new Set(original.flatMap((s) => s.resourceIds))] } },
+        select: { id: true },
+      })
+    ).map((r) => r.id)
+  );
+
   const restored: PlannedSession[] = restorableSessions({
     original,
     completedClips,
     completedWhole,
     completedReviews,
     allowed: new Set(subtopics.map((s) => s.id)),
+    existingClips,
   });
 
   const rest = { ...ctx.metadata };
