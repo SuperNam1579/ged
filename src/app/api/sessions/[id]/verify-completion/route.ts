@@ -5,6 +5,7 @@ import { checkCsrf } from "@/lib/csrf";
 import { audit, extractRequestContext } from "@/lib/audit";
 import { getSessionResourceIds, getSubtopicResources } from "@/lib/resources";
 import { isComplete, requiredSecFor } from "@/lib/resources/types";
+import { earlierPartPending } from "@/lib/schedule/part-gate";
 
 /**
  * POST /api/sessions/:id/verify-completion
@@ -104,6 +105,16 @@ export async function POST(
   // original timestamp survives a repeated call.
   if (session.status === "COMPLETED") {
     return NextResponse.json({ eligible: true, status: session.status, resources: breakdown });
+  }
+
+  // Part 2 waits for part 1: watching its clips counts, but it can't be
+  // completed while earlier content of the subtopic is unfinished.
+  const lockedBy = await earlierPartPending(authUser.id, session.id);
+  if (lockedBy) {
+    return NextResponse.json(
+      { eligible: false, reason: "earlier_part_pending", lockedBy, status: session.status, resources: breakdown },
+      { status: 409 }
+    );
   }
 
   const updated = await db.studySession.update({

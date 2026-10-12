@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findConflicts, pickClips, restorableSessions } from "../edits";
+import { findConflicts, partOrderViolation, pickClips, restorableSessions } from "../edits";
 import type { CalendarDay } from "../calendar";
 import type { Clip } from "../parts";
 
@@ -82,5 +82,41 @@ describe("findConflicts", () => {
       ["2026-10-20", "after-exam"],
     ]);
     expect(conflicts[1]).toMatchObject({ plannedMinutes: 75, availableMinutes: 60 });
+  });
+});
+
+describe("partOrderViolation", () => {
+  const part = (id: string, firstClip: number, date: string, order = 0) => ({ id, firstClip, date, order });
+
+  it("accepts parts in order, including later in the same day", () => {
+    expect(partOrderViolation([part("p1", 0, "2026-10-12", 0), part("p2", 5, "2026-10-12", 1), part("p3", 9, "2026-10-14")])).toBeNull();
+  });
+
+  it("catches part 2 moved to a day before part 1, whatever order the list is in", () => {
+    const v = partOrderViolation([part("p2", 5, "2026-10-11"), part("p1", 0, "2026-10-12")]);
+    expect(v).toMatchObject({ earlier: { id: "p1" }, later: { id: "p2" } });
+  });
+
+  it("catches part 2 placed ahead of part 1 within the same day", () => {
+    expect(partOrderViolation([part("p1", 0, "2026-10-12", 3), part("p2", 5, "2026-10-12", 1)])).not.toBeNull();
+  });
+});
+
+describe("restorableSessions — curriculum changed since the plan was made", () => {
+  it("leaves out subtopics and clips that no longer exist", () => {
+    const base = { scheduledDate: "2026-10-12", durationMins: 60 };
+    const restored = restorableSessions({
+      original: [
+        { ...base, subtopicId: "kept", resourceIds: ["k1", "gone1"], order: 0 },
+        { ...base, subtopicId: "kept", resourceIds: ["gone2"], order: 1 },
+        { ...base, subtopicId: "removed", resourceIds: ["r1"], order: 2 },
+      ],
+      completedClips: new Set(),
+      completedWhole: new Set(),
+      completedReviews: new Set(),
+      allowed: new Set(["kept"]), // "removed" was dropped by a re-import
+      existingClips: new Set(["k1", "r1"]),
+    });
+    expect(restored.map((s) => s.resourceIds)).toEqual([["k1"]]);
   });
 });

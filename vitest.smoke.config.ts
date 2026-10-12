@@ -9,7 +9,8 @@ export default defineConfig({
     environment: "node",
     include: ["scripts/**/*.smoke.ts"],
     testTimeout: 120_000,
-    hookTimeout: 60_000,
+    // Setup creates users and plans over a remote connection; give it room.
+    hookTimeout: 120_000,
     fileParallelism: false,
   },
   resolve: {

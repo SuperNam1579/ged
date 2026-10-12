@@ -49,6 +49,8 @@ Source: `src/lib/schedule/manual.ts` (edits), `src/lib/schedule/edits.ts` (rules
 | Rule | Behaviour | What the UI should do |
 |---|---|---|
 | Completed is history | A `COMPLETED` session can't be moved, changed or deleted (409). | Hide edit controls on completed sessions. |
+| Parts stay in order | A long subtopic is split into parts ("part 2 of 5", `partIndex`/`partCount`). No edit may put a later part before an earlier one — an earlier day, or earlier in the same day (409, message names the subtopic). | Limit where a part can be dropped; show the 409 message. |
+| Part 2 waits for part 1 | A part can't be completed while earlier content of its subtopic isn't done. `GET /api/sessions/[id]` returns `session.lockedBy` (`{ subtopicName, sessionId, scheduledDate, partIndex } \| null`; `sessionId: null` = that content is in the backlog). `verify-completion` answers 409 `reason: "earlier_part_pending"` with the same `lockedBy`. | On a locked part, keep the content closed and link to the part to do first. |
 | Days a session may go on | From today (Bangkok) up to the day before the exam (400 otherwise). | Limit date pickers / drop targets to that range. |
 | Missed sessions | Past and not done; stay where they are until the learner moves them. | Show as "missed / ไม่ได้เรียน"; allow moving to a day from today on. Swapping a missed session is refused — move it first. |
 | Free time is advisory | Editing availability never moves sessions. Days that no longer fit come back as `conflicts`. | Highlight conflict days; let the learner fix them. |
@@ -334,7 +336,8 @@ settings following a `not-enough` result (save the new usual week with `PUT
 | Fitness | `src/lib/ga/fitness.ts` |
 | Cutting subtopics into sessions | `src/lib/schedule/parts.ts` |
 | What is left to study, part numbers | `src/lib/schedule/work-items.ts` |
-| Smoke tests (real dev DB): plan lifecycle, content arriving later | `scripts/db/plan.smoke.ts`, `scripts/db/late-content.smoke.ts` |
+| Part 2 waits for part 1 (study time) | `src/lib/schedule/part-gate.ts` |
+| Smoke tests (real dev DB): plan lifecycle, content arriving later, racing requests, parts | `scripts/db/*.smoke.ts` |
 
 ## 6. Deploying
 

@@ -1,11 +1,12 @@
 /**
- * Content that arrives after the plan was made: a subject imported without
- * its videos (RLA today), whose videos — and a new lesson — are added later.
+ * Content that arrives after the plan was made: a lesson imported without its
+ * videos, whose videos — and another new lesson — are added later.
  *
  *   npm run test:smoke
  *
- * DEVELOPMENT database only. Adds a throwaway user, one clip and one subtopic
- * to RLA, and removes all three afterwards.
+ * DEVELOPMENT database only. Makes its own video-less lesson in RLA rather than
+ * relying on what the curriculum has, so it holds whatever RLA contains. Adds a
+ * throwaway user, two lessons and one clip, and removes them all afterwards.
  */
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -23,8 +24,19 @@ let userId = "";
 let clipId = "";
 let newSubtopicId = "";
 let rlaSubtopicId = "";
+let rlaTopicId = "";
 
 beforeAll(async () => {
+  // A lesson with no videos yet, in an existing RLA topic.
+  const topic = await db.topic.findFirstOrThrow({ where: { category: { subject: { code: "RLA" } } }, select: { id: true } });
+  rlaTopicId = topic.id;
+  rlaSubtopicId = (
+    await db.subtopic.create({
+      data: { topicId: rlaTopicId, name: `Smoke video-less ${stamp}`, description: "Smoke", learningUrl: "", estimatedMinutes: 30, difficultyLevel: 1 },
+      select: { id: true },
+    })
+  ).id;
+
   const user = await db.user.create({ data: { email: `smoke-late-${stamp}@example.test`, name: "Smoke Late" } });
   userId = user.id;
   await db.userPreferences.create({
@@ -39,9 +51,11 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // The user first: their sessions point at the lessons.
+  if (userId) await db.user.delete({ where: { id: userId } });
   if (clipId) await db.resource.deleteMany({ where: { id: clipId } });
   if (newSubtopicId) await db.subtopic.deleteMany({ where: { id: newSubtopicId } });
-  if (userId) await db.user.delete({ where: { id: userId } });
+  if (rlaSubtopicId) await db.subtopic.deleteMany({ where: { id: rlaSubtopicId } });
   await db.$disconnect();
 });
 
@@ -50,7 +64,7 @@ describe("content that arrives later", () => {
     const f = (await checkFeasibility(userId))!;
     const rla = f.subjects.find((s) => s.subjectCode === "RLA")!;
     expect(rla.requiredMinutes).toBeGreaterThan(0);
-    expect(["estimate", "mixed"]).toContain(rla.source);
+    expect(rla.estimatedSubtopics).toBeGreaterThanOrEqual(1); // at least our video-less lesson
     expect(f.warnings.some((w) => w.code === "estimated-time")).toBe(true);
 
     const result = await createInitialPlan(userId, "INITIAL");
@@ -58,11 +72,10 @@ describe("content that arrives later", () => {
   });
 
   it("flags a planned session once its subtopic's videos arrive", async () => {
-    const session = await db.studySession.findFirstOrThrow({
-      where: { studyPlan: { userId, isActive: true }, kind: "STUDY", resources: { none: {} } },
-      select: { subtopicId: true },
+    // Our video-less lesson got one session, at its estimate.
+    await db.studySession.findFirstOrThrow({
+      where: { studyPlan: { userId, isActive: true }, subtopicId: rlaSubtopicId, kind: "STUDY", resources: { none: {} } },
     });
-    rlaSubtopicId = session.subtopicId;
     clipId = `${rlaSubtopicId}-smoke-${stamp}`;
     await db.resource.create({
       data: { id: clipId, subtopicId: rlaSubtopicId, kind: "VIDEO", title: "Smoke clip", channelTitle: "Smoke", durationSec: 600, order: 9999 },
@@ -75,13 +88,13 @@ describe("content that arrives later", () => {
 
     // A fresh check counts the clip instead of the estimate.
     const f = (await checkFeasibility(userId))!;
-    expect(f.subjects.find((s) => s.subjectCode === "RLA")!.source).toBe("mixed");
+    const before = f.subjects.find((s) => s.subjectCode === "RLA")!;
+    expect(["mixed", "clips"]).toContain(before.source);
   });
 
   it("puts a lesson added later in the backlog, ready to plan by hand", async () => {
-    const topicId = (await db.subtopic.findUniqueOrThrow({ where: { id: rlaSubtopicId }, select: { topicId: true } })).topicId;
     const created = await db.subtopic.create({
-      data: { topicId, name: `Smoke lesson ${stamp}`, description: "Smoke", learningUrl: "", estimatedMinutes: 45, difficultyLevel: 2 },
+      data: { topicId: rlaTopicId, name: `Smoke lesson ${stamp}`, description: "Smoke", learningUrl: "", estimatedMinutes: 45, difficultyLevel: 2 },
       select: { id: true },
     });
     newSubtopicId = created.id;
