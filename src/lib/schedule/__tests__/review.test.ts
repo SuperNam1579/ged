@@ -46,18 +46,19 @@ describe("planReviews", () => {
     expect(noneWeak[0].subtopicId).toBe("hard");
   });
 
-  it("reviews every subtopic once before any twice, one session per 30 minutes", () => {
+  it("reviews every subtopic once before any twice, at most two a day however long the day", () => {
     const reviews = planReviews({
       days: [
         { date: "2026-10-10", capacity: 90 },
-        { date: "2026-10-11", capacity: 90 },
+        { date: "2026-10-11", capacity: 600 },
+        { date: "2026-10-12", capacity: 90 },
       ],
       studied,
       subtopics,
       proficiencies: {},
       lastDay: "2026-10-20",
     });
-    expect(reviews).toHaveLength(6);
+    expect(reviews).toHaveLength(6); // 2 a day, though the 10-hour day could hold 20
     expect(new Set(reviews.slice(0, 4).map((r) => r.subtopicId)).size).toBe(4);
     expect(reviews.every((r) => r.minutes === REVIEW_MINUTES)).toBe(true);
   });

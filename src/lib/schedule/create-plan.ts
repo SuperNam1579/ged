@@ -1,8 +1,9 @@
 // Makes the learner's study plan: one GA run, once. Server-only.
 //
 // The GA plans every day from today to the day before the exam onto the study
-// calendar (./calendar.ts): content first, then review days (./review.ts) - the
-// last few study days, and any left once the content is done. That happens
+// calendar (./calendar.ts): the content spread evenly over the run (./pace.ts),
+// then review on the last few study days (./review.ts). Spare time is left to
+// the learner. That happens
 // once, when the learner has no plan. Afterwards the learner edits the plan by
 // hand (./manual.ts) and nothing re-plans; the GA's sessions are kept in the
 // plan's metadata as `original`, so the learner can always go back to them.
@@ -17,6 +18,7 @@ import { PlanExistsError, planDays, savePlan, type PlannedSession } from "@/lib/
 import type { AvailabilitySlotInput, FitnessBreakdown, SubtopicData, TriggerReason } from "@/types";
 import { addDaysStr, buildStudyCalendar, bangkokDateStr, mondayOf, type StudyCalendar } from "./calendar";
 import { assessFeasibility, type Feasibility } from "./feasibility";
+import { paceShare, scaleDays } from "./pace";
 import { remainingMinutes } from "./parts";
 import { finalReviewDayCount, planReviews } from "./review";
 import { loadWorkItems } from "./work-items";
@@ -203,20 +205,25 @@ export async function createInitialPlan(userId: string, triggerReason: TriggerRe
 
   // The last few study days are kept for review; content is planned onto the rest.
   const reserved = new Set(days.slice(days.length - finalReviewDayCount(days.length)).map((d) => d.date));
-  const plan = pending.length
-    ? planDays({
-        items: pending,
-        subtopics,
-        proficiencies: profMap,
-        days: days.map((d) => ({ date: d.date, capacity: reserved.has(d.date) ? 0 : d.capacity })),
-        timeBudgetMs: GA_TIME_BUDGET_MS,
-      })
-    : null;
+  const contentDays = days.map((d) => ({ date: d.date, capacity: reserved.has(d.date) ? 0 : d.capacity }));
+
+  // Spread the content over the whole run (./pace.ts): every day loaded to the
+  // same share of its free time rather than the first weeks full and the rest
+  // empty. If the GA's order doesn't fit at that share, plan on full days.
+  const share = paceShare({ items: pending, days: contentDays, subtopics, proficiencies: profMap });
+  const run = (days: typeof contentDays) =>
+    planDays({ items: pending, subtopics, proficiencies: profMap, days, timeBudgetMs: GA_TIME_BUDGET_MS });
+  let plan = pending.length ? run(scaleDays(contentDays, share)) : null;
+  let pace = share;
+  if (plan && plan.leftovers.length > 0 && share < 1) {
+    plan = run(contentDays);
+    pace = 1;
+  }
   const studySessions = plan?.sessions ?? [];
 
-  // Review: the kept days, and every day left once the content is done.
-  const lastStudy = studySessions.reduce<string | null>((a, s) => (a && a > s.scheduledDate ? a : s.scheduledDate), null);
-  const reviewDays = days.filter((d) => reserved.has(d.date) || !lastStudy || d.date > lastStudy);
+  // Review: only the kept days before the exam. Spare time anywhere else is
+  // the learner's — to review or study more as they choose (POST /api/sessions).
+  const reviewDays = days.filter((d) => reserved.has(d.date));
   const earlier = await db.studySession.findMany({
     where: { studyPlan: { userId }, kind: "STUDY", status: "COMPLETED" },
     select: { subtopicId: true, scheduledDate: true },
@@ -258,6 +265,8 @@ export async function createInitialPlan(userId: string, triggerReason: TriggerRe
       extraMetadata: {
         ...(plan ? { seed: plan.seed, baselineFitness: plan.baseline.total, baselineBreakdown: plan.baseline } : {}),
         feasibility: { status: feasibility.status, load: feasibility.load, requiredMinutes: feasibility.requiredMinutes, contentMinutes: feasibility.contentMinutes },
+      /** Share of each day's free time the content was spread over (1 = full days). */
+      pace,
         reviewDays: reviewDays.map((d) => d.date),
         original,
       },

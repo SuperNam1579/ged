@@ -9,7 +9,8 @@
 //   not-enough    the content doesn't fit — the GA would leave some of it out
 //   tight         it fits with under 10% to spare: one missed day can't be caught up
 //   comfortable   it fits with room for missed days
-//   light         under half the time is needed; the rest goes to review
+//   light         under half the time is needed; the content is spread thin
+//                 and the spare time is the learner's
 //
 // The GA may run for the last three. For the first three the learner is told
 // what to change: more minutes a week, a later exam date, or fewer subjects.
@@ -115,7 +116,7 @@ function greedyOrder(items: WorkItem[], subtopics: SubtopicData[], proficiencies
 }
 
 /** Minutes of content packDays() can't place on `days`. */
-function shortfallOn(items: WorkItem[], days: Day[], subtopics: SubtopicData[], proficiencies: ProficiencyMap): number {
+export function shortfallOn(items: WorkItem[], days: Day[], subtopics: SubtopicData[], proficiencies: ProficiencyMap): number {
   if (items.length === 0) return 0;
   const { leftovers } = packDays(greedyOrder(items, subtopics, proficiencies), days);
   return leftovers.reduce((a, i) => a + remainingMinutes(i), 0);

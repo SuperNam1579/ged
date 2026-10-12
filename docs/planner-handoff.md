@@ -38,9 +38,15 @@ npm run verify          # typecheck + lint + tests + production build — run be
 4. **Reset brings the GA's plan back.** The GA's original sessions are kept with
    the plan. "Reset" undoes every edit; what the learner completed stays done.
 
-The GA's plan also includes **review sessions** (`kind: "REVIEW"`, 30 min): on
-the last 1–3 study days before the exam, and on every day left once the content
-is finished.
+The content is **spread over the whole run**: every day is loaded to the same
+share of its free time — the smallest share at which it all fits, plus 10%
+(`metadata.pace`, 1 = full days). A learner with lots of time gets light days
+up to the exam, not full days for three weeks and nothing after. Spare time is
+the learner's: nothing fills it.
+
+The GA's plan also includes **review sessions** (`kind: "REVIEW"`, 30 min, at
+most 2 a day) on the last 1–3 study days before the exam. More review or
+study is the learner's choice — add it with `POST /api/sessions`.
 
 ## 2. Rules the UI must reflect
 
@@ -223,7 +229,7 @@ check counts it. After the plan exists:
 | `not-enough` | Content doesn't fit. GA won't run. | Show `shortfallMinutes` and the suggestions; let the learner change settings and re-check. |
 | `tight` | Fits with under 10% to spare. GA runs. | Warn: a missed day can't be caught up. |
 | `comfortable` | Fits with room. GA runs. | — |
-| `light` | Under half the time needed. GA runs; extra days become review. | Optionally suggest fewer hours or more subjects. |
+| `light` | Under half the time needed. GA runs; the content is spread thin over the run. | Optionally mention the spare time is theirs (review, or add study). |
 | `exam-passed` / `no-time` | Nothing to plan. | Ask for a new exam date / free time. |
 
 ### Free time and subjects
