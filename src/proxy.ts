@@ -47,6 +47,9 @@ export default auth(async (req) => {
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
+    // Generated metadata images (app/opengraph-image.tsx, apple-icon): link
+    // previews fetch them without a session, and their URLs carry no extension.
+    /^\/(opengraph-image|twitter-image|apple-icon|icon)(\/|$|\?)/.test(pathname) ||
     (!pathname.startsWith("/api/") && /\.[a-z0-9]{2,5}$/i.test(pathname))
   ) {
     return NextResponse.next();
