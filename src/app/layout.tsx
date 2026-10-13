@@ -18,7 +18,7 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.ged-nn.com"),
+  //metadataBase: new URL("https://www.ged-nn.com"),
   title: {
     default: "GED Prep — Adaptive Study Platform",
     template: "%s | GED Prep",
@@ -28,6 +28,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+      icon: "https://marketplace.canva.com/k5zKE/MAGrKHk5zKE/1/tl/canva-%E0%B8%A0%E0%B8%B2%E0%B8%9E%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%81%E0%B8%AD%E0%B8%9A%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B9%8C%E0%B8%95%E0%B8%B9%E0%B8%99%E0%B8%9C%E0%B8%B6%E0%B9%89%E0%B8%87%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%99%E0%B9%88%E0%B8%B2%E0%B8%A3%E0%B8%B1%E0%B8%81-MAGrKHk5zKE.jpg",
+      shortcut: "https://marketplace.canva.com/k5zKE/MAGrKHk5zKE/1/tl/canva-%E0%B8%A0%E0%B8%B2%E0%B8%9E%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%81%E0%B8%AD%E0%B8%9A%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B9%8C%E0%B8%95%E0%B8%B9%E0%B8%99%E0%B8%9C%E0%B8%B6%E0%B9%89%E0%B8%87%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%99%E0xB9%88%E0xB8%B2%E0xB8%A3%E0xB8%B1%E0xB8%81-MAGrKHk5zKE.jpg",
+      apple: "https://marketplace.canva.com/k5zKE/MAGrKHk5zKE/1/tl/canva-%E0%B8%A0%E0xB8%B2%E0xB8%9E%E0xB8%9B%E0xB8%A3%E0xB8%B0%E0xB8%81%E0xB8%AD%E0xB8%9A%E0xB8%81%E0xB8%B2%E0xB8%A3%E0%B9%8C%E0%B8%95%E0%B8%B9%E0%B8%99%E0%B8%9C%E0%B8%B6%E0%B9%89%E0%B8%87%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%99%E0xB9%88%E0xB8%B2%E0xB8%A3%E0xB8%B1%E0xB8%81-MAGrKHk5zKE.jpg",
+    },
   openGraph: {
       title: "GED Prep — Adaptive Study Platform",
       description:
