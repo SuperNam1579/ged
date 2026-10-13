@@ -6,6 +6,7 @@ import { audit, extractRequestContext } from "@/lib/audit";
 import { getSessionResourceIds, getSubtopicResources } from "@/lib/resources";
 import { isComplete, requiredSecFor } from "@/lib/resources/types";
 import { earlierPartPending } from "@/lib/schedule/part-gate";
+import { skipWatchCheck } from "@/lib/resources/test-mode";
 
 /**
  * POST /api/sessions/:id/verify-completion
@@ -90,7 +91,8 @@ export async function POST(
     };
   });
 
-  const eligible = breakdown.every((b) => b.complete);
+  // Test mode (STUDY_SKIP_WATCH_CHECK=1): finishing needs no watch time.
+  const eligible = skipWatchCheck() || breakdown.every((b) => b.complete);
 
   if (!eligible) {
     return NextResponse.json({

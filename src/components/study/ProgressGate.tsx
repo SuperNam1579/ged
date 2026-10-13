@@ -24,6 +24,8 @@ interface ProgressGateProps {
   /** More parts of this subtopic follow — hold the quiz until the last one. */
   isLastPart?: boolean;
   nextPartDate?: string | null;
+  /** Test mode (STUDY_SKIP_WATCH_CHECK): the session can be completed straight away. */
+  skipWatchCheck?: boolean;
 }
 
 interface VerifyResponse {
@@ -54,6 +56,7 @@ export function ProgressGate({
   onCompleted,
   isLastPart = true,
   nextPartDate = null,
+  skipWatchCheck = false,
 }: ProgressGateProps) {
   const reduceMotion = useReducedMotion();
   const [verifying, setVerifying] = useState(false);
@@ -67,7 +70,7 @@ export function ProgressGate({
     0
   );
   const percent = requiredTotal > 0 ? (watchedTotal / requiredTotal) * 100 : 0;
-  const looksReady = requiredTotal > 0 && watchedTotal >= requiredTotal;
+  const looksReady = skipWatchCheck || (requiredTotal > 0 && watchedTotal >= requiredTotal);
   const remaining = Math.max(0, 100 - percent);
 
   // What the learner has to do, in words that match what is in the session.
@@ -149,9 +152,11 @@ export function ProgressGate({
                   ? "Session complete — the quiz is unlocked."
                   : "Part complete — the quiz unlocks after the last part."
                 : looksReady
-                  ? isLastPart
-                    ? "Ready to complete this session."
-                    : "Ready to complete this part."
+                  ? skipWatchCheck && watchedTotal < requiredTotal
+                    ? "Test mode: you can complete this without watching."
+                    : isLastPart
+                      ? "Ready to complete this session."
+                      : "Ready to complete this part."
                   : isLastPart
                     ? `${Math.round(remaining)}% more to unlock the quiz.`
                     : `${Math.round(remaining)}% more to finish this part.`}

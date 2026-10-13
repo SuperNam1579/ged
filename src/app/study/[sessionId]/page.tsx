@@ -330,6 +330,7 @@ function StudySessionPageInner() {
                 onResourcesLoaded={setVideoCount}
                 onCompleted={() => setCompleted(true)}
                 isLastPart={session.isLastPart ?? true}
+                skipWatchCheck={session.skipWatchCheck ?? false}
                 nextPartDate={session.nextPart?.scheduledDate ?? null}
                 fallback={
                   /* Videos when the subtopic has them, the original external link

@@ -35,6 +35,8 @@ interface StudySessionViewProps {
    * follow. The quiz covers the whole subtopic, so it waits for the last part.
    */
   isLastPart?: boolean;
+  /** Test mode: completing doesn't wait for the videos. */
+  skipWatchCheck?: boolean;
   /** When the next part is scheduled, for the "part complete" footer. */
   nextPartDate?: string | null;
 }
@@ -69,6 +71,7 @@ export function StudySessionView({
   onResourcesLoaded,
   onCompleted,
   isLastPart = true,
+  skipWatchCheck = false,
   nextPartDate = null,
 }: StudySessionViewProps) {
   const reduceMotion = useReducedMotion();
@@ -375,6 +378,7 @@ export function StudySessionView({
         elapsedSec={elapsedSec}
         returnTo={returnTo}
         isLastPart={isLastPart}
+        skipWatchCheck={skipWatchCheck}
         nextPartDate={nextPartDate}
         onCompleted={() => {
           setStatus("COMPLETED");

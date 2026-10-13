@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { deleteSession, PlanEditError, updateSession } from "@/lib/schedule/manual";
+import { skipWatchCheck } from "@/lib/resources/test-mode";
 import { earlierPartPending } from "@/lib/schedule/part-gate";
 import { displayUnitName } from "@/lib/curriculum/display-names";
 
@@ -94,6 +95,8 @@ export async function GET(
     session: {
       id: session.id,
       lockedBy,
+      /** Test mode: the session can be completed without watching (lib/resources/test-mode.ts). */
+      skipWatchCheck: skipWatchCheck(),
       subtopicId: session.subtopicId,
       subtopicName: session.subtopic.name,
       subtopicDescription: session.subtopic.description,

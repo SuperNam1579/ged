@@ -70,6 +70,8 @@ export interface StudySessionWithSubtopic {
    * finish, which this part waits for. sessionId null = that content is in the
    * backlog, not the plan.
    */
+  /** Test mode is on: the session can be completed without watching first. */
+  skipWatchCheck?: boolean;
   lockedBy?: { subtopicName: string; sessionId: string | null; scheduledDate: string | null; partIndex: number | null } | null;
 }
 
