@@ -4,7 +4,7 @@
 // (the structure, scope sentences, and cut rules). Every video below was
 // confirmed embeddable against the YouTube Data API at generation time.
 //
-// Generated: 2026-09-27T14:48:22.976Z
+// Generated: 2026-10-11T21:22:35.236Z
 
 export interface CurriculumClip {
   kind: "VIDEO" | "ARTICLE";
@@ -53,7 +53,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Fractions",
                 "description": "Read, compare, and compute with fractions and mixed numbers, including unlike denominators.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Fractions",
-                "estimatedMinutes": 430,
+                "estimatedMinutes": 437,
                 "difficultyLevel": 1,
                 "clips": [
                   {
@@ -255,6 +255,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 9: Add and subtract fractions (like denominators)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:add-and-subtract-fraction-like-denominators/x18ca194a:untitled-857/a/equivalent-fractions-review",
+                    "wordCount": 281,
+                    "title": "Visualizing equivalent fractions review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 71,
+                    "lesson": "Equivalent fractions",
+                    "unit": "Unit 9: Add and subtract fractions (like denominators)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "N1X0vf5PUz4",
                     "url": null,
@@ -310,6 +321,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 9: Add and subtract fractions (like denominators)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:add-and-subtract-fraction-like-denominators/x18ca194a:untitled-858/a/common-denominators-review",
+                    "wordCount": 393,
+                    "title": "Common denominators review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 99,
+                    "lesson": "Common denominators",
+                    "unit": "Unit 9: Add and subtract fractions (like denominators)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "_E9fG8BYcBo",
                     "url": null,
@@ -328,6 +350,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Decomposing a mixed number | Fractions | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 300,
+                    "lesson": "Decomposing fractions",
+                    "unit": "Unit 9: Add and subtract fractions (like denominators)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:add-and-subtract-fraction-like-denominators/x18ca194a:decomposing-fractions/a/decomposing-fractions-review",
+                    "wordCount": 361,
+                    "title": "Decomposing fractions review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 91,
                     "lesson": "Decomposing fractions",
                     "unit": "Unit 9: Add and subtract fractions (like denominators)"
                   },
@@ -405,6 +438,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Mixed numbers: changing from an improper fraction | Fractions | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 242,
+                    "lesson": "Mixed numbers",
+                    "unit": "Unit 9: Add and subtract fractions (like denominators)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:add-and-subtract-fraction-like-denominators/x18ca194a:mixed-numbers/a/mixed-numbers-and-improper-fractions-review",
+                    "wordCount": 295,
+                    "title": "Mixed numbers and improper fractions review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 74,
                     "lesson": "Mixed numbers",
                     "unit": "Unit 9: Add and subtract fractions (like denominators)"
                   },
@@ -1030,7 +1074,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Decimals",
                 "description": "Read place value and add, subtract, multiply, and divide decimals.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Decimals",
-                "estimatedMinutes": 208,
+                "estimatedMinutes": 220,
                 "difficultyLevel": 1,
                 "clips": [
                   {
@@ -1089,6 +1133,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 11: Decimals and place value"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/arith-decimals/x18ca194a:decimal-place-value-intro/a/decimal-place-value-review",
+                    "wordCount": 220,
+                    "title": "Decimal place value review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 55,
+                    "lesson": "Decimal place value intro",
+                    "unit": "Unit 11: Decimals and place value"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "ABHQJFWZGsk",
                     "url": null,
@@ -1107,6 +1162,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Decimals: expanding out place value | Decimals | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 173,
+                    "lesson": "Decimals in expanded form",
+                    "unit": "Unit 11: Decimals and place value"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/arith-decimals/x18ca194a:decimals-in-expanded-form/a/decimals-in-expanded-form-review",
+                    "wordCount": 235,
+                    "title": "Decimals in expanded form review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 59,
                     "lesson": "Decimals in expanded form",
                     "unit": "Unit 11: Decimals and place value"
                   },
@@ -1151,6 +1217,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Estimating adding decimals",
                     "channelTitle": "Khan Academy",
                     "durationSec": 210,
+                    "lesson": "Adding decimals intro",
+                    "unit": "Unit 12: Add and subtract decimals"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:add-and-subtract-decimals/x18ca194a:adding-decimals-intro/a/adding-decimals-without-the-standard-algorithm",
+                    "wordCount": 756,
+                    "title": "Adding decimals",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 191,
                     "lesson": "Adding decimals intro",
                     "unit": "Unit 12: Add and subtract decimals"
                   },
@@ -1206,6 +1283,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Estimating subtracting decimals",
                     "channelTitle": "Khan Academy",
                     "durationSec": 208,
+                    "lesson": "Subtracting decimals intro",
+                    "unit": "Unit 12: Add and subtract decimals"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:add-and-subtract-decimals/x18ca194a:subtracting-decimals-intro/a/subtracting-decimals-without-the-standard-algorithm",
+                    "wordCount": 910,
+                    "title": "Subtracting decimals",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 229,
                     "lesson": "Subtracting decimals intro",
                     "unit": "Unit 12: Add and subtract decimals"
                   },
@@ -1331,6 +1419,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 16: Multiply and divide decimals"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:multiply-and-divide-decimals/x18ca194a:multiplying-decimals/a/multiplying-decimals-without-the-standard-algorithm",
+                    "wordCount": 362,
+                    "title": "Multiplying decimals (no standard algorithm)",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 91,
+                    "lesson": "Multiplying decimals",
+                    "unit": "Unit 16: Multiply and divide decimals"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "29qKGbhFnf8",
                     "url": null,
@@ -1435,7 +1534,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Positive & negative numbers",
                 "description": "Add, subtract, multiply, and divide signed numbers, and interpret absolute value.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Positive%20%26%20negative%20numbers",
-                "estimatedMinutes": 150,
+                "estimatedMinutes": 163,
                 "difficultyLevel": 1,
                 "clips": [
                   {
@@ -1450,6 +1549,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 18: Add and subtract negative numbers"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/arith-review-negative-numbers/arith-review-neg-num-intro/a/intro-to-negative-numbers",
+                    "wordCount": 224,
+                    "title": "Intro to negative numbers",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 56,
+                    "lesson": "Intro to negative numbers",
+                    "unit": "Unit 18: Add and subtract negative numbers"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "3-aryZYsoxU",
                     "url": null,
@@ -1457,6 +1567,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Negative symbol as opposite | Negative numbers | 6th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 301,
+                    "lesson": "Negative symbol as opposite",
+                    "unit": "Unit 18: Add and subtract negative numbers"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/arith-review-negative-numbers/arith-review-number-opposites/a/number-opposites-review",
+                    "wordCount": 135,
+                    "title": "Number opposites review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 34,
                     "lesson": "Negative symbol as opposite",
                     "unit": "Unit 18: Add and subtract negative numbers"
                   },
@@ -1512,6 +1633,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Signs of sums on a number line | Integers: Addition and subtraction | 7th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 444,
+                    "lesson": "Adding negative numbers fluently",
+                    "unit": "Unit 18: Add and subtract negative numbers"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/arith-review-negative-numbers/x18ca194a:adding-negative-numbers-fluently/a/adding-negative-numbers-review",
+                    "wordCount": 206,
+                    "title": "Adding negative numbers review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 52,
                     "lesson": "Adding negative numbers fluently",
                     "unit": "Unit 18: Add and subtract negative numbers"
                   },
@@ -1582,6 +1714,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 18: Add and subtract negative numbers"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/arith-review-negative-numbers/x18ca194a:subtracting-negative-numbers-fluently/a/subtracting-negative-numbers-review",
+                    "wordCount": 306,
+                    "title": "Subtracting negative numbers review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 77,
+                    "lesson": "Subtracting negative numbers fluently",
+                    "unit": "Unit 18: Add and subtract negative numbers"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "jA1vyOrzlOE",
                     "url": null,
@@ -1626,6 +1769,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 18: Add and subtract negative numbers"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:multiply-and-divide-negative-numbers/x18ca194a:multiply-and-divide-integers/a/multiplying-negative-numbers",
+                    "wordCount": 427,
+                    "title": "Multiplying a positive and a negative number",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 108,
+                    "lesson": "Multiply and divide integers",
+                    "unit": "Unit 19: Multiply and divide negative numbers"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:multiply-and-divide-negative-numbers/x18ca194a:multiply-and-divide-integers/a/multiplying-two-negative-numbers",
+                    "wordCount": 917,
+                    "title": "Multiplying two negative numbers",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 231,
+                    "lesson": "Multiply and divide integers",
+                    "unit": "Unit 19: Multiply and divide negative numbers"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "rK4sXm_MPWo",
                     "url": null,
@@ -1666,6 +1831,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Dividing positive and negative numbers | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 292,
+                    "lesson": "Multiply and divide integers",
+                    "unit": "Unit 19: Multiply and divide negative numbers"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:multiply-and-divide-negative-numbers/x18ca194a:multiply-and-divide-integers/a/multiplying-negative-numbers-review",
+                    "wordCount": 88,
+                    "title": "Multiplying negative numbers review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 22,
+                    "lesson": "Multiply and divide integers",
+                    "unit": "Unit 19: Multiply and divide negative numbers"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:multiply-and-divide-negative-numbers/x18ca194a:multiply-and-divide-integers/a/dividing-negative-numbers-review",
+                    "wordCount": 73,
+                    "title": "Dividing negative numbers review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 18,
                     "lesson": "Multiply and divide integers",
                     "unit": "Unit 19: Multiply and divide negative numbers"
                   },
@@ -1723,6 +1910,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "durationSec": 142,
                     "lesson": "Absolute value",
                     "unit": "Unit 18: Add and subtract negative numbers (Arithmetic) — เฉพาะ lesson Absolute value"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/arith-review-negative-numbers/arith-review-abs-value/a/intro-to-absolute-value",
+                    "wordCount": 182,
+                    "title": "Intro to absolute value",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 46,
+                    "lesson": "Absolute value",
+                    "unit": "Unit 18: Add and subtract negative numbers (Arithmetic) — เฉพาะ lesson Absolute value"
                   }
                 ]
               },
@@ -1730,7 +1928,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Factors & Multiples",
                 "description": "Find factors, multiples, GCF, LCM, and prime factorisations.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Factors%20%26%20Multiples",
-                "estimatedMinutes": 68,
+                "estimatedMinutes": 84,
                 "difficultyLevel": 1,
                 "clips": [
                   {
@@ -1789,6 +1987,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 1: Factors and multiples (Pre-algebra)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-factors-multiples/pre-algebra-factors-mult/a/factors-and-multiples",
+                    "wordCount": 2094,
+                    "title": "Factors and multiples",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 528,
+                    "lesson": "Factors and multiples",
+                    "unit": "Unit 1: Factors and multiples (Pre-algebra)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "mIStB5X4U8M",
                     "url": null,
@@ -1807,6 +2016,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Recognizing prime and composite numbers | Factors and multiples | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 280,
+                    "lesson": "Prime and composite numbers",
+                    "unit": "Unit 1: Factors and multiples (Pre-algebra)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-factors-multiples/pre-algebra-prime-numbers/a/prime-composite-numbers",
+                    "wordCount": 711,
+                    "title": "Prime and composite numbers intro",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 179,
+                    "lesson": "Prime and composite numbers",
+                    "unit": "Unit 1: Factors and multiples (Pre-algebra)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-factors-multiples/pre-algebra-prime-numbers/a/prime-and-composite-review",
+                    "wordCount": 392,
+                    "title": "Prime and composite numbers review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 99,
                     "lesson": "Prime and composite numbers",
                     "unit": "Unit 1: Factors and multiples (Pre-algebra)"
                   },
@@ -1849,7 +2080,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Exponents & roots",
                 "description": "Apply exponent rules and evaluate square and cube roots.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Exponents%20%26%20roots",
-                "estimatedMinutes": 202,
+                "estimatedMinutes": 224,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -1886,6 +2117,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 17: Exponents and powers of ten (Arithmetic)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:exponents-and-powers-of-ten/x18ca194a:multiplying-and-dividing-decimals-by-10-100-and-1-000/a/multiplying-by-10-100-1000",
+                    "wordCount": 479,
+                    "title": "Multiplying decimals by 10, 100, and 1000",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 121,
+                    "lesson": "Multiplying and dividing decimals by 10, 100, and 1,000",
+                    "unit": "Unit 17: Exponents and powers of ten (Arithmetic)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:exponents-and-powers-of-ten/x18ca194a:multiplying-and-dividing-decimals-by-10-100-and-1-000/a/multiplying-and-dividing-by-powers-of-10",
+                    "wordCount": 601,
+                    "title": "Dividing decimals by 10, 100, and 1000",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 152,
+                    "lesson": "Multiplying and dividing decimals by 10, 100, and 1,000",
+                    "unit": "Unit 17: Exponents and powers of ten (Arithmetic)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "Xvsqv2oO2ac",
                     "url": null,
@@ -1904,6 +2157,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Powers of 10: patterns | Place value and decimals | 5th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 334,
+                    "lesson": "Powers of 10",
+                    "unit": "Unit 17: Exponents and powers of ten (Arithmetic)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/arithmetic/x18ca194a:exponents-and-powers-of-ten/x18ca194a:powers-of-10/a/powers-of-10-review",
+                    "wordCount": 161,
+                    "title": "Powers of 10 review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 41,
                     "lesson": "Powers of 10",
                     "unit": "Unit 17: Exponents and powers of ten (Arithmetic)"
                   },
@@ -1952,6 +2216,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 5: Exponents intro and order of operations (Pre-algebra)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/xb4832e56:exponents-intro-and-order-of-operations/xb4832e56:exponents/a/squaring-numbers",
+                    "wordCount": 131,
+                    "title": "Squaring numbers",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 33,
+                    "lesson": "Meaning of exponents",
+                    "unit": "Unit 5: Exponents intro and order of operations (Pre-algebra)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/xb4832e56:exponents-intro-and-order-of-operations/xb4832e56:exponents/a/introduction-to-exponents",
+                    "wordCount": 283,
+                    "title": "Intro to exponents",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 71,
+                    "lesson": "Meaning of exponents",
+                    "unit": "Unit 5: Exponents intro and order of operations (Pre-algebra)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "TWv6f7rwjF4",
                     "url": null,
@@ -1981,6 +2267,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Powers of fractions | Exponents, radicals, and scientific notation | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 106,
+                    "lesson": "Powers of fractions and decimals",
+                    "unit": "Unit 5: Exponents intro and order of operations (Pre-algebra)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/xb4832e56:exponents-intro-and-order-of-operations/xb4832e56:powers-of-fractions-and-decimals/a/exponents-review",
+                    "wordCount": 155,
+                    "title": "Exponents review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 39,
                     "lesson": "Powers of fractions and decimals",
                     "unit": "Unit 5: Exponents intro and order of operations (Pre-algebra)"
                   },
@@ -2040,6 +2337,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 5: Exponents intro and order of operations (Pre-algebra)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/xb4832e56:exponents-intro-and-order-of-operations/xb4832e56:more-on-order-of-operations/a/order-of-operations-review",
+                    "wordCount": 787,
+                    "title": "Order of operations review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 198,
+                    "lesson": "More on order of operations",
+                    "unit": "Unit 5: Exponents intro and order of operations (Pre-algebra)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "mbc3_e5lWw0",
                     "url": null,
@@ -2047,6 +2355,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Introduction to square roots | Numbers and operations | 8th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 323,
+                    "lesson": "Square roots & cube roots",
+                    "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-exponents-radicals/pre-algebra-square-roots/a/square-roots-of-perfect-squares-art",
+                    "wordCount": 199,
+                    "title": "Square roots of perfect squares",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 50,
                     "lesson": "Square roots & cube roots",
                     "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
                   },
@@ -2095,6 +2414,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-exponents-radicals/pre-algebra-square-roots/a/square-roots-review",
+                    "wordCount": 333,
+                    "title": "Square roots review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 84,
+                    "lesson": "Square roots & cube roots",
+                    "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-exponents-radicals/pre-algebra-square-roots/a/cube-roots-review",
+                    "wordCount": 315,
+                    "title": "Cube roots review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 79,
+                    "lesson": "Square roots & cube roots",
+                    "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "zM_p7tfWvLU",
                     "url": null,
@@ -2128,6 +2469,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-exponents-radicals/pre-algebra-exponent-properties/a/exponent-properties-review",
+                    "wordCount": 607,
+                    "title": "Exponent properties review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 153,
+                    "lesson": "Exponent properties intro",
+                    "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "JnpqlXN9Whw",
                     "url": null,
@@ -2146,6 +2498,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Negative exponent intuition | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 278,
+                    "lesson": "Negative exponents",
+                    "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-exponents-radicals/pre-algebra-negative-exponents/a/negative-exponents-review",
+                    "wordCount": 238,
+                    "title": "Negative exponents review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 60,
                     "lesson": "Negative exponents",
                     "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน roots/exponents"
                   },
@@ -2188,7 +2551,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Scientific notation",
                 "description": "Convert between standard and scientific notation and compute with it.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Scientific%20notation",
-                "estimatedMinutes": 76,
+                "estimatedMinutes": 78,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -2232,6 +2595,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Scientific notation examples | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 686,
+                    "lesson": "Scientific notation intro",
+                    "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน scientific notation"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-exponents-radicals/pre-algebra-scientific-notation/a/scientific-notation-review",
+                    "wordCount": 355,
+                    "title": "Learn and try: Scientific notation review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 89,
                     "lesson": "Scientific notation intro",
                     "unit": "Unit 11: Roots, exponents, & scientific notation (Pre-algebra) — เฉพาะส่วน scientific notation"
                   },
@@ -2323,7 +2697,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Ratios",
                 "description": "Write and compare ratios and unit rates, and solve rate problems.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Ratios",
-                "estimatedMinutes": 80,
+                "estimatedMinutes": 83,
                 "difficultyLevel": 1,
                 "clips": [
                   {
@@ -2360,6 +2734,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 3: Ratios and rates"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-ratios-rates/pre-algebra-ratios-intro/a/intro-to-ratios",
+                    "wordCount": 220,
+                    "title": "Ratio review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 55,
+                    "lesson": "Intro to ratios",
+                    "unit": "Unit 3: Ratios and rates"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "suRIY3ULrQo",
                     "url": null,
@@ -2390,6 +2775,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "channelTitle": "Khan Academy",
                     "durationSec": 353,
                     "lesson": "Visualize ratios",
+                    "unit": "Unit 3: Ratios and rates"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/pre-algebra-ratios-rates/xb4832e56:equivalent-ratios/a/ratio-tables",
+                    "wordCount": 258,
+                    "title": "Ratio tables",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 65,
+                    "lesson": "Equivalent ratios",
                     "unit": "Unit 3: Ratios and rates"
                   },
                   {
@@ -2475,7 +2871,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Percentages",
                 "description": "Calculate percent of a number, percent change, discount, markup, tax, and tip.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Percentages",
-                "estimatedMinutes": 40,
+                "estimatedMinutes": 46,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -2567,6 +2963,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 4: Percentages"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/xb4832e56:percentages/xb4832e56:equivalent-representations-of-percent-problems/a/converting-between-percents-fractions-decimals",
+                    "wordCount": 542,
+                    "title": "Converting between percents, fractions, & decimals",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 137,
+                    "lesson": "Equivalent representations of percent problems",
+                    "unit": "Unit 4: Percentages"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "GdwjpJwa8Ys",
                     "url": null,
@@ -2574,6 +2981,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Common percentages",
                     "channelTitle": "Khan Academy",
                     "durationSec": 172,
+                    "lesson": "Equivalent representations of percent problems",
+                    "unit": "Unit 4: Percentages"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/xb4832e56:percentages/xb4832e56:equivalent-representations-of-percent-problems/a/converting-percents-and-fractions-review",
+                    "wordCount": 376,
+                    "title": "Converting percents and fractions review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 95,
+                    "lesson": "Equivalent representations of percent problems",
+                    "unit": "Unit 4: Percentages"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/xb4832e56:percentages/xb4832e56:equivalent-representations-of-percent-problems/a/rewriting-decimals-and-percents-review",
+                    "wordCount": 236,
+                    "title": "Converting decimals and percents review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 59,
                     "lesson": "Equivalent representations of percent problems",
                     "unit": "Unit 4: Percentages"
                   },
@@ -2605,7 +3034,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Proportions",
                 "description": "Set up and solve proportions, including scale and constant-of-proportionality problems.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Proportions",
-                "estimatedMinutes": 140,
+                "estimatedMinutes": 146,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -2884,6 +3313,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 9: Proportional relationships (Pre-algebra)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/pre-algebra/xb4832e56:proportional-relationships/xb4832e56:writing-solving-proportions/a/multi-step-ratio-and-proportion-problems",
+                    "wordCount": 1190,
+                    "title": "Multi-step ratio and percent problems",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 300,
+                    "lesson": "Writing & solving proportions",
+                    "unit": "Unit 9: Proportional relationships (Pre-algebra)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "qcz1Cm_-l50",
                     "url": null,
@@ -2927,7 +3367,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Mean, median, mode, range",
                 "description": "Calculate mean, median, mode, range, and weighted average, and judge the effect of outliers.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Mean%2C%20median%2C%20mode%2C%20range",
-                "estimatedMinutes": 217,
+                "estimatedMinutes": 257,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -2949,6 +3389,39 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Finding mean, median, and mode | Descriptive statistics | Probability and Statistics | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 235,
+                    "lesson": "Measuring center in quantitative data",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/mean-median-basics/a/calculating-the-mean",
+                    "wordCount": 508,
+                    "title": "Calculating the mean",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 128,
+                    "lesson": "Measuring center in quantitative data",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/mean-median-basics/a/choosing-the-best-measure-of-center",
+                    "wordCount": 574,
+                    "title": "Choosing the \"best\" measure of center",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 145,
+                    "lesson": "Measuring center in quantitative data",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/mean-median-basics/a/mean-median-and-mode-review",
+                    "wordCount": 877,
+                    "title": "Mean, median, and mode review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 221,
                     "lesson": "Measuring center in quantitative data",
                     "unit": "Unit 3: Summarizing quantitative data"
                   },
@@ -2997,6 +3470,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 3: Summarizing quantitative data"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/more-mean-median/a/mean-as-the-balancing-point",
+                    "wordCount": 743,
+                    "title": "Mean as the balancing point",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 187,
+                    "lesson": "More on mean and median",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "qpbaglogObM",
                     "url": null,
@@ -3026,6 +3510,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "How to calculate interquartile range IQR | Data and statistics | 6th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 372,
+                    "lesson": "Interquartile range (IQR)",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/interquartile-range-iqr/a/range-and-interquartile-range-worksheet",
+                    "wordCount": 1079,
+                    "title": "Comparing range and interquartile range (IQR)",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 272,
+                    "lesson": "Interquartile range (IQR)",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/interquartile-range-iqr/a/interquartile-range-review",
+                    "wordCount": 851,
+                    "title": "Interquartile range review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 215,
                     "lesson": "Interquartile range (IQR)",
                     "unit": "Unit 3: Summarizing quantitative data"
                   },
@@ -3063,6 +3569,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 3: Summarizing quantitative data"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/variance-standard-deviation-population/a/introduction-to-standard-deviation",
+                    "wordCount": 197,
+                    "title": "The idea of spread and standard deviation",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 50,
+                    "lesson": "Variance and standard deviation of a population",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/variance-standard-deviation-population/a/calculating-standard-deviation-step-by-step",
+                    "wordCount": 1007,
+                    "title": "Calculating standard deviation step by step",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 254,
+                    "lesson": "Variance and standard deviation of a population",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "qNKOi08NxHs",
                     "url": null,
@@ -3070,6 +3598,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Mean and standard deviation versus median and IQR | AP Statistics | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 478,
+                    "lesson": "Variance and standard deviation of a population",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/variance-standard-deviation-population/a/concept-check-standard-deviation",
+                    "wordCount": 872,
+                    "title": "Concept check: Standard deviation",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 220,
                     "lesson": "Variance and standard deviation of a population",
                     "unit": "Unit 3: Summarizing quantitative data"
                   },
@@ -3107,6 +3646,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 3: Summarizing quantitative data"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/variance-standard-deviation-sample/a/population-and-sample-standard-deviation-review",
+                    "wordCount": 790,
+                    "title": "Population and sample standard deviation review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 199,
+                    "lesson": "Variance and standard deviation of a sample",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "F2mfEldxsPI",
                     "url": null,
@@ -3136,6 +3686,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Simulation providing evidence that (n-1) gives us unbiased estimate | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 270,
+                    "lesson": "More on standard deviation",
+                    "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/more-on-standard-deviation/a/unbiased-estimate-of-population-variance",
+                    "wordCount": 4,
+                    "title": "Unbiased estimate of population variance",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 1,
                     "lesson": "More on standard deviation",
                     "unit": "Unit 3: Summarizing quantitative data"
                   },
@@ -3182,6 +3743,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "durationSec": 382,
                     "lesson": "Other measures of spread",
                     "unit": "Unit 3: Summarizing quantitative data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/other-measures-of-spread/a/mean-absolute-deviation-mad-review",
+                    "wordCount": 398,
+                    "title": "Mean absolute deviation (MAD) review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 100,
+                    "lesson": "Other measures of spread",
+                    "unit": "Unit 3: Summarizing quantitative data"
                   }
                 ]
               },
@@ -3189,7 +3761,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Bar & circle graphs",
                 "description": "Read and interpret bar graphs, circle graphs, and pictographs.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Bar%20%26%20circle%20graphs",
-                "estimatedMinutes": 56,
+                "estimatedMinutes": 78,
                 "difficultyLevel": 1,
                 "clips": [
                   {
@@ -3281,6 +3853,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 1: Analyzing categorical data"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/analyzing-categorical-data/one-categorical-variable/a/picture-graphs-review",
+                    "wordCount": 182,
+                    "title": "Picture graphs (pictographs) review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 46,
+                    "lesson": "Analyzing one categorical variable",
+                    "unit": "Unit 1: Analyzing categorical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/analyzing-categorical-data/one-categorical-variable/a/bar-graphs-review",
+                    "wordCount": 307,
+                    "title": "Bar graphs review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 77,
+                    "lesson": "Analyzing one categorical variable",
+                    "unit": "Unit 1: Analyzing categorical data"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "l5MrtV7ZN88",
                     "url": null,
@@ -3288,6 +3882,39 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Two-way frequency tables and Venn diagrams | Data and modeling | 8th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 382,
+                    "lesson": "Two-way tables",
+                    "unit": "Unit 1: Analyzing categorical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/analyzing-categorical-data/two-way-tables-for-categorical-data/a/two-way-frequency-tables",
+                    "wordCount": 659,
+                    "title": "Two-way frequency tables",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 166,
+                    "lesson": "Two-way tables",
+                    "unit": "Unit 1: Analyzing categorical data"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "_ETPMszULXc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Two-way relative frequency tables | Data and modeling | 8th grade | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 267,
+                    "lesson": "Two-way tables",
+                    "unit": "Unit 1: Analyzing categorical data"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "MarqSlyz-lU",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Interpreting two-way tables | Data and modeling | 8th grade | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 103,
                     "lesson": "Two-way tables",
                     "unit": "Unit 1: Analyzing categorical data"
                   },
@@ -3314,6 +3941,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 1: Analyzing categorical data"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/analyzing-categorical-data/two-way-tables-for-categorical-data/a/two-way-relative-frequency-tables-super-powers",
+                    "wordCount": 432,
+                    "title": "Two-way relative frequency tables and associations",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 109,
+                    "lesson": "Two-way tables",
+                    "unit": "Unit 1: Analyzing categorical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/analyzing-categorical-data/two-way-tables-for-categorical-data/a/two-way-tables-review",
+                    "wordCount": 414,
+                    "title": "Two-way tables review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 104,
+                    "lesson": "Two-way tables",
+                    "unit": "Unit 1: Analyzing categorical data"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "Iw9fEYIpPMA",
                     "url": null,
@@ -3323,6 +3972,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "durationSec": 317,
                     "lesson": "Distributions in two-way tables",
                     "unit": "Unit 1: Analyzing categorical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/analyzing-categorical-data/distributions-in-two-way-tables/a/conditional-distributions-relationships-ap",
+                    "wordCount": 764,
+                    "title": "Conditional distributions and relationships",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 193,
+                    "lesson": "Distributions in two-way tables",
+                    "unit": "Unit 1: Analyzing categorical data"
                   }
                 ]
               },
@@ -3330,7 +3990,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Dot plots, histograms & box plots",
                 "description": "Build and interpret dot plots, histograms, and box plots, including shape and spread.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Dot%20plots%2C%20histograms%20%26%20box%20plots",
-                "estimatedMinutes": 147,
+                "estimatedMinutes": 159,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -3352,6 +4012,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Frequency tables and dot plots | Data and statistics | 6th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 438,
+                    "lesson": "Displaying quantitative data with graphs",
+                    "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/displaying-describing-data/quantitative-data-graphs/a/dot-plots-and-frequency-tables-review",
+                    "wordCount": 171,
+                    "title": "Dot plots and frequency tables review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 43,
                     "lesson": "Displaying quantitative data with graphs",
                     "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
                   },
@@ -3389,6 +4060,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/displaying-describing-data/quantitative-data-graphs/a/histograms-review",
+                    "wordCount": 358,
+                    "title": "Histograms review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 90,
+                    "lesson": "Displaying quantitative data with graphs",
+                    "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "OaJXJduRiIE",
                     "url": null,
@@ -3407,6 +4089,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Reading stem and leaf plots | Applying mathematical reasoning | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 188,
+                    "lesson": "Displaying quantitative data with graphs",
+                    "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/displaying-describing-data/quantitative-data-graphs/a/stem-and-leaf-plots-review",
+                    "wordCount": 478,
+                    "title": "Stem and leaf plots review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 121,
                     "lesson": "Displaying quantitative data with graphs",
                     "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
                   },
@@ -3543,6 +4236,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/box-whisker-plots/a/box-plot-review",
+                    "wordCount": 540,
+                    "title": "Box plot review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 136,
+                    "lesson": "Box and whisker plots",
+                    "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "FRlTh5HQORA",
                     "url": null,
@@ -3552,6 +4256,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "durationSec": 500,
                     "lesson": "Box and whisker plots",
                     "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/box-whisker-plots/a/identifying-outliers-iqr-rule",
+                    "wordCount": 780,
+                    "title": "Identifying outliers with the 1.5xIQR rule",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 197,
+                    "lesson": "Box and whisker plots",
+                    "unit": "Unit 2: Displaying and comparing quantitative data + Unit 3 (บางส่วน)"
                   }
                 ]
               },
@@ -3559,7 +4274,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Scatter plots",
                 "description": "Describe association in a scatter plot and use a line of best fit to make predictions.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Scatter%20plots",
-                "estimatedMinutes": 266,
+                "estimatedMinutes": 302,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -3607,6 +4322,61 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 5: Exploring bivariate numerical data"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/introduction-to-scatterplots/a/constructing-and-interpreting-a-scatterplot",
+                    "wordCount": 960,
+                    "title": "Positive and negative associations in scatterplots",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 242,
+                    "lesson": "Introduction to scatterplots",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/introduction-to-scatterplots/a/outliers-in-scatter-plots",
+                    "wordCount": 506,
+                    "title": "Outliers in scatter plots",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 128,
+                    "lesson": "Introduction to scatterplots",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/introduction-to-scatterplots/a/clusters-in-scatter-plots",
+                    "wordCount": 617,
+                    "title": "Clusters in scatter plots",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 156,
+                    "lesson": "Introduction to scatterplots",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/introduction-to-scatterplots/a/describing-scatterplots-form-direction-strength-outliers",
+                    "wordCount": 517,
+                    "title": "Describing scatterplots (form, direction, strength, outliers)",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 130,
+                    "lesson": "Introduction to scatterplots",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/introduction-to-scatterplots/a/scatterplots-and-correlation-review",
+                    "wordCount": 374,
+                    "title": "Scatterplots and correlation review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 94,
+                    "lesson": "Introduction to scatterplots",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "-Y-M9aD_ccQ",
                     "url": null,
@@ -3625,6 +4395,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Calculating correlation coefficient r | AP Statistics | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 742,
+                    "lesson": "Correlation coefficients",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/scatterplots-and-correlation/a/correlation-coefficient-review",
+                    "wordCount": 473,
+                    "title": "Correlation coefficient review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 119,
                     "lesson": "Correlation coefficients",
                     "unit": "Unit 5: Exploring bivariate numerical data"
                   },
@@ -3673,6 +4454,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 5: Exploring bivariate numerical data"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/introduction-to-trend-lines/a/equations-of-trend-lines-phone-data",
+                    "wordCount": 1079,
+                    "title": "Equations of trend lines: Phone data",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 272,
+                    "lesson": "Introduction to trend lines",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/introduction-to-trend-lines/a/linear-regression-review",
+                    "wordCount": 639,
+                    "title": "Linear regression review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 161,
+                    "lesson": "Introduction to trend lines",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "yMgFHbjbAW8",
                     "url": null,
@@ -3680,6 +4483,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Introduction to residuals and least squares regression",
                     "channelTitle": "Khan Academy",
                     "durationSec": 459,
+                    "lesson": "Least-squares regression equations",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/regression-library/a/introduction-to-residuals",
+                    "wordCount": 361,
+                    "title": "Introduction to residuals",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 91,
                     "lesson": "Least-squares regression equations",
                     "unit": "Unit 5: Exploring bivariate numerical data"
                   },
@@ -3750,6 +4564,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 5: Exploring bivariate numerical data"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/assessing-the-fit-in-least-squares-regression/a/r-squared-intuition",
+                    "wordCount": 549,
+                    "title": "R-squared intuition",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 138,
+                    "lesson": "Assessing the fit in least-squares regression",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "lng4ZgConCM",
                     "url": null,
@@ -3779,6 +4604,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Interpreting computer regression data | AP Statistics | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 313,
+                    "lesson": "Assessing the fit in least-squares regression",
+                    "unit": "Unit 5: Exploring bivariate numerical data"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data/assessing-the-fit-in-least-squares-regression/a/interpreting-computer-output-regression",
+                    "wordCount": 1022,
+                    "title": "Interpreting computer output for regression",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 258,
                     "lesson": "Assessing the fit in least-squares regression",
                     "unit": "Unit 5: Exploring bivariate numerical data"
                   },
@@ -3898,7 +4734,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Probability",
                 "description": "Find probabilities of simple and compound events, including independent and dependent events.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Probability",
-                "estimatedMinutes": 330,
+                "estimatedMinutes": 382,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -3909,6 +4745,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Probability explained | Independent and dependent events | Probability and Statistics | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 498,
+                    "lesson": "Basic theoretical probability",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/basic-theoretical-probability/a/probability-the-basics",
+                    "wordCount": 296,
+                    "title": "Probability: the basics",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 75,
                     "lesson": "Basic theoretical probability",
                     "unit": "Unit 7: Probability"
                   },
@@ -4078,6 +4925,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 7: Probability"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/experimental-probability-lib/a/simulations-and-randomness-random-digit-tables",
+                    "wordCount": 912,
+                    "title": "Simulation and randomness: Random digit tables",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 230,
+                    "lesson": "Experimental probability",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "Nos-xOCpQqg",
                     "url": null,
@@ -4085,6 +4943,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Experimental versus theoretical probability simulation | Probability | AP Statistics | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 297,
+                    "lesson": "Randomness, probability, and simulation",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/randomness-probability-and-simulation/a/theoretical-and-experimental-probability-coin-flips-and-die-rolls",
+                    "wordCount": 570,
+                    "title": "Theoretical and experimental probability: Coin flips and die rolls",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 144,
                     "lesson": "Randomness, probability, and simulation",
                     "unit": "Unit 7: Probability"
                   },
@@ -4140,6 +5009,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Addition rule for probability | Probability and Statistics | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 643,
+                    "lesson": "Addition rule",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/addition-rule-lib/a/addition-rule-for-probability-basic",
+                    "wordCount": 417,
+                    "title": "Addition rule for probability (basic)",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 105,
                     "lesson": "Addition rule",
                     "unit": "Unit 7: Probability"
                   },
@@ -4243,6 +5123,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 7: Probability"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/multiplication-rule-independent/a/probabilities-involving-at-least-one-success",
+                    "wordCount": 511,
+                    "title": "Probabilities involving \"at least one\" success",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 129,
+                    "lesson": "Multiplication rule for independent events",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "VjLEoo3hIoM",
                     "url": null,
@@ -4276,6 +5167,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 7: Probability"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/multiplication-rule-dependent/a/general-multiplication-rule",
+                    "wordCount": 785,
+                    "title": "The general multiplication rule",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 198,
+                    "lesson": "Multiplication rule for dependent events",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "8iKsY8C5VW8",
                     "url": null,
@@ -4299,12 +5201,67 @@ export const CURRICULUM: CurriculumSubject[] = [
                   },
                   {
                     "kind": "VIDEO",
+                    "youtubeId": "KqCKZwh5WY8",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Conditional Probability",
+                    "channelTitle": "Khan Academy Labs",
+                    "durationSec": 306,
+                    "lesson": "Conditional probability and independence",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/conditional-probability-independence/a/conditional-probability-using-two-way-tables",
+                    "wordCount": 551,
+                    "title": "Conditional probability using two-way tables",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 139,
+                    "lesson": "Conditional probability and independence",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "hxEdXUB_IdQ",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Conditional probability tree diagram example | Probability | AP Statistics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 644,
+                    "lesson": "Conditional probability and independence",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/conditional-probability-independence/a/tree-diagrams-conditional-probability",
+                    "wordCount": 1215,
+                    "title": "Tree diagrams and conditional probability",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 306,
+                    "lesson": "Conditional probability and independence",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
+                    "kind": "VIDEO",
                     "youtubeId": "pIfpHdGVwLU",
                     "url": null,
                     "wordCount": null,
                     "title": "Conditional probability and independence | Probability | AP Statistics | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 247,
+                    "lesson": "Conditional probability and independence",
+                    "unit": "Unit 7: Probability"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/statistics-probability/probability-library/conditional-probability-independence/a/check-independence-conditional-probability",
+                    "wordCount": 1004,
+                    "title": "Conditional probability and independence",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 253,
                     "lesson": "Conditional probability and independence",
                     "unit": "Unit 7: Probability"
                   },
@@ -4330,7 +5287,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Area & perimeter",
                 "description": "Calculate area and perimeter of rectangles, triangles, and composite figures.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Area%20%26%20perimeter",
-                "estimatedMinutes": 98,
+                "estimatedMinutes": 103,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -4411,6 +5368,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 1: Intro to area and perimeter"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geo-area-and-perimeter/x7fa91416:multiply-to-find-area/a/area-rectangles-review",
+                    "wordCount": 414,
+                    "title": "Area of rectangles review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 104,
+                    "lesson": "Multiply to find area",
+                    "unit": "Unit 1: Intro to area and perimeter"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "Q3wfb0CPhIY",
                     "url": null,
@@ -4477,6 +5445,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 1: Intro to area and perimeter"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geo-area-and-perimeter/x7fa91416:perimeter-intro/a/find-perimeter-by-counting-unit-squares",
+                    "wordCount": 243,
+                    "title": "Find perimeter by counting unit squares",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 61,
+                    "lesson": "Perimeter intro",
+                    "unit": "Unit 1: Intro to area and perimeter"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "tmt5fXhU7Rs",
                     "url": null,
@@ -4495,6 +5474,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Finding missing side length when given perimeter | Math | 3rd grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 295,
+                    "lesson": "Perimeter intro",
+                    "unit": "Unit 1: Intro to area and perimeter"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geo-area-and-perimeter/x7fa91416:perimeter-intro/a/perimeter-review",
+                    "wordCount": 346,
+                    "title": "Perimeter review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 87,
                     "lesson": "Perimeter intro",
                     "unit": "Unit 1: Intro to area and perimeter"
                   },
@@ -4570,7 +5560,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Surface area & volume",
                 "description": "Calculate surface area and volume of prisms, cylinders, cones, spheres, and pyramids.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Surface%20area%20%26%20volume",
-                "estimatedMinutes": 82,
+                "estimatedMinutes": 89,
                 "difficultyLevel": 3,
                 "clips": [
                   {
@@ -4629,6 +5619,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 2: Intro to mass and volume + Unit 6: Volume + Unit 10 (เฉพาะ lesson 'Volume of cylinders, spheres, and cones')"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geo-volume-sa/x7fa91416:volume-with-unit-cubes/a/volume-formula-intuition",
+                    "wordCount": 478,
+                    "title": "Volume formula intuition",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 121,
+                    "lesson": "Volume with unit cubes",
+                    "unit": "Unit 2: Intro to mass and volume + Unit 6: Volume + Unit 10 (เฉพาะ lesson 'Volume of cylinders, spheres, and cones')"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "daCT_24RnIY",
                     "url": null,
@@ -4673,6 +5674,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 2: Intro to mass and volume + Unit 6: Volume + Unit 10 (เฉพาะ lesson 'Volume of cylinders, spheres, and cones')"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geo-volume-sa/x7fa91416:decompose-figures-to-find-volumes/a/decompose-figures-to-find-volume-practice",
+                    "wordCount": 409,
+                    "title": "Decompose figures to find volume practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 103,
+                    "lesson": "Decompose figures to find volumes",
+                    "unit": "Unit 2: Intro to mass and volume + Unit 6: Volume + Unit 10 (เฉพาะ lesson 'Volume of cylinders, spheres, and cones')"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "OanPzjf2EYY",
                     "url": null,
@@ -4680,6 +5692,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Volume word problem | Measurement | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 280,
+                    "lesson": "Volume word problems",
+                    "unit": "Unit 2: Intro to mass and volume + Unit 6: Volume + Unit 10 (เฉพาะ lesson 'Volume of cylinders, spheres, and cones')"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geo-volume-sa/x7fa91416:volume-word-problems/a/volume-of-rectangular-prisms-review",
+                    "wordCount": 434,
+                    "title": "Volume of rectangular prisms review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 109,
                     "lesson": "Volume word problems",
                     "unit": "Unit 2: Intro to mass and volume + Unit 6: Volume + Unit 10 (เฉพาะ lesson 'Volume of cylinders, spheres, and cones')"
                   },
@@ -4722,7 +5745,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Circles",
                 "description": "Calculate circumference, area, radius, and diameter of circles.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Circles",
-                "estimatedMinutes": 37,
+                "estimatedMinutes": 40,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -4781,6 +5804,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 10: Circles, cylinders, cones, and spheres (ไม่รวม lesson 'Volume of cylinders, spheres, and cones' — ย้ายไปอยู่ subtopic 'Surface area & volume' แล้ว)"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/x7fa91416:circles-cylinders-cones-and-spheres/x7fa91416:area-and-circumference-of-circles/a/circumference-review",
+                    "wordCount": 322,
+                    "title": "Circumference review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 81,
+                    "lesson": "Area and circumference of circles",
+                    "unit": "Unit 10: Circles, cylinders, cones, and spheres (ไม่รวม lesson 'Volume of cylinders, spheres, and cones' — ย้ายไปอยู่ subtopic 'Surface area & volume' แล้ว)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/x7fa91416:circles-cylinders-cones-and-spheres/x7fa91416:area-and-circumference-of-circles/a/area-of-circles-review",
+                    "wordCount": 349,
+                    "title": "Area of circles review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 88,
+                    "lesson": "Area and circumference of circles",
+                    "unit": "Unit 10: Circles, cylinders, cones, and spheres (ไม่รวม lesson 'Volume of cylinders, spheres, and cones' — ย้ายไปอยู่ subtopic 'Surface area & volume' แล้ว)"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "YjWCDdNlXxc",
                     "url": null,
@@ -4797,7 +5842,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Pythagorean theorem",
                 "description": "Apply the Pythagorean theorem to find missing side lengths in right triangles.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Pythagorean%20theorem",
-                "estimatedMinutes": 74,
+                "estimatedMinutes": 78,
                 "difficultyLevel": 3,
                 "clips": [
                   {
@@ -4852,6 +5897,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Pythagorean theorem 2 | Right triangles and trigonometry | Geometry | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 257,
+                    "lesson": "Pythagorean theorem",
+                    "unit": "Unit 13: Triangle side lengths"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geometry-pythagorean-theorem/geo-pythagorean-theorem/a/pythagorean-theorem-intro",
+                    "wordCount": 205,
+                    "title": "Pythagorean theorem intro problems",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 52,
                     "lesson": "Pythagorean theorem",
                     "unit": "Unit 13: Triangle side lengths"
                   },
@@ -4920,6 +5976,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "durationSec": 579,
                     "lesson": "Pythagorean theorem and distance between points",
                     "unit": "Unit 13: Triangle side lengths"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geometry-pythagorean-theorem/pythagorean-theorem-distance/a/distance-formula",
+                    "wordCount": 279,
+                    "title": "Distance formula",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 70,
+                    "lesson": "Pythagorean theorem and distance between points",
+                    "unit": "Unit 13: Triangle side lengths"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/basic-geo/basic-geometry-pythagorean-theorem/pythagorean-theorem-distance/a/distance-formula-review",
+                    "wordCount": 191,
+                    "title": "Distance formula review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 48,
+                    "lesson": "Pythagorean theorem and distance between points",
+                    "unit": "Unit 13: Triangle side lengths"
                   }
                 ]
               }
@@ -4938,7 +6016,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Variables & expressions",
                 "description": "Write, evaluate, and simplify algebraic expressions using the properties of operations.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Variables%20%26%20expressions",
-                "estimatedMinutes": 64,
+                "estimatedMinutes": 68,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -4975,6 +6053,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 2: Algebraic expressions"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-algebraic-expressions/alg-basics-intro-to-variables/a/evaluating-expressions-with-one-variable",
+                    "wordCount": 381,
+                    "title": "Evaluating expressions with one variable",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 96,
+                    "lesson": "Introduction to variables",
+                    "unit": "Unit 2: Algebraic expressions"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "IQlblcRgucY",
                     "url": null,
@@ -4986,6 +6075,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 2: Algebraic expressions"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-algebraic-expressions/alg-basics-substitution/a/evaluating-expressions-with-two-variables",
+                    "wordCount": 93,
+                    "title": "Evaluating expressions with two variables",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 23,
+                    "lesson": "Substitution & evaluating expressions",
+                    "unit": "Unit 2: Algebraic expressions"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "640-86yn2wM",
                     "url": null,
@@ -4993,6 +6093,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "How to write basic expressions with variables | 6th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 156,
+                    "lesson": "Writing algebraic expressions",
+                    "unit": "Unit 2: Algebraic expressions"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-algebraic-expressions/alg-basics-writing-expressions/a/writing-basic-algebraic-expressions",
+                    "wordCount": 324,
+                    "title": "Writing basic expressions with variables",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 82,
                     "lesson": "Writing algebraic expressions",
                     "unit": "Unit 2: Algebraic expressions"
                   },
@@ -5106,7 +6217,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Solving equations & inequalities",
                 "description": "Solve one- and two-step linear equations and inequalities, including word problems.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Solving%20equations%20%26%20inequalities",
-                "estimatedMinutes": 193,
+                "estimatedMinutes": 199,
                 "difficultyLevel": 2,
                 "clips": [
                   {
@@ -5132,6 +6243,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 3: Linear equations and inequalities"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-linear-equations-and-inequalities/alg-basics-one-step-add-sub-equations/a/solving-one-step-addition-and-subtraction-equations",
+                    "wordCount": 434,
+                    "title": "One-step addition & subtraction equations",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 109,
+                    "lesson": "One-step equations",
+                    "unit": "Unit 3: Linear equations and inequalities"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "9Ek61w1LxSc",
                     "url": null,
@@ -5150,6 +6272,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "How to solve equations of the form x/a = b | Linear equations | Algebra I | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 143,
+                    "lesson": "One-step equations",
+                    "unit": "Unit 3: Linear equations and inequalities"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-linear-equations-and-inequalities/alg-basics-one-step-add-sub-equations/a/solving-one-step-multiplication-and-division-equations",
+                    "wordCount": 422,
+                    "title": "One-step multiplication & division equations",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 106,
                     "lesson": "One-step equations",
                     "unit": "Unit 3: Linear equations and inequalities"
                   },
@@ -5297,6 +6430,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 3: Linear equations and inequalities"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-linear-equations-and-inequalities/alg-basics-one-step-inequalities/a/one-step-inequalities-review",
+                    "wordCount": 273,
+                    "title": "One-step inequalities review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 69,
+                    "lesson": "One-step inequalities",
+                    "unit": "Unit 3: Linear equations and inequalities"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "y7QLay8wrW8",
                     "url": null,
@@ -5423,7 +6567,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Systems of equations",
                 "description": "Solve systems of two linear equations by graphing, substitution, and elimination.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Systems%20of%20equations",
-                "estimatedMinutes": 160,
+                "estimatedMinutes": 167,
                 "difficultyLevel": 3,
                 "clips": [
                   {
@@ -5537,6 +6681,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 5: Systems of equations"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-systems-of-equations/alg-basics-elimination-method-systems/a/elimination-method-review",
+                    "wordCount": 459,
+                    "title": "Elimination method review (systems of linear equations)",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 116,
+                    "lesson": "Elimination method for systems of equations",
+                    "unit": "Unit 5: Systems of equations"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "2EwPpga_XPw",
                     "url": null,
@@ -5555,6 +6710,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Solving systems of linear equations with substitution example | Algebra II | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 261,
+                    "lesson": "Substitution method for systems of equations",
+                    "unit": "Unit 5: Systems of equations"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-systems-of-equations/alg-basics-solving-systems-with-substitution/a/substitution-method-review-systems-of-equations",
+                    "wordCount": 357,
+                    "title": "Substitution method review (systems of equations)",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 90,
                     "lesson": "Substitution method for systems of equations",
                     "unit": "Unit 5: Systems of equations"
                   },
@@ -5645,6 +6811,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "durationSec": 132,
                     "lesson": "Number of solutions to systems of equations",
                     "unit": "Unit 5: Systems of equations"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-systems-of-equations/alg-basics-systems-number-of-solutions/a/number-of-solutions-to-system-of-equations-review",
+                    "wordCount": 470,
+                    "title": "Number of solutions to system of equations review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 118,
+                    "lesson": "Number of solutions to systems of equations",
+                    "unit": "Unit 5: Systems of equations"
                   }
                 ]
               }
@@ -5657,7 +6834,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Slope & linear functions",
                 "description": "Find slope and intercepts, and graph and interpret linear functions.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Slope%20%26%20linear%20functions",
-                "estimatedMinutes": 171,
+                "estimatedMinutes": 203,
                 "difficultyLevel": 3,
                 "clips": [
                   {
@@ -5668,6 +6845,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Coordinate plane: quadrants | Negative numbers | 6th grade | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 144,
+                    "lesson": "Coordinate plane",
+                    "unit": "Unit 4: Graphing lines and slope"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-graphing-lines-and-slope/alg-basics-coordinate-planee/a/points-on-the-coordinate-plane",
+                    "wordCount": 467,
+                    "title": "Points on the coordinate plane",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 118,
                     "lesson": "Coordinate plane",
                     "unit": "Unit 4: Graphing lines and slope"
                   },
@@ -5804,6 +6992,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 4: Graphing lines and slope"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-graphing-lines-and-slope/alg-basics-slope/a/slope-review",
+                    "wordCount": 480,
+                    "title": "Slope review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 121,
+                    "lesson": "Slope",
+                    "unit": "Unit 4: Graphing lines and slope"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "CFSHq099Mx0",
                     "url": null,
@@ -5826,6 +7025,50 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 4: Graphing lines and slope"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-graphing-lines-and-slope/alg-basics-slope-intercept-form/a/introduction-to-slope-intercept-form",
+                    "wordCount": 1486,
+                    "title": "Intro to slope-intercept form",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 375,
+                    "lesson": "Slope-intercept form intro",
+                    "unit": "Unit 4: Graphing lines and slope"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "uk7gS3cZVp4",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Graph from slope-intercept equation example | Algebra I | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 182,
+                    "lesson": "Slope-intercept form intro",
+                    "unit": "Unit 4: Graphing lines and slope"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-graphing-lines-and-slope/alg-basics-slope-intercept-form/a/graphing-slope-intercept-form",
+                    "wordCount": 1292,
+                    "title": "Graphing slope-intercept form",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 326,
+                    "lesson": "Slope-intercept form intro",
+                    "unit": "Unit 4: Graphing lines and slope"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-graphing-lines-and-slope/alg-basics-slope-intercept-form/a/graphing-lines-review",
+                    "wordCount": 514,
+                    "title": "Graphing lines from slope-intercept form review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 130,
+                    "lesson": "Slope-intercept form intro",
+                    "unit": "Unit 4: Graphing lines and slope"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "9wOalujeZf4",
                     "url": null,
@@ -5833,6 +7076,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Slope-intercept equation from a graph examples | Algebra I | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 671,
+                    "lesson": "Writing slope-intercept equations",
+                    "unit": "Unit 4: Graphing lines and slope"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-graphing-lines-and-slope/alg-basics-writing-slope-intercept/a/writing-slope-intercept-equations",
+                    "wordCount": 833,
+                    "title": "Writing slope-intercept equations",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 210,
                     "lesson": "Writing slope-intercept equations",
                     "unit": "Unit 4: Graphing lines and slope"
                   },
@@ -5870,6 +7124,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 4: Graphing lines and slope"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-graphing-lines-and-slope/alg-basics-writing-slope-intercept/a/slope-intercept-form-review",
+                    "wordCount": 336,
+                    "title": "Slope-intercept form review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 85,
+                    "lesson": "Writing slope-intercept equations",
+                    "unit": "Unit 4: Graphing lines and slope"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "unSBFwK881s",
                     "url": null,
@@ -5897,7 +7162,7 @@ export const CURRICULUM: CurriculumSubject[] = [
                 "name": "Quadratic functions",
                 "description": "Factor, solve, and graph quadratic expressions and functions.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Quadratic%20functions",
-                "estimatedMinutes": 196,
+                "estimatedMinutes": 272,
                 "difficultyLevel": 4,
                 "clips": [
                   {
@@ -5934,6 +7199,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-expressions-with-exponents/alg-basics-exponent-properties-intro/a/exponent-properties-review",
+                    "wordCount": 607,
+                    "title": "Exponent properties review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 153,
+                    "lesson": "Exponent properties intro",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "JnpqlXN9Whw",
                     "url": null,
@@ -5952,6 +7228,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Negative exponent intuition | Pre-Algebra | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 278,
+                    "lesson": "Negative exponents",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-expressions-with-exponents/alg-basics-pos-neg-exponents/a/negative-exponents-review",
+                    "wordCount": 238,
+                    "title": "Negative exponents review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 60,
                     "lesson": "Negative exponents",
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
@@ -6011,6 +7298,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-adding-and-subtracting-polynomials/a/adding-and-subtracting-polynomials-review",
+                    "wordCount": 231,
+                    "title": "Adding and subtracting polynomials review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 58,
+                    "lesson": "Adding & subtracting polynomials",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "pD2-H15ucNE",
                     "url": null,
@@ -6018,6 +7316,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Example 3: Multiplying a monomial by a polynomial | Algebra I | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 163,
+                    "lesson": "Multiplying binomials",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-multiplying-binomials/a/multiplying-monomials-by-polynomials-review",
+                    "wordCount": 167,
+                    "title": "Multiplying monomials by polynomials review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 42,
                     "lesson": "Multiplying binomials",
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
@@ -6055,6 +7364,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-multiplying-binomials/a/multiplying-binomials-review",
+                    "wordCount": 328,
+                    "title": "Multiplying binomials review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 83,
+                    "lesson": "Multiplying binomials",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "JfuisfEdnjk",
                     "url": null,
@@ -6077,6 +7397,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-special-products-of-polynomials/a/binomial-special-products-review",
+                    "wordCount": 270,
+                    "title": "Binomial special products review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 68,
+                    "lesson": "Special products of binomials",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "mbb3msmX2xs",
                     "url": null,
@@ -6084,6 +7415,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Example 1: Factor a linear binomial by taking a common factor | Algebra I | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 208,
+                    "lesson": "Factoring polynomials by taking common factors",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-factoring-polynomials-1-common-factors/a/taking-common-factors",
+                    "wordCount": 1780,
+                    "title": "Factoring polynomials by taking a common factor",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 449,
                     "lesson": "Factoring polynomials by taking common factors",
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
@@ -6132,6 +7474,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
                   {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-factoring-polynomials-1-common-factors/a/common-factors-in-polynomials-review",
+                    "wordCount": 253,
+                    "title": "Factoring by common factor review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 64,
+                    "lesson": "Factoring polynomials by taking common factors",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
                     "kind": "VIDEO",
                     "youtubeId": "D3a8NnpQ2vU",
                     "url": null,
@@ -6139,6 +7492,17 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "title": "Factoring quadratics as (x+a)(x+b) | Mathematics II | High School Math | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 393,
+                    "lesson": "Factoring quadratics 1",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-factoring-quadratics-1/a/factoring-quadratics-leading-coefficient-1",
+                    "wordCount": 2195,
+                    "title": "Factoring quadratics: leading coefficient = 1",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 553,
                     "lesson": "Factoring quadratics 1",
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
@@ -6155,12 +7519,45 @@ export const CURRICULUM: CurriculumSubject[] = [
                   },
                   {
                     "kind": "VIDEO",
+                    "youtubeId": "eF6zYNzlZKQ",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "More examples of factoring quadratics with a leading coefficient of 1 | Algebra II | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 990,
+                    "lesson": "Factoring quadratics 1",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-factoring-quadratics-1/a/factoring-simple-quadratics-review",
+                    "wordCount": 176,
+                    "title": "Factoring simple quadratics review",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 44,
+                    "lesson": "Factoring quadratics 1",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "VIDEO",
                     "youtubeId": "X7B_tH4O-_s",
                     "url": null,
                     "wordCount": null,
                     "title": "More examples of factoring by grouping | Algebra I | Khan Academy",
                     "channelTitle": "Khan Academy",
                     "durationSec": 837,
+                    "lesson": "Factoring quadratics 2",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-factoring-quadratics-2/a/factoring-by-grouping",
+                    "wordCount": 1437,
+                    "title": "Factoring by grouping",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 362,
                     "lesson": "Factoring quadratics 2",
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
@@ -6173,6 +7570,28 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "channelTitle": "Khan Academy",
                     "durationSec": 235,
                     "lesson": "Factoring quadratics 2",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-factoring-quadratics-2/a/factoring-quadratics-leading-coefficient-not-1",
+                    "wordCount": 2175,
+                    "title": "Factoring quadratics: leading coefficient ≠ 1",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 548,
+                    "lesson": "Factoring quadratics 2",
+                    "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/math/algebra-basics/alg-basics-quadratics-and-polynomials/alg-basics-factoring-diff-of-squares/a/factoring-quadratics-difference-of-squares",
+                    "wordCount": 941,
+                    "title": "Factoring quadratics: Difference of squares",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 237,
+                    "lesson": "Factoring quadratics: Difference of squares",
                     "unit": "Unit 6: Expressions with exponents (ไม่รวม lesson Scientific notation — ซ้ำกับ subtopic 'Scientific notation') + Unit 7: Quadratics and polynomials"
                   },
                   {
@@ -6217,15 +7636,2294 @@ export const CURRICULUM: CurriculumSubject[] = [
     ]
   },
   {
+    "code": "RLA",
+    "name": "Reasoning Through Language Arts",
+    "categories": [
+      {
+        "name": "Reading for Meaning",
+        "weight": 45,
+        "topics": [
+          {
+            "name": "Main Ideas & Details",
+            "subtopics": [
+              {
+                "name": "Main Ideas & Details",
+                "description": "Central theme, summarizing, supporting details.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Main%20Ideas%20%26%20Details",
+                "estimatedMinutes": 27,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:key-ideas-and-details-9/xd45453bfd2ae8614:determining-central-idea-summary-and-theme-9/a/whats-the-big-idea-central-ideas-and-supporting-details-9",
+                    "wordCount": 1217,
+                    "title": "Central ideas and supporting details | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 307,
+                    "lesson": "Determining central idea, summary, and theme",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "GvWH9ZXy9gY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "How can a text have two or more main ideas? | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 215,
+                    "lesson": "Determining central idea, summary, and theme",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:key-ideas-and-details-9/xd45453bfd2ae8614:determining-central-idea-summary-and-theme-9/a/the-search-for-meaning-determining-theme-9",
+                    "wordCount": 1781,
+                    "title": "Determining theme | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 449,
+                    "lesson": "Determining central idea, summary, and theme",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "D2FFijvA00I",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Developing themes | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 331,
+                    "lesson": "Determining central idea, summary, and theme",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Inference & Conclusion",
+            "subtopics": [
+              {
+                "name": "Inference & Conclusions",
+                "description": "Drawing logical conclusions from text.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Inference%20%26%20Conclusions",
+                "estimatedMinutes": 27,
+                "difficultyLevel": 3,
+                "clips": [
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:key-ideas-and-details-9/xd45453bfd2ae8614:citing-text-evidence-9/a/text-evidence-9-1",
+                    "wordCount": 1202,
+                    "title": "Citing text evidence to support analysis of a text | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 303,
+                    "lesson": "Citing text evidence",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "JC24Qcpyn9E",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Choosing the best text evidence | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 276,
+                    "lesson": "Citing text evidence",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "kFmtXeKPId4",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Supporting an inference with logical reasoning and evidence | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 300,
+                    "lesson": "Making inferences",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:key-ideas-and-details-9/xd45453bfd2ae8614:making-inferences-9/a/be-a-text-detective-making-inferences-9",
+                    "wordCount": 1710,
+                    "title": "Making inferences | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 431,
+                    "lesson": "Making inferences",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Author's Purpose & Tone",
+            "subtopics": [
+              {
+                "name": "Author's Purpose & Tone",
+                "description": "Author's viewpoint and rhetorical techniques.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Author's%20Purpose%20%26%20Tone",
+                "estimatedMinutes": 58,
+                "difficultyLevel": 3,
+                "clips": [
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:craft-and-structure-9/xd45453bfd2ae8614:identifying-author-s-purpose-and-rhetoric-9/a/how-do-authors-use-rhetoric-to-achieve-their-purposes-10",
+                    "wordCount": 1884,
+                    "title": "Analyzing how authors use rhetoric to achieve a purpose | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 475,
+                    "lesson": "Identifying author's purpose and rhetoric",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "t4ODg51XNYk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Rhetorical devices and appeals | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 243,
+                    "lesson": "Identifying author's purpose and rhetoric",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "K_3u0e3XwCQ",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Identifying \"hidden\" viewpoints | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 301,
+                    "lesson": "Determining point of view",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:craft-and-structure-9/xd45453bfd2ae8614:determining-point-of-view-9/a/the-way-i-see-it-analyzing-an-authors-point-of-view-9",
+                    "wordCount": 1772,
+                    "title": "Determining an author's point of view | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 447,
+                    "lesson": "Determining point of view",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:craft-and-structure-9/xd45453bfd2ae8614:determining-point-of-view-9/a/the-way-they-see-it-analyzing-characters-points-of-view-9",
+                    "wordCount": 2139,
+                    "title": "Analyzing a character's point of view | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 539,
+                    "lesson": "Determining point of view",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "lRoFaux2V_g",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Changes in POV and dramatic irony | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 295,
+                    "lesson": "Determining point of view",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:craft-and-structure-9/xd45453bfd2ae8614:interpreting-words-in-context-9/a/words-at-work-analyzing-how-authors-create-meaning-and-tone-9",
+                    "wordCount": 2016,
+                    "title": "Analyzing the impact of word choice on meaning and tone | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 508,
+                    "lesson": "Interpreting words in context",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Vocabulary in Context",
+            "subtopics": [
+              {
+                "name": "Vocabulary in Context",
+                "description": "Words and phrases from context clues.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Vocabulary%20in%20Context",
+                "estimatedMinutes": 69,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "XRt1N0sJJQo",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Connotation | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 322,
+                    "lesson": "Interpreting words in context",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "lzKj-bLvrYQ",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Figurative language | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 358,
+                    "lesson": "Interpreting words in context",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "CiNggzdWkIo",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Using context clues to figure out new words | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 287,
+                    "lesson": "Context clues",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:context-clues-9-grammar/a/using-context-clues-to-interpret-unfamiliar-words-grammar-9",
+                    "wordCount": 450,
+                    "title": "Using context clues to interpret unfamiliar words",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 113,
+                    "lesson": "Context clues",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:context-clues-9-grammar/a/using-parts-of-speech-to-determine-word-meanings-grammar-9",
+                    "wordCount": 412,
+                    "title": "Using parts of speech to determine word meanings",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 104,
+                    "lesson": "Context clues",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "NcrsPIv6NdI",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Using word parts to determine meaning | Reading | 5th Grade | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 236,
+                    "lesson": "Roots and affixes",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:roots-and-affixes-9-grammar/a/deconstructing-and-constructing-words-grammar-9",
+                    "wordCount": 422,
+                    "title": "Deconstructing and constructing words",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 106,
+                    "lesson": "Roots and affixes",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "fiaPqgwJFo4",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Latin and Greek roots and affixes | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 383,
+                    "lesson": "Roots and affixes",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:roots-and-affixes-9-grammar/a/common-roots-and-affixes-grammar-9",
+                    "wordCount": 498,
+                    "title": "Common roots and affixes",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 126,
+                    "lesson": "Roots and affixes",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:figurative-language-9-grammar/a/figures-of-speech-grammar-9",
+                    "wordCount": 259,
+                    "title": "Figures of speech",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 65,
+                    "lesson": "Figurative language",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:figurative-language-9-grammar/a/allusions-grammar-9",
+                    "wordCount": 1691,
+                    "title": "Allusions",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 426,
+                    "lesson": "Figurative language",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "LY5EBvlRCP4",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Irony | Style | Grammar",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 478,
+                    "lesson": "Figurative language",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:consulting-reference-materials-9-grammar/a/reading-dictionary-glossary-and-thesaurus-entries-9",
+                    "wordCount": 396,
+                    "title": "Reading dictionary, glossary, and thesaurus entries",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 100,
+                    "lesson": "Consulting reference materials",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:consulting-reference-materials-9-grammar/a/verifying-word-meanings-grammar-9",
+                    "wordCount": 679,
+                    "title": "Verifying word meanings",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 171,
+                    "lesson": "Consulting reference materials",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Development of Ideas",
+            "subtopics": [
+              {
+                "name": "Development of Ideas",
+                "description": "Development of ideas, sequence, cause–effect.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Development%20of%20Ideas",
+                "estimatedMinutes": 18,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "ClwmqcEewRc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Analyzing the presentation of ideas | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 208,
+                    "lesson": "Analyzing idea and character development",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:key-ideas-and-details-9/xd45453bfd2ae8614:analyzing-idea-and-character-development-9/a/follow-the-trail-analyzing-idea-development-in-a-text-9",
+                    "wordCount": 1235,
+                    "title": "Analyzing idea development | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 311,
+                    "lesson": "Analyzing idea and character development",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "KC6WY06twwc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Character change | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 333,
+                    "lesson": "Analyzing idea and character development",
+                    "unit": "Unit 2: Reading: Key ideas and details (G9 + G10)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Text Structure",
+            "subtopics": [
+              {
+                "name": "Text Structure & Transitions",
+                "description": "Text structure & transitional language.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Text%20Structure%20%26%20Transitions",
+                "estimatedMinutes": 20,
+                "difficultyLevel": 3,
+                "clips": [
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:craft-and-structure-9/xd45453bfd2ae8614:analyzing-text-structure-9/a/beyond-the-basics-how-specific-sentences-develop-an-authors-ideas-9",
+                    "wordCount": 1123,
+                    "title": "Analyzing how sentences develop an author's ideas | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 283,
+                    "lesson": "Analyzing text structure",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "_11QgROQ9mY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "How parts of an argument make a whole | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 273,
+                    "lesson": "Analyzing text structure",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:craft-and-structure-9/xd45453bfd2ae8614:analyzing-text-structure-9/a/out-of-order-how-authors-sequence-events-in-literary-texts-to-create-different-effects",
+                    "wordCount": 1259,
+                    "title": "Analyzing the structure of literary texts | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 317,
+                    "lesson": "Analyzing text structure",
+                    "unit": "Unit 7: Reading: Craft and structure (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:logical-transitions-9-grammar/a/using-transitions-grammar-9",
+                    "wordCount": 483,
+                    "title": "Using transitions",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 122,
+                    "lesson": "Logical transitions",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Identifying & Creating Arguments",
+        "weight": 35,
+        "topics": [
+          {
+            "name": "Argumentation & Evidence",
+            "subtopics": [
+              {
+                "name": "Argumentation & Evidence",
+                "description": "Analyzing arguments and evaluating evidence.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Argumentation%20%26%20Evidence",
+                "estimatedMinutes": 51,
+                "difficultyLevel": 4,
+                "clips": [
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:integration-of-knowledge-and-ideas-9/xd45453bfd2ae8614:evaluating-claims-and-arguments-9/a/evaluating-an-arguments-reasoning-and-evidence-9",
+                    "wordCount": 1861,
+                    "title": "Evaluating an argument's reasoning and evidence | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 469,
+                    "lesson": "Evaluating claims and arguments",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "msHjgIsYOkU",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Incorporating opposing viewpoints | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 335,
+                    "lesson": "Evaluating claims and arguments",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "v4HhzvSgUpU",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Evaluating a source’s reasoning and evidence | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 442,
+                    "lesson": "Evaluating claims and arguments",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "xUbgRHeCOyY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "The value of historical context | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 297,
+                    "lesson": "Understanding historical documents and allusions",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:integration-of-knowledge-and-ideas-9/xd45453bfd2ae8614:understanding-historical-documents-9/a/reading-and-analyzing-historical-documents",
+                    "wordCount": 1945,
+                    "title": "Analyzing historical documents | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 490,
+                    "lesson": "Understanding historical documents and allusions",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:integration-of-knowledge-and-ideas-9/xd45453bfd2ae8614:understanding-historical-documents-9/a/points-of-reference-interpreting-allusions",
+                    "wordCount": 1693,
+                    "title": "Analyzing allusions | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 427,
+                    "lesson": "Understanding historical documents and allusions",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Comparing Texts",
+            "subtopics": [
+              {
+                "name": "Comparing Texts & Opposing Claims",
+                "description": "Comparing two texts / opposing claims.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Comparing%20Texts%20%26%20Opposing%20Claims",
+                "estimatedMinutes": 40,
+                "difficultyLevel": 4,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "K-JL39rcJlA",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Similarities and differences: different accounts of the same topic | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 169,
+                    "lesson": "Comparing two texts",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "uwjKRjIfxhE",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Similarities and differences: primary and secondary sources | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 301,
+                    "lesson": "Comparing two texts",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:integration-of-knowledge-and-ideas-9/xd45453bfd2ae8614:comparing-two-texts-9/a/not-just-the-same-old-story-analyzing-multiple-accounts-of-a-subject-9",
+                    "wordCount": 1486,
+                    "title": "Analyzing multiple accounts of a subject | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 375,
+                    "lesson": "Comparing two texts",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "BjH-5npLi6s",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Analyzing visual evidence (and vampires) | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 299,
+                    "lesson": "Using visual and quantitative evidence",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:integration-of-knowledge-and-ideas-9/xd45453bfd2ae8614:using-visual-and-quantitative-evidence-9/a/seeing-beyond-words-analyzing-visual-evidence-to-better-understand-texts-9",
+                    "wordCount": 1638,
+                    "title": "Analyzing visual evidence | Guided practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 413,
+                    "lesson": "Using visual and quantitative evidence",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "ZASEsKwEvqE",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Different mediums and the tone of the text | Reading | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 339,
+                    "lesson": "Using visual and quantitative evidence",
+                    "unit": "Unit 12: Reading: Integration of knowledge and ideas (G9 + G10)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Extended Response (Essay)",
+            "subtopics": [
+              {
+                "name": "Extended Response (Essay)",
+                "description": "Essay analyzing two opposing viewpoints — 45 min.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Extended%20Response%20(Essay)",
+                "estimatedMinutes": 64,
+                "difficultyLevel": 4,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "56_VO5HsjyY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Test Taker RLA Extended Response update",
+                    "channelTitle": "GED Testing Service",
+                    "durationSec": 89,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "stw-i0QqQX0",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Video 1, How to Determine Which Position is Best Supported",
+                    "channelTitle": "ProLiteracy",
+                    "durationSec": 200,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "J_LSXzgePRY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Video 2, How to Determine Which Position is Best Supported",
+                    "channelTitle": "ProLiteracy",
+                    "durationSec": 175,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "KGxOLL7eytY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Video 3, How to Write a Well-Supported Argument",
+                    "channelTitle": "ProLiteracy",
+                    "durationSec": 267,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "73zQ8TCcemk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Video 4, How to Make a Plan and Write an Introduction",
+                    "channelTitle": "ProLiteracy",
+                    "durationSec": 211,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "u_y5cCoN4AM",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Video 5, How to Write the Body and Conclusion",
+                    "channelTitle": "ProLiteracy",
+                    "durationSec": 293,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "sal7IGPTcqI",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Video 6, How to Write a Fully Supported Response",
+                    "channelTitle": "ProLiteracy",
+                    "durationSec": 220,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "yjmM9K8jSBQ",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Video 7, How to Check and Revise Your Response",
+                    "channelTitle": "ProLiteracy",
+                    "durationSec": 183,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "CgfnfqYIBec",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Video 8, Understand How Your Response is Scored",
+                    "channelTitle": "ProLiteracy",
+                    "durationSec": 199,
+                    "lesson": "How to write a great GED extended response (GED official, 9 คลิป)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "wtCtLN9Lcuk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "How to Easily Beat the GED Language Arts Extended Response Essay!",
+                    "channelTitle": "Test Prep Champions",
+                    "durationSec": 1135,
+                    "lesson": "ทางเลือกเสริม (จาก GED_Dataset_v5)",
+                    "unit": "ไม่มีใน Khan — GED Testing Service (ged.com) + แหล่งเสริม"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Grammar and Language",
+        "weight": 20,
+        "topics": [
+          {
+            "name": "Sentence Structure",
+            "subtopics": [
+              {
+                "name": "Sentence Structure",
+                "description": "Run-ons, fragments, subject-verb agreement.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Sentence%20Structure",
+                "estimatedMinutes": 36,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "Fh45mhVsZrU",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Run-ons and comma splices | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 278,
+                    "lesson": "Run-ons and comma splices",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:run-ons-and-comma-splices-9-grammar/a/run-on-sentences-grammar-9",
+                    "wordCount": 910,
+                    "title": "Run-on sentences",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 229,
+                    "lesson": "Run-ons and comma splices",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:fragments-9-grammar/a/identifying-and-correcting-fragments-grammar-10",
+                    "wordCount": 786,
+                    "title": "Identifying and correcting fragments",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 198,
+                    "lesson": "Fragments",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "xpoZBnXHg3E",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Recognizing fragments | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 228,
+                    "lesson": "Fragments",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:correcting-common-errors-9-grammar/a/review-of-common-errors-grammar-9",
+                    "wordCount": 515,
+                    "title": "Review of common errors",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 130,
+                    "lesson": "Correcting common errors",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "4fMipjAnlRk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Subject-verb agreement | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 293,
+                    "lesson": "Subject-verb agreement",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:subject-verb-agreement-9-grammar/a/tricky-cases-of-subject-verb-agreement-9",
+                    "wordCount": 1025,
+                    "title": "Tricky cases of subject-verb agreement",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 258,
+                    "lesson": "Subject-verb agreement",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:phrases-9-grammar/a/prepositional-phrases-and-subjectverb-agreement-9",
+                    "wordCount": 444,
+                    "title": "Prepositional phrases and subject–verb agreement",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 112,
+                    "lesson": "Phrases",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  }
+                ]
+              },
+              {
+                "name": "Conventions of Standard English",
+                "description": "Conventions of standard English.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Conventions%20of%20Standard%20English",
+                "estimatedMinutes": 176,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "TeiuG81mbII",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "What is a sentence? | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 274,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:sentences-clauses-and-phrases-building-knowledge-9-grammar/a/unit-glossary-phrases-clauses-9-10",
+                    "wordCount": 656,
+                    "title": "Glossary: Sentences, clauses, and phrases",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 165,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "49EsnvxVQec",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Phrases and clauses | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 357,
+                    "lesson": "Phrases",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:phrases-9-grammar/a/noun-and-verb-phrases-grammar-9",
+                    "wordCount": 657,
+                    "title": "Noun and verb phrases",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 166,
+                    "lesson": "Phrases",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:phrases-9-grammar/a/adjectival-and-adverbial-phrases-grammar-9",
+                    "wordCount": 674,
+                    "title": "Adjectival and adverbial phrases",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 170,
+                    "lesson": "Phrases",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "7dOBMUESkqk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Prepositional phrases | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 338,
+                    "lesson": "Phrases",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:phrases-9-grammar/a/participial-and-absolute-phrases-grammar-9",
+                    "wordCount": 1018,
+                    "title": "Participial and absolute phrases",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 257,
+                    "lesson": "Phrases",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:clauses-9-grammar/a/independent-and-dependent-clauses-grammar-9",
+                    "wordCount": 671,
+                    "title": "Dependent and independent clauses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 169,
+                    "lesson": "Clauses",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "sAo6LbCUAQo",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Dependent and independent clauses | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 424,
+                    "lesson": "Clauses",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:clauses-9-grammar/a/noun-relative-and-adverbial-clauses-5",
+                    "wordCount": 862,
+                    "title": "Noun, relative, and adverbial clauses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 217,
+                    "lesson": "Clauses",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "fm7QEiEk83o",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Relative clauses | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 284,
+                    "lesson": "Clauses",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:clauses-9-grammar/a/how-different-types-of-phrases-and-clauses-convey-specific-meaning-and-add-variety-to-writing-9",
+                    "wordCount": 512,
+                    "title": "How different types of phrases and clauses convey specific meaning and add variety to writing",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 129,
+                    "lesson": "Clauses",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:coordinating-conjunctions-and-compound-sentences-9-grammar/a/coordinating-conjunctions-grammar-9",
+                    "wordCount": 608,
+                    "title": "Coordinating conjunctions",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 153,
+                    "lesson": "Coordinating conjunctions and compound sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "imwtcmvk668",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Coordinating conjunctions | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 273,
+                    "lesson": "Coordinating conjunctions and compound sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "RNwD4z3EVDc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "BONUS: \"FANBOYS,\" a mnemonic song | Conjunctions | Parts of speech| Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 174,
+                    "lesson": "Coordinating conjunctions and compound sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "3DGKY3eM9PY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Simple and compound sentences | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 269,
+                    "lesson": "Coordinating conjunctions and compound sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:coordinating-conjunctions-and-compound-sentences-9-grammar/a/compound-sentences-grammar-9",
+                    "wordCount": 538,
+                    "title": "Compound sentences",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 136,
+                    "lesson": "Coordinating conjunctions and compound sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:subordinating-conjunctions-and-complex-sentences-9-grammar/a/subordinating-conjunctions-grammar-9",
+                    "wordCount": 627,
+                    "title": "Subordinating conjunctions",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 158,
+                    "lesson": "Subordinating conjunctions and complex sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "IKrRuDWEP68",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Subordinating conjunctions | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 327,
+                    "lesson": "Subordinating conjunctions and complex sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:subordinating-conjunctions-and-complex-sentences-9-grammar/a/complex-sentences-grammar-9",
+                    "wordCount": 502,
+                    "title": "Complex sentences",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 127,
+                    "lesson": "Subordinating conjunctions and complex sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "CsrM_RpqXek",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Complex sentences | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 307,
+                    "lesson": "Subordinating conjunctions and complex sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:compound-complex-sentences-9-grammar/a/compound-complex-sentences-grammar-9",
+                    "wordCount": 584,
+                    "title": "Compound-complex sentences",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 147,
+                    "lesson": "Compound-complex sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "Hnmm57B0JgQ",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Compound-complex sentences | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 254,
+                    "lesson": "Compound-complex sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:compound-complex-sentences-9-grammar/a/using-varied-sentence-structure-grammar-9",
+                    "wordCount": 919,
+                    "title": "Using varied sentence structure",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 232,
+                    "lesson": "Compound-complex sentences",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:correlative-conjunctions-9-grammar/a/correlative-conjunctions-grammar-9",
+                    "wordCount": 636,
+                    "title": "Correlative conjunctions",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 160,
+                    "lesson": "Correlative conjunctions",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "R74Ly00UygU",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Correlative conjunctions | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 192,
+                    "lesson": "Correlative conjunctions",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "0T9xMqvjdLk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Introduction to verbs | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 86,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:verbs-building-knowledge-9-grammar/a/verbs-unit-glossary-grammar-9",
+                    "wordCount": 406,
+                    "title": "Glossary: Verbs",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 102,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:verb-tenses-and-aspects-9-grammar/a/verb-tenses-9",
+                    "wordCount": 650,
+                    "title": "Verb tenses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 164,
+                    "lesson": "Verb tenses and aspects",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:verb-tenses-and-aspects-9-grammar/a/verb-aspect-grammar-9",
+                    "wordCount": 1407,
+                    "title": "Verb aspect",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 355,
+                    "lesson": "Verb tenses and aspects",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "_JXcMl8Hqjo",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Simple Aspect | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 92,
+                    "lesson": "Verb tenses and aspects",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "-PhyqbvnoCg",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Progressive Aspect | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 165,
+                    "lesson": "Verb tenses and aspects",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "858npSa0rgc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Perfect Aspect | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 151,
+                    "lesson": "Verb tenses and aspects",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "UORrFsnRCr8",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Perfect progressive aspect | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 131,
+                    "lesson": "Verb tenses and aspects",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:mood-and-modals-9-grammar/a/indicative-interrogative-and-imperative-verb-moods-9",
+                    "wordCount": 434,
+                    "title": "Indicative, interrogative, and imperative verb moods",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 109,
+                    "lesson": "Mood and modals",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "hp9T-7on2Ow",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Modal verbs | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 293,
+                    "lesson": "Mood and modals",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:mood-and-modals-9-grammar/a/conditional-and-subjunctive-moods-9",
+                    "wordCount": 875,
+                    "title": "Conditional and subjunctive moods",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 221,
+                    "lesson": "Mood and modals",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:verb-consistency-9-grammar/a/using-consistent-verb-tenses-9",
+                    "wordCount": 907,
+                    "title": "Using consistent verb tenses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 229,
+                    "lesson": "Verb consistency",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:active-and-passive-voice-9-grammar/a/active-and-passive-voice-9",
+                    "wordCount": 1127,
+                    "title": "Active and passive voice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 284,
+                    "lesson": "Active and passive voice",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:verbs-9-grammar/xd45453bfd2ae8614:verbals-9-grammar/a/verbals-grammar-9",
+                    "wordCount": 803,
+                    "title": "Verbals",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 202,
+                    "lesson": "Verbals",
+                    "unit": "Unit 6: Grammar: Verbs (G9)"
+                  }
+                ]
+              },
+              {
+                "name": "Modifiers & Parallelism",
+                "description": "Modifiers & parallelism.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Modifiers%20%26%20Parallelism",
+                "estimatedMinutes": 17,
+                "difficultyLevel": 3,
+                "clips": [
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:sentences-clauses-and-phrases-9-grammar/xd45453bfd2ae8614:parenthetical-elements-and-modifiers-9-grammar/a/subject-modifier-placement-grammar-9",
+                    "wordCount": 405,
+                    "title": "Subject-modifier placement",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 102,
+                    "lesson": "Parenthetical elements and modifiers",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "SjunMcrXgE0",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Dangling modifiers | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 259,
+                    "lesson": "Parenthetical elements and modifiers",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "2l2FgUrln1A",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Parallel structure | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 305,
+                    "lesson": "Parallel structure",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:parallel-structure-9/a/parallel-structure-9",
+                    "wordCount": 580,
+                    "title": "Parallel structure",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 146,
+                    "lesson": "Parallel structure",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Punctuation & Capitalization",
+            "subtopics": [
+              {
+                "name": "Commas & Apostrophes",
+                "description": "Commas and apostrophes.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Commas%20%26%20Apostrophes",
+                "estimatedMinutes": 56,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "Wk0k2FLjM1c",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Meet the Comma | Punctuation | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 239,
+                    "lesson": "Introduction to commas",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "7dYePWVTTTI",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Commas in addresses and dates | The Comma | Punctuation | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 199,
+                    "lesson": "Introduction to commas",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:introduction-to-commas-9-grammar/a/using-commas-in-tag-questions-direct-address-and-yes-no-statements",
+                    "wordCount": 354,
+                    "title": "Using commas in tag questions, direct address, and yes/no statements",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 89,
+                    "lesson": "Introduction to commas",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "09-t-giMcNk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Commas in tag questions, direct address, & yes/no statements | Punctuation | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 204,
+                    "lesson": "Introduction to commas",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:commas-to-separate-items-descriptions-and-clauses-9-grammar/a/commas-in-lists-coordinate-adjectives-and-appositives-grammar-9",
+                    "wordCount": 520,
+                    "title": "Commas in lists, coordinate adjectives, and appositives",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 131,
+                    "lesson": "Commas to separate items, descriptions, and clauses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "DBMQOK64VQY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Punctuating a list | Punctuation | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 111,
+                    "lesson": "Commas to separate items, descriptions, and clauses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "_i8TVzaMZ8Q",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "BONUS: The Oxford comma | Punctuation | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 223,
+                    "lesson": "Commas to separate items, descriptions, and clauses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "QFcaUTd8DgY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Appositives | Punctuation | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 180,
+                    "lesson": "Commas to separate items, descriptions, and clauses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "NvGBug8iORE",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Commas and introductory elements | Punctuation | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 275,
+                    "lesson": "Commas to separate items, descriptions, and clauses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:commas-to-separate-items-descriptions-and-clauses-9-grammar/a/commas-in-introductory-elements-grammar-9",
+                    "wordCount": 747,
+                    "title": "Commas in introductory elements",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 188,
+                    "lesson": "Commas to separate items, descriptions, and clauses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:commas-to-separate-items-descriptions-and-clauses-9-grammar/a/commas-in-compound-sentences-grammar-9",
+                    "wordCount": 303,
+                    "title": "Commas in compound sentences",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 76,
+                    "lesson": "Commas to separate items, descriptions, and clauses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:commas-to-separate-items-descriptions-and-clauses-9-grammar/a/commas-in-complex-sentences-grammar-9",
+                    "wordCount": 322,
+                    "title": "Commas in complex sentences",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 81,
+                    "lesson": "Commas to separate items, descriptions, and clauses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/10th-grade-reading-and-vocabulary/xd89aabc5d5847a2b:sentences-clauses-and-phrases-10-grammar/xd89aabc5d5847a2b:parenthetical-elements-and-modifiers-10-grammar/a/restrictive-and-nonrestrictive-elements-9",
+                    "wordCount": 1059,
+                    "title": "Restrictive and nonrestrictive elements",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 267,
+                    "lesson": "Parenthetical elements and modifiers",
+                    "unit": "Unit 11: Grammar: Sentences, clauses, and phrases (G9 + G10)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "o6zzLAhEyqo",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Introduction to the apostrophe | The Apostrophe | Punctuation | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 290,
+                    "lesson": "Apostrophes",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:apostrophes-9-grammar/a/using-apostrophes-to-show-possession-grammar-9",
+                    "wordCount": 440,
+                    "title": "Using apostrophes to show possession",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 111,
+                    "lesson": "Apostrophes",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  }
+                ]
+              },
+              {
+                "name": "Colons, Semicolons & Capitalization",
+                "description": "Colon, semicolon, and more.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Colons%2C%20Semicolons%20%26%20Capitalization",
+                "estimatedMinutes": 72,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:punctuation-and-capitalization-building-knowledge-9-grammar/a/punctuation-capitalization-unit-glossary-grammar-9",
+                    "wordCount": 348,
+                    "title": "Glossary: Punctuation and capitalization",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 88,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:capitalization-9-grammar/a/capitalization-grammar-9",
+                    "wordCount": 662,
+                    "title": "Capitalization",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 167,
+                    "lesson": "Capitalization",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "41XNKfR56OY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Introduction to the semicolon | The Colon and semicolon | Punctuation | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 158,
+                    "lesson": "Semicolons",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:semicolons-9-grammar/a/semicolons-clauses-grammar-9",
+                    "wordCount": 275,
+                    "title": "Using semicolons to link clauses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 69,
+                    "lesson": "Semicolons",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:semicolons-9-grammar/a/conjunctive-adverbs-and-semicolons-grammar-9",
+                    "wordCount": 411,
+                    "title": "Conjunctive adverbs and semicolons",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 104,
+                    "lesson": "Semicolons",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "xWJ3HoQTpgY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Semicolons and complex lists | The colon and semicolon | Punctuation | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 159,
+                    "lesson": "Semicolons",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:semicolons-9-grammar/a/semicolons-and-complex-lists-grammar-9",
+                    "wordCount": 462,
+                    "title": "Semicolons and complex lists",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 116,
+                    "lesson": "Semicolons",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:colons-9-grammar/a/using-colons-to-link-clauses-grammar-9",
+                    "wordCount": 307,
+                    "title": "Using colons to link clauses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 77,
+                    "lesson": "Colons",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:colons-9-grammar/a/colons-lists-quotations-grammar-9",
+                    "wordCount": 342,
+                    "title": "Using colons to introduce lists and quotations",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 86,
+                    "lesson": "Colons",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:punctuating-text-evidence-and-dialogue-9-grammar/a/punctuating-text-evidence-and-dialogue",
+                    "wordCount": 785,
+                    "title": "Punctuating text evidence and dialogue",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 198,
+                    "lesson": "Punctuating text evidence and dialogue",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:punctuating-text-evidence-and-dialogue-9-grammar/a/g9-10-punctuating-quotations-within-quotations",
+                    "wordCount": 722,
+                    "title": "Punctuating quotations within quotations",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 182,
+                    "lesson": "Punctuating text evidence and dialogue",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "uYoX_Qyknao",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Commas in dialogue | Punctuation | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 180,
+                    "lesson": "Punctuating text evidence and dialogue",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:punctuating-and-capitalizing-titles-9-grammar/a/punctuating-and-capitalizing-titles-grammar-9",
+                    "wordCount": 496,
+                    "title": "Punctuating and capitalizing titles",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 125,
+                    "lesson": "Punctuating and capitalizing titles",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:hyphens-and-dashes-9-grammar/a/using-dashes-to-set-off-parenthetical-elements-grammar-9",
+                    "wordCount": 609,
+                    "title": "Using dashes to set off parenthetical elements",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 154,
+                    "lesson": "Hyphens and dashes",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "tLmDYzhv6Z0",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Dashes | Punctuation | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 380,
+                    "lesson": "Hyphens and dashes",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "CgpExkmY6Y0",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Hyphens vs. dashes | Punctuation | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 291,
+                    "lesson": "Hyphens and dashes",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:hyphens-and-dashes-9-grammar/a/using-hyphens-grammar-9",
+                    "wordCount": 506,
+                    "title": "Using hyphens",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 128,
+                    "lesson": "Hyphens and dashes",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:parentheses-9-grammar/a/parentheses-grammar-10",
+                    "wordCount": 478,
+                    "title": "Parentheses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 121,
+                    "lesson": "Parentheses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:parentheses-9-grammar/a/choosing-between-parentheses-dashes-and-commas-9",
+                    "wordCount": 775,
+                    "title": "Choosing between parentheses, dashes, and commas",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 195,
+                    "lesson": "Parentheses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:punctuation-and-capitalization-9-grammar/xd45453bfd2ae8614:ellipses-9-grammar/a/using-ellipses-grammar-9",
+                    "wordCount": 690,
+                    "title": "Using ellipses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 174,
+                    "lesson": "Ellipses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "JmRMfFVw6NE",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Ellipses | Punctuation | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 312,
+                    "lesson": "Ellipses",
+                    "unit": "Unit 14: Grammar: Punctuation and capitalization (G9)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Word Choice",
+            "subtopics": [
+              {
+                "name": "Word Choice",
+                "description": "Vocabulary, informal language, homonyms.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Word%20Choice",
+                "estimatedMinutes": 77,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:word-study-building-knowledge-9-grammar/a/glossary-word-study-grammar-9",
+                    "wordCount": 507,
+                    "title": "Glossary: Word study",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 128,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:frequently-confused-words-9-grammar/a/frequently-confused-words-9",
+                    "wordCount": 998,
+                    "title": "Frequently confused words",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 252,
+                    "lesson": "Frequently confused words",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "joTuAvMQ9vE",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "To, two, and too | Frequently confused words | Usage | Grammar",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 199,
+                    "lesson": "Frequently confused words",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:frequently-confused-words-9-grammar/a/its-vs-its-9",
+                    "wordCount": 376,
+                    "title": "It's vs. its",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 95,
+                    "lesson": "Frequently confused words",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "0D54pfccNUQ",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "There, their, and they're | Frequently confused words | Usage | Grammar",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 201,
+                    "lesson": "Frequently confused words",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:frequently-confused-words-9-grammar/a/less-vs-fewer-9",
+                    "wordCount": 146,
+                    "title": "Less vs. fewer",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 37,
+                    "lesson": "Frequently confused words",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "5pfZ3dyG1cg",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Affect and effect | Frequently confused words | Usage | Grammar",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 258,
+                    "lesson": "Frequently confused words",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:choosing-precise-language-grammar-9/a/choosing-among-words-with-similar-meanings-grammar-9",
+                    "wordCount": 237,
+                    "title": "Choosing among words with similar meanings",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 60,
+                    "lesson": "Choosing precise language",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:word-study-9-grammar/xd45453bfd2ae8614:choosing-precise-language-grammar-9/a/analyzing-word-relationships-grammar-9",
+                    "wordCount": 370,
+                    "title": "Analyzing word relationships",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 93,
+                    "lesson": "Choosing precise language",
+                    "unit": "Unit 15: Grammar: Word study (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:style-and-tone-building-knowledge-9-grammar/a/style-and-tone-unit-glossary-grammar-9",
+                    "wordCount": 187,
+                    "title": "Glossary: Style and tone",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 47,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "dzSbmCxUyuo",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "The scale of formality | Style | Grammar",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 494,
+                    "lesson": "Consistency in style and tone",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:consistency-in-style-and-tone-9-grammar/a/varieties-of-english-grammar-9",
+                    "wordCount": 681,
+                    "title": "Varieties of English",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 172,
+                    "lesson": "Consistency in style and tone",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:consistency-in-style-and-tone-9-grammar/a/effects-of-word-choice-on-meaning-and-tone-grammar-9",
+                    "wordCount": 416,
+                    "title": "Effects of word choice on meaning and tone",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 105,
+                    "lesson": "Consistency in style and tone",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:consistency-in-style-and-tone-9-grammar/a/maintaining-a-consistent-style-and-tone-grammar-9",
+                    "wordCount": 1056,
+                    "title": "Maintaining a consistent style and tone",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 266,
+                    "lesson": "Consistency in style and tone",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:expanding-combining-and-reducing-sentences-9-grammar/a/varying-sentence-structure-grammar-9",
+                    "wordCount": 1075,
+                    "title": "Varying sentence structure",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 271,
+                    "lesson": "Expanding, combining, and reducing sentences",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:expanding-combining-and-reducing-sentences-9-grammar/a/expanding-sentences-with-modifying-phrases-descriptions-and-details-9",
+                    "wordCount": 1051,
+                    "title": "Expanding sentences with modifying phrases, descriptions, and details",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 265,
+                    "lesson": "Expanding, combining, and reducing sentences",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:expanding-combining-and-reducing-sentences-9-grammar/a/combining-sentences-grammar-9",
+                    "wordCount": 705,
+                    "title": "Combining sentences",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 178,
+                    "lesson": "Expanding, combining, and reducing sentences",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:expanding-combining-and-reducing-sentences-9-grammar/a/eliminating-wordiness-and-redundancy-9",
+                    "wordCount": 858,
+                    "title": "Eliminating wordiness and redundancy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 216,
+                    "lesson": "Expanding, combining, and reducing sentences",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:using-active-and-passive-voice-9-grammar/a/using-active-and-passive-voice-for-effect-grammar-9",
+                    "wordCount": 814,
+                    "title": "Using active and passive voice for effect",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 205,
+                    "lesson": "Using active and passive voice",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:style-and-tone-9-grammar/xd45453bfd2ae8614:using-style-manuals-9-grammar/a/using-style-manuals-to-write-and-edit-grammar-9",
+                    "wordCount": 768,
+                    "title": "Using style manuals to write and edit",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 194,
+                    "lesson": "Using style manuals",
+                    "unit": "Unit 16: Grammar: Style and tone (G9)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Usage",
+            "subtopics": [
+              {
+                "name": "Pronouns",
+                "description": "Pronoun–antecedent & pronoun usage.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Pronouns",
+                "estimatedMinutes": 87,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "nkjKPhleQ5E",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "What is a pronoun? | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 120,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:pronouns-building-knowledge-9-grammar/a/pronouns-unit-glossary-grammar-9",
+                    "wordCount": 284,
+                    "title": "Glossary: Pronouns",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 72,
+                    "lesson": "Building knowledge",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:pronoun-case-person-and-number-9-grammar/a/pronouns-and-antecedents-case-person-and-number-grammar-9",
+                    "wordCount": 1312,
+                    "title": "Pronouns and antecedents: Case, person, and number",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 331,
+                    "lesson": "Pronoun case, person, and number",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "q5HmV3Czl6g",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Subject and object pronouns | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 334,
+                    "lesson": "Pronoun case, person, and number",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "dFFRD7GAEUA",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Grammatical person and pronouns | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 279,
+                    "lesson": "Pronoun case, person, and number",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "iqldLGr2aug",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Pronoun number | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 318,
+                    "lesson": "Pronoun case, person, and number",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "j9kIACViG60",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Pronoun-antecedent agreement | Syntax | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 247,
+                    "lesson": "Pronoun case, person, and number",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:pronoun-case-person-and-number-9-grammar/a/tricky-cases-of-pronounantecedent-agreement-grammar-9",
+                    "wordCount": 565,
+                    "title": "Tricky cases of pronoun-antecedent agreement",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 142,
+                    "lesson": "Pronoun case, person, and number",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:pronoun-case-person-and-number-9-grammar/a/using-consistent-pronouns-9",
+                    "wordCount": 806,
+                    "title": "Using consistent pronouns",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 203,
+                    "lesson": "Pronoun case, person, and number",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "bhzh8VDykc4",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Possessive pronouns | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 292,
+                    "lesson": "Possessive, indefinite, and demonstrative pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:possessive-indefinite-and-demonstrative-pronouns-9-grammar/a/possessive-pronouns-9",
+                    "wordCount": 394,
+                    "title": "Possessive pronouns",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 99,
+                    "lesson": "Possessive, indefinite, and demonstrative pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "gaMFyEravAs",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Indefinite Pronouns | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 302,
+                    "lesson": "Possessive, indefinite, and demonstrative pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:possessive-indefinite-and-demonstrative-pronouns-9-grammar/a/indefinite-pronouns-grammar-9",
+                    "wordCount": 683,
+                    "title": "Indefinite pronouns",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 172,
+                    "lesson": "Possessive, indefinite, and demonstrative pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:possessive-indefinite-and-demonstrative-pronouns-9-grammar/a/demonstrative-pronouns-grammar-9",
+                    "wordCount": 550,
+                    "title": "Demonstrative pronouns",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 139,
+                    "lesson": "Possessive, indefinite, and demonstrative pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:reflexive-and-intensive-pronouns-9-grammar/a/intensive-and-reflexive-pronouns-grammar-9",
+                    "wordCount": 506,
+                    "title": "Intensive and reflexive pronouns",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 128,
+                    "lesson": "Reflexive and intensive pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "Zoh8XpfcF-c",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Reflexive pronouns | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 310,
+                    "lesson": "Reflexive and intensive pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "ADfyReSt2L0",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Emphatic pronouns | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 175,
+                    "lesson": "Reflexive and intensive pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "ZHzKQkX3IxI",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Relative pronouns | The parts of speech | Grammar | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 116,
+                    "lesson": "Relative pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:relative-pronouns-9-grammar/a/relative-pronouns-grammar-9",
+                    "wordCount": 926,
+                    "title": "Relative pronouns",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 233,
+                    "lesson": "Relative pronouns",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/ela/9th-grade-reading-and-vocabulary/xd45453bfd2ae8614:pronouns-9-grammar/xd45453bfd2ae8614:vague-pronoun-references-9-grammar/a/vague-pronouns-grammar-9",
+                    "wordCount": 474,
+                    "title": "Vague pronouns",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 119,
+                    "lesson": "Vague pronoun references",
+                    "unit": "Unit 5: Grammar: Pronouns (G9)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "code": "SS",
     "name": "Social Studies",
     "categories": [
       {
-        "name": "Civics & Government",
+        "name": "Civics & Gov",
         "weight": 50,
         "topics": [
           {
-            "name": "Foundations of Government",
+            "name": "Foundations",
             "subtopics": [
               {
                 "name": "Types of Government & Constitutional Principles",
@@ -6950,104 +10648,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 1: Foundations of American democracy"
                   }
                 ]
-              },
-              {
-                "name": "Founding Documents",
-                "description": "Read and interpret the Declaration of Independence, the Articles of Confederation and the Constitution as primary sources.",
-                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Founding%20Documents",
-                "estimatedMinutes": 166,
-                "difficultyLevel": 3,
-                "clips": [
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "po33g3yIRXA",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "How to read a document part 2 | The historian's toolkit | US History | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 829,
-                    "lesson": "Thinking like a historian",
-                    "unit": "Unit 12: Primary documents"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "XLAA6ic_AmI",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Avoiding common mistakes in historical essays | US History | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 585,
-                    "lesson": "Thinking like a historian",
-                    "unit": "Unit 12: Primary documents"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-history/x71a94f19:primary-documents/x71a94f19:primary-documents-lesson/a/the-articles-of-confederation",
-                    "wordCount": 3442,
-                    "title": "Primary source: The Declaration of Independence",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 868,
-                    "lesson": "Primary documents",
-                    "unit": "Unit 12: Primary documents"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-history/x71a94f19:primary-documents/x71a94f19:primary-documents-lesson/a/us-constitution",
-                    "wordCount": 4379,
-                    "title": "Primary source: The Articles of Confederation",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 1104,
-                    "lesson": "Primary documents",
-                    "unit": "Unit 12: Primary documents"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-history/x71a94f19:primary-documents/x71a94f19:primary-documents-lesson/a/frederick-douglass-what-to-the-slave-is-the-fourth-of-july",
-                    "wordCount": 10434,
-                    "title": "Primary source: The Constitution of the United States",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 2630,
-                    "lesson": "Primary documents",
-                    "unit": "Unit 12: Primary documents"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-history/x71a94f19:primary-documents/x71a94f19:primary-documents-lesson/a/letter-from-birmingham-jail",
-                    "wordCount": 6913,
-                    "title": "Frederick Douglass, \"What to the Slave is the Fourth of July?\"",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 1743,
-                    "lesson": "Primary documents",
-                    "unit": "Unit 12: Primary documents"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "Ht0FW7RwRmc",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Native American societies before contact | Period 1: 1491-1607 | AP US History | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 325,
-                    "lesson": "Indigenous America",
-                    "unit": "Unit 1: Worlds collide (1491-1607)  →  Unit 2: Colonial America (1607-1754)  →  Unit 3: The Revolutionary Era (1754-1800)"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-history/precontact-and-early-colonial-era/before-contact/a/pre-contact-americas-lesson-summary",
-                    "wordCount": 226,
-                    "title": "Indigenous America",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 57,
-                    "lesson": "Indigenous America",
-                    "unit": "Unit 1: Worlds collide (1491-1607)  →  Unit 2: Colonial America (1607-1754)  →  Unit 3: The Revolutionary Era (1754-1800)"
-                  }
-                ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Structure",
+            "subtopics": [
               {
                 "name": "Branches of government",
                 "description": "Describe the powers of Congress, the presidency and the courts, and how each branch checks the others.",
@@ -7665,7 +11271,7 @@ export const CURRICULUM: CurriculumSubject[] = [
             ]
           },
           {
-            "name": "Rights & Civic Participation",
+            "name": "Rights",
             "subtopics": [
               {
                 "name": "Bill of Rights & amendments",
@@ -8029,6 +11635,306 @@ export const CURRICULUM: CurriculumSubject[] = [
                 ]
               },
               {
+                "name": "Citizenship & civic responsibilities",
+                "description": "Describe the rights and responsibilities of citizens and how citizenship is gained.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Citizenship%20%26%20civic%20responsibilities",
+                "estimatedMinutes": 169,
+                "difficultyLevel": 1,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "4Xn5DqJzhJk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Civic life, private life, politics, and government | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 276,
+                    "lesson": "What does it mean to be a citizen?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "AG6SiMEK1tk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Personal rights of citizenship | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 299,
+                    "lesson": "What are the rights and responsibilities of citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "jCP23_xNf1A",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Political rights of citizenship | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 222,
+                    "lesson": "What are the rights and responsibilities of citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "j_XrGo15iBc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Economic rights of citizenship | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 269,
+                    "lesson": "What are the rights and responsibilities of citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "Tms0TgD_97g",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Responsibilities of citizenship | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 152,
+                    "lesson": "What are the rights and responsibilities of citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "VjPE5JTGjXE",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Obligations of citizenship | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 251,
+                    "lesson": "What are the rights and responsibilities of citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-are-the-rights-and-responsibilities-of-citizenship/a/the-rights-and-responsibilities-of-citizenship-learn-and-practice",
+                    "wordCount": 905,
+                    "title": "Why do some citizens have to register for the draft?",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 228,
+                    "lesson": "What are the rights and responsibilities of citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "XTubp0aUTEA",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Citizenship in early America, 1789-1830s | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 254,
+                    "lesson": "How has the definition of citizenship changed over time?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "SMvZkK02ipI",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Citizenship in early America, 1840s-1870s | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 336,
+                    "lesson": "How has the definition of citizenship changed over time?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "U3vK0RuwZMc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "The Dred Scott case and citizenship | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 468,
+                    "lesson": "How has the definition of citizenship changed over time?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "LS2Av3F-8iM",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "The 19th Amendment and citizenship | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 261,
+                    "lesson": "How has the definition of citizenship changed over time?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "SIT637hrMOo",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Citizenship in the US territories and District of Columbia | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 372,
+                    "lesson": "How has the definition of citizenship changed over time?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "b4vLXhf7vYk",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Citizenship and voting rights of indigenous people | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 300,
+                    "lesson": "How has the definition of citizenship changed over time?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-is-the-difference-between-citizens-and-non-citizens/a/what-is-dual-nationality",
+                    "wordCount": 919,
+                    "title": "How citizenship has changed over time | Learn and practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 232,
+                    "lesson": "How has the definition of citizenship changed over time?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-is-the-difference-between-citizens-and-non-citizens/a/refugees-in-the-united-states",
+                    "wordCount": 1420,
+                    "title": "What is dual nationality?",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 358,
+                    "lesson": "What is the difference between citizens and non-citizens?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-is-the-difference-between-citizens-and-non-citizens/a/the-dream-act-and-daca",
+                    "wordCount": 2967,
+                    "title": "Refugees in the United States",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 748,
+                    "lesson": "What is the difference between citizens and non-citizens?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-is-the-difference-between-citizens-and-non-citizens/a/the-difference-between-citizens-and-non-citizens-learn-and-practice",
+                    "wordCount": 1129,
+                    "title": "The DREAM Act and DACA",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 285,
+                    "lesson": "What is the difference between citizens and non-citizens?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "NJk_ZOUpvl0",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "The naturalization process | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 153,
+                    "lesson": "What is the pathway to citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "gM15QCuHWMo",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Who is eligible for naturalization? | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 435,
+                    "lesson": "What is the pathway to citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "rQzMYkMZmks",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Challenges of naturalization | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 230,
+                    "lesson": "What is the pathway to citizenship?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "387o7cyj40g",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Civic engagement | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 171,
+                    "lesson": "How can citizens shape and strengthen democracy?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "1HRl5nEOwGM",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Models of citizenship | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 381,
+                    "lesson": "How can citizens shape and strengthen democracy?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "VBRlnO1BbcU",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Service in the United States | Citizenship | High school civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 206,
+                    "lesson": "How can citizens shape and strengthen democracy?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:citizenship-unit-overview/a/citizenship-unit-overview",
+                    "wordCount": 1460,
+                    "title": "Citizens can shape and strengthen democracy | Learn and practice",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 368,
+                    "lesson": "How can citizens shape and strengthen democracy?",
+                    "unit": "Unit 6: Citizenship"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "VmFX6AIzllE",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "American attitudes about government and politics | US government and civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 512,
+                    "lesson": "What shapes people's beliefs about government and politics?",
+                    "unit": "Unit 8: American political ideologies and beliefs  →  Unit 10: Democracy today"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "chfz7QiwdOc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Political socialization | US government and civics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 212,
+                    "lesson": "What shapes people's beliefs about government and politics?",
+                    "unit": "Unit 8: American political ideologies and beliefs  →  Unit 10: Democracy today"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Elections",
+            "subtopics": [
+              {
                 "name": "Elections & political parties",
                 "description": "Explain how elections, campaigns and political parties work in the United States.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Elections%20%26%20political%20parties",
@@ -8388,302 +12294,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 6: Citizenship"
                   }
                 ]
-              },
-              {
-                "name": "Citizenship & civic responsibilities",
-                "description": "Describe the rights and responsibilities of citizens and how citizenship is gained.",
-                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Citizenship%20%26%20civic%20responsibilities",
-                "estimatedMinutes": 169,
-                "difficultyLevel": 1,
-                "clips": [
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "4Xn5DqJzhJk",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Civic life, private life, politics, and government | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 276,
-                    "lesson": "What does it mean to be a citizen?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "AG6SiMEK1tk",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Personal rights of citizenship | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 299,
-                    "lesson": "What are the rights and responsibilities of citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "jCP23_xNf1A",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Political rights of citizenship | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 222,
-                    "lesson": "What are the rights and responsibilities of citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "j_XrGo15iBc",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Economic rights of citizenship | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 269,
-                    "lesson": "What are the rights and responsibilities of citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "Tms0TgD_97g",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Responsibilities of citizenship | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 152,
-                    "lesson": "What are the rights and responsibilities of citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "VjPE5JTGjXE",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Obligations of citizenship | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 251,
-                    "lesson": "What are the rights and responsibilities of citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-are-the-rights-and-responsibilities-of-citizenship/a/the-rights-and-responsibilities-of-citizenship-learn-and-practice",
-                    "wordCount": 905,
-                    "title": "Why do some citizens have to register for the draft?",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 228,
-                    "lesson": "What are the rights and responsibilities of citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "XTubp0aUTEA",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Citizenship in early America, 1789-1830s | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 254,
-                    "lesson": "How has the definition of citizenship changed over time?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "SMvZkK02ipI",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Citizenship in early America, 1840s-1870s | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 336,
-                    "lesson": "How has the definition of citizenship changed over time?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "U3vK0RuwZMc",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "The Dred Scott case and citizenship | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 468,
-                    "lesson": "How has the definition of citizenship changed over time?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "LS2Av3F-8iM",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "The 19th Amendment and citizenship | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 261,
-                    "lesson": "How has the definition of citizenship changed over time?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "SIT637hrMOo",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Citizenship in the US territories and District of Columbia | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 372,
-                    "lesson": "How has the definition of citizenship changed over time?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "b4vLXhf7vYk",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Citizenship and voting rights of indigenous people | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 300,
-                    "lesson": "How has the definition of citizenship changed over time?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-is-the-difference-between-citizens-and-non-citizens/a/what-is-dual-nationality",
-                    "wordCount": 919,
-                    "title": "How citizenship has changed over time | Learn and practice",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 232,
-                    "lesson": "How has the definition of citizenship changed over time?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-is-the-difference-between-citizens-and-non-citizens/a/refugees-in-the-united-states",
-                    "wordCount": 1420,
-                    "title": "What is dual nationality?",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 358,
-                    "lesson": "What is the difference between citizens and non-citizens?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-is-the-difference-between-citizens-and-non-citizens/a/the-dream-act-and-daca",
-                    "wordCount": 2967,
-                    "title": "Refugees in the United States",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 748,
-                    "lesson": "What is the difference between citizens and non-citizens?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:what-is-the-difference-between-citizens-and-non-citizens/a/the-difference-between-citizens-and-non-citizens-learn-and-practice",
-                    "wordCount": 1129,
-                    "title": "The DREAM Act and DACA",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 285,
-                    "lesson": "What is the difference between citizens and non-citizens?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "NJk_ZOUpvl0",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "The naturalization process | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 153,
-                    "lesson": "What is the pathway to citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "gM15QCuHWMo",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Who is eligible for naturalization? | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 435,
-                    "lesson": "What is the pathway to citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "rQzMYkMZmks",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Challenges of naturalization | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 230,
-                    "lesson": "What is the pathway to citizenship?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "387o7cyj40g",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Civic engagement | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 171,
-                    "lesson": "How can citizens shape and strengthen democracy?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "1HRl5nEOwGM",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Models of citizenship | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 381,
-                    "lesson": "How can citizens shape and strengthen democracy?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "VBRlnO1BbcU",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Service in the United States | Citizenship | High school civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 206,
-                    "lesson": "How can citizens shape and strengthen democracy?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/humanities/us-government-and-civics/x231f0f4241b58f49:citizens-us-gov-civics/x231f0f4241b58f49:citizenship-unit-overview/a/citizenship-unit-overview",
-                    "wordCount": 1460,
-                    "title": "Citizens can shape and strengthen democracy | Learn and practice",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 368,
-                    "lesson": "How can citizens shape and strengthen democracy?",
-                    "unit": "Unit 6: Citizenship"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "VmFX6AIzllE",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "American attitudes about government and politics | US government and civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 512,
-                    "lesson": "What shapes people's beliefs about government and politics?",
-                    "unit": "Unit 8: American political ideologies and beliefs  →  Unit 10: Democracy today"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "chfz7QiwdOc",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Political socialization | US government and civics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 212,
-                    "lesson": "What shapes people's beliefs about government and politics?",
-                    "unit": "Unit 8: American political ideologies and beliefs  →  Unit 10: Democracy today"
-                  }
-                ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Public Policy",
+            "subtopics": [
               {
                 "name": "Contemporary public policy",
                 "description": "Analyze how political ideology, public opinion and government institutions shape current policy debates.",
@@ -8911,7 +12527,109 @@ export const CURRICULUM: CurriculumSubject[] = [
         "weight": 20,
         "topics": [
           {
-            "name": "Founding to Reconstruction",
+            "name": "Documents",
+            "subtopics": [
+              {
+                "name": "Founding Documents",
+                "description": "Read and interpret the Declaration of Independence, the Articles of Confederation and the Constitution as primary sources.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Founding%20Documents",
+                "estimatedMinutes": 166,
+                "difficultyLevel": 3,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "po33g3yIRXA",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "How to read a document part 2 | The historian's toolkit | US History | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 829,
+                    "lesson": "Thinking like a historian",
+                    "unit": "Unit 12: Primary documents"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "XLAA6ic_AmI",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Avoiding common mistakes in historical essays | US History | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 585,
+                    "lesson": "Thinking like a historian",
+                    "unit": "Unit 12: Primary documents"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-history/x71a94f19:primary-documents/x71a94f19:primary-documents-lesson/a/the-articles-of-confederation",
+                    "wordCount": 3442,
+                    "title": "Primary source: The Declaration of Independence",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 868,
+                    "lesson": "Primary documents",
+                    "unit": "Unit 12: Primary documents"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-history/x71a94f19:primary-documents/x71a94f19:primary-documents-lesson/a/us-constitution",
+                    "wordCount": 4379,
+                    "title": "Primary source: The Articles of Confederation",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 1104,
+                    "lesson": "Primary documents",
+                    "unit": "Unit 12: Primary documents"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-history/x71a94f19:primary-documents/x71a94f19:primary-documents-lesson/a/frederick-douglass-what-to-the-slave-is-the-fourth-of-july",
+                    "wordCount": 10434,
+                    "title": "Primary source: The Constitution of the United States",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 2630,
+                    "lesson": "Primary documents",
+                    "unit": "Unit 12: Primary documents"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-history/x71a94f19:primary-documents/x71a94f19:primary-documents-lesson/a/letter-from-birmingham-jail",
+                    "wordCount": 6913,
+                    "title": "Frederick Douglass, \"What to the Slave is the Fourth of July?\"",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 1743,
+                    "lesson": "Primary documents",
+                    "unit": "Unit 12: Primary documents"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "Ht0FW7RwRmc",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Native American societies before contact | Period 1: 1491-1607 | AP US History | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 325,
+                    "lesson": "Indigenous America",
+                    "unit": "Unit 1: Worlds collide (1491-1607)  →  Unit 2: Colonial America (1607-1754)  →  Unit 3: The Revolutionary Era (1754-1800)"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/humanities/us-history/precontact-and-early-colonial-era/before-contact/a/pre-contact-americas-lesson-summary",
+                    "wordCount": 226,
+                    "title": "Indigenous America",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 57,
+                    "lesson": "Indigenous America",
+                    "unit": "Unit 1: Worlds collide (1491-1607)  →  Unit 2: Colonial America (1607-1754)  →  Unit 3: The Revolutionary Era (1754-1800)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Colonial/Revolution",
             "subtopics": [
               {
                 "name": "Colonial America + Revolutionary Era",
@@ -9647,7 +13365,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 5: The Civil War Era (1844-1877)"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Civil War",
+            "subtopics": [
               {
                 "name": "Civil War & Reconstruction",
                 "description": "Explain the causes, major events and outcomes of the Civil War and Reconstruction.",
@@ -9990,7 +13713,7 @@ export const CURRICULUM: CurriculumSubject[] = [
             ]
           },
           {
-            "name": "Modern America",
+            "name": "World Wars",
             "subtopics": [
               {
                 "name": "World Wars I & II",
@@ -10484,7 +14207,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 8: The Postwar Era (1945-1980) (เฉพาะ lesson ที่เกี่ยวกับ Cold War)"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Cold War",
+            "subtopics": [
               {
                 "name": "Cold War",
                 "description": "Describe the rivalry between the US and the Soviet Union and its major conflicts and policies.",
@@ -10812,7 +14540,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 8: The Postwar Era (1945-1980) (เฉพาะ lesson ที่เกี่ยวกับ Civil Rights)"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Civil Rights",
+            "subtopics": [
               {
                 "name": "Civil Rights Movement",
                 "description": "Explain the goals, strategies and key events of the civil rights movement.",
@@ -11008,7 +14741,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 9: The Modern Era (1980-present)"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Foreign policy",
+            "subtopics": [
               {
                 "name": "Foreign Policy after 9/11",
                 "description": "Analyze US foreign policy from the late Cold War through the September 11 attacks and the war on terror.",
@@ -11203,7 +14941,7 @@ export const CURRICULUM: CurriculumSubject[] = [
         "weight": 15,
         "topics": [
           {
-            "name": "Microeconomics",
+            "name": "Micro",
             "subtopics": [
               {
                 "name": "Supply, demand, market equilibrium",
@@ -11930,7 +15668,7 @@ export const CURRICULUM: CurriculumSubject[] = [
             ]
           },
           {
-            "name": "Macroeconomics",
+            "name": "Macro",
             "subtopics": [
               {
                 "name": "Banking & financial sector",
@@ -12910,11 +16648,11 @@ export const CURRICULUM: CurriculumSubject[] = [
         ]
       },
       {
-        "name": "Geography & the World",
+        "name": "Geography",
         "weight": 15,
         "topics": [
           {
-            "name": "World History",
+            "name": "Civilizations",
             "subtopics": [
               {
                 "name": "World history beginnings",
@@ -14710,7 +18448,7 @@ export const CURRICULUM: CurriculumSubject[] = [
             ]
           },
           {
-            "name": "Geography",
+            "name": "Environment",
             "subtopics": [
               {
                 "name": "Resources and society",
@@ -15193,7 +18931,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Unit 3: Early Agrarian Societies (6000 BCE to 100 CE)"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Migration",
+            "subtopics": [
               {
                 "name": "Migration",
                 "description": "Explain why people migrate and how population growth and urbanization change places.",
@@ -15246,7 +18989,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "Crash Course Geography (external — ไม่มีคอร์สตรงใน Khan)"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Borders",
+            "subtopics": [
               {
                 "name": "Borders, Regions & Geographic Tools",
                 "description": "Use maps and geographic tools, and explain how regions and borders are defined and contested.",
@@ -15348,7 +19096,7 @@ export const CURRICULUM: CurriculumSubject[] = [
         "weight": 40,
         "topics": [
           {
-            "name": "Cells & Energy",
+            "name": "Cell Structure & Function",
             "subtopics": [
               {
                 "name": "Cell Parts and Their Functions",
@@ -15750,7 +19498,7 @@ export const CURRICULUM: CurriculumSubject[] = [
             ]
           },
           {
-            "name": "Human Body & Health",
+            "name": "Human Body Systems",
             "subtopics": [
               {
                 "name": "Human Body Systems",
@@ -16286,7 +20034,7 @@ export const CURRICULUM: CurriculumSubject[] = [
             ]
           },
           {
-            "name": "Heredity & Evolution",
+            "name": "Genetics & Reproduction",
             "subtopics": [
               {
                 "name": "DNA & Heredity",
@@ -16714,7 +20462,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "HS Biology · U5: Gene expression and regulation"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Evolution",
+            "subtopics": [
               {
                 "name": "Evolution & Natural Selection",
                 "description": "Explain how natural selection drives evolution and the evidence for it.",
@@ -17401,7 +21154,7 @@ export const CURRICULUM: CurriculumSubject[] = [
         "weight": 40,
         "topics": [
           {
-            "name": "Chemistry",
+            "name": "Atoms & Matter",
             "subtopics": [
               {
                 "name": "Atomic Structure & Properties of Matter",
@@ -17968,7 +21721,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "HS Chemistry · U8: Solutions, acids, and bases"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Chemical Reactions",
+            "subtopics": [
               {
                 "name": "Chemical Equations & Energy Changes",
                 "description": "Balance chemical equations and classify reactions as exothermic or endothermic.",
@@ -18120,11 +21878,64 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "HS Chemistry · U4: Chemical reactions"
                   }
                 ]
+              },
+              {
+                "name": "Heat & Heat Transfer",
+                "description": "Distinguish heat from temperature and explain conduction, convection and radiation.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Heat%20%26%20Heat%20Transfer",
+                "estimatedMinutes": 61,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "-7Gl-yKF6Y4",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Thermal energy, temperature, and heat | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 692,
+                    "lesson": "Thermal energy and equilibrium",
+                    "unit": "HS Chemistry · U7: Thermochemistry"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "f1OokOgtcqg",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "First and second laws of thermodynamics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 740,
+                    "lesson": "Thermal energy and equilibrium",
+                    "unit": "HS Chemistry · U7: Thermochemistry"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "GNelfJ6IAJw",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Specific heat capacity | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 828,
+                    "lesson": "Specific heat capacity",
+                    "unit": "HS Chemistry · U7: Thermochemistry"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "SkMeY6RBJZY",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Constant-pressure calorimetry | Thermodynamics | AP Chemistry | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 560,
+                    "lesson": "Calorimetry",
+                    "unit": "HS Chemistry · U7: Thermochemistry"
+                  }
+                ]
               }
             ]
           },
           {
-            "name": "Physics",
+            "name": "Energy & Forces",
             "subtopics": [
               {
                 "name": "Motion & Newton's Laws",
@@ -18418,59 +22229,6 @@ export const CURRICULUM: CurriculumSubject[] = [
                 ]
               },
               {
-                "name": "Heat & Heat Transfer",
-                "description": "Distinguish heat from temperature and explain conduction, convection and radiation.",
-                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Heat%20%26%20Heat%20Transfer",
-                "estimatedMinutes": 61,
-                "difficultyLevel": 2,
-                "clips": [
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "-7Gl-yKF6Y4",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Thermal energy, temperature, and heat | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 692,
-                    "lesson": "Thermal energy and equilibrium",
-                    "unit": "HS Chemistry · U7: Thermochemistry"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "f1OokOgtcqg",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "First and second laws of thermodynamics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 740,
-                    "lesson": "Thermal energy and equilibrium",
-                    "unit": "HS Chemistry · U7: Thermochemistry"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "GNelfJ6IAJw",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Specific heat capacity | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 828,
-                    "lesson": "Specific heat capacity",
-                    "unit": "HS Chemistry · U7: Thermochemistry"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "SkMeY6RBJZY",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Constant-pressure calorimetry | Thermodynamics | AP Chemistry | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 560,
-                    "lesson": "Calorimetry",
-                    "unit": "HS Chemistry · U7: Thermochemistry"
-                  }
-                ]
-              },
-              {
                 "name": "Work & Simple Machines",
                 "description": "Calculate work and explain how simple machines trade force for distance.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Work%20%26%20Simple%20Machines",
@@ -18500,7 +22258,12 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "unit": "HS Physics · U5: Energy"
                   }
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "name": "Waves & Electricity",
+            "subtopics": [
               {
                 "name": "Waves & Sound",
                 "description": "Describe wave properties and how sound travels.",
@@ -18834,7 +22597,7 @@ export const CURRICULUM: CurriculumSubject[] = [
         "weight": 20,
         "topics": [
           {
-            "name": "Earth Systems",
+            "name": "Earth's Systems",
             "subtopics": [
               {
                 "name": "Plate Tectonics, Volcanoes & Earthquakes",
@@ -19018,147 +22781,6 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "durationSec": 461,
                     "lesson": "Earthquakes",
                     "unit": "Khan partner (AMNH) · U4: Earthquakes and Volcanoes"
-                  }
-                ]
-              },
-              {
-                "name": "Weather & Climate Change",
-                "description": "Distinguish weather from climate and explain the causes and effects of climate change.",
-                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Weather%20%26%20Climate%20Change",
-                "estimatedMinutes": 80,
-                "difficultyLevel": 2,
-                "clips": [
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "U5ikrkOGio0",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Weather | Weather and climate | Middle school Earth and space science | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 243,
-                    "lesson": "Weather",
-                    "unit": "MS Earth & Space · U3: Weather and climate"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:weather/a/wind-and-air-masses",
-                    "wordCount": 1115,
-                    "title": "Learn and try: Wind and air masses",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 281,
-                    "lesson": "Weather",
-                    "unit": "MS Earth & Space · U3: Weather and climate"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:weather/a/fronts-and-weather",
-                    "wordCount": 1173,
-                    "title": "Learn: Fronts and weather",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 296,
-                    "lesson": "Weather",
-                    "unit": "MS Earth & Space · U3: Weather and climate"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:weather/a/weather-ms",
-                    "wordCount": 171,
-                    "title": "Key points: Weather",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 43,
-                    "lesson": "Weather",
-                    "unit": "MS Earth & Space · U3: Weather and climate"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "JMaqaspDpr0",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "The Sun's energy and Earth's weather | Middle school Earth and space science | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 374,
-                    "lesson": "Global winds and currents",
-                    "unit": "MS Earth & Space · U3: Weather and climate"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:global-winds-and-currents/a/the-suns-energy-and-earths-weather",
-                    "wordCount": 1220,
-                    "title": "Learn: The Sun's energy and Earth's weather",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 308,
-                    "lesson": "Global winds and currents",
-                    "unit": "MS Earth & Space · U3: Weather and climate"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "a9muG72XZ18",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Regional climates | Weather and climate | Middle school Earth and space science | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 297,
-                    "lesson": "Regional climates",
-                    "unit": "MS Earth & Space · U3: Weather and climate"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:regional-climates/a/regional-climates",
-                    "wordCount": 175,
-                    "title": "Key points: Regional climates",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 44,
-                    "lesson": "Regional climates",
-                    "unit": "MS Earth & Space · U3: Weather and climate"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "z9xKxciHgo8",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Earth's changing climate | Earth and society | Middle school Earth and space science | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 270,
-                    "lesson": "Earth's changing climate",
-                    "unit": "MS Earth & Space · U5: Earth and society"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:earth-and-society/x87d03b443efbea0a:earths-changing-climate/a/human-activities-and-climate-change",
-                    "wordCount": 1605,
-                    "title": "Learn: Human activities and climate change",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 405,
-                    "lesson": "Earth's changing climate",
-                    "unit": "MS Earth & Space · U5: Earth and society"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:earth-and-society/x87d03b443efbea0a:earths-changing-climate/a/phet-simulation-article-exploring-climate-change",
-                    "wordCount": 1857,
-                    "title": "PhET simulation: Explore climate change",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 468,
-                    "lesson": "Earth's changing climate",
-                    "unit": "MS Earth & Space · U5: Earth and society"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "Yn7ICU3Q4mE",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "The greenhouse effect | Physics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 808,
-                    "lesson": "EM radiation from the Sun",
-                    "unit": "HS Physics · U7: Electromagnetic radiation"
                   }
                 ]
               },
@@ -19355,6 +22977,199 @@ export const CURRICULUM: CurriculumSubject[] = [
                 ]
               },
               {
+                "name": "Earth's Age, Rock Layers & Fossils",
+                "description": "Use rock layers and fossils to reason about Earth's age and history.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Earth's%20Age%2C%20Rock%20Layers%20%26%20Fossils",
+                "estimatedMinutes": 21,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "3LObb5WxMdw",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Fossils and rock layers | The geosphere | Middle school Earth and space science | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 275,
+                    "lesson": "Fossils and rock layers",
+                    "unit": "MS Earth & Space · U4: The geosphere"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:the-geosphere/x87d03b443efbea0a:fossils-and-rock-layers/a/fossils-and-rock-layers",
+                    "wordCount": 164,
+                    "title": "Key points: Fossils and rock layers",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 41,
+                    "lesson": "Fossils and rock layers",
+                    "unit": "MS Earth & Space · U4: The geosphere"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "gDpyBifg6-s",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Half-life | Physics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 656,
+                    "lesson": "Half-life",
+                    "unit": "HS Physics · U8: Nuclear physics"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Climate & Weather",
+            "subtopics": [
+              {
+                "name": "Weather & Climate Change",
+                "description": "Distinguish weather from climate and explain the causes and effects of climate change.",
+                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Weather%20%26%20Climate%20Change",
+                "estimatedMinutes": 80,
+                "difficultyLevel": 2,
+                "clips": [
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "U5ikrkOGio0",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Weather | Weather and climate | Middle school Earth and space science | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 243,
+                    "lesson": "Weather",
+                    "unit": "MS Earth & Space · U3: Weather and climate"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:weather/a/wind-and-air-masses",
+                    "wordCount": 1115,
+                    "title": "Learn and try: Wind and air masses",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 281,
+                    "lesson": "Weather",
+                    "unit": "MS Earth & Space · U3: Weather and climate"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:weather/a/fronts-and-weather",
+                    "wordCount": 1173,
+                    "title": "Learn: Fronts and weather",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 296,
+                    "lesson": "Weather",
+                    "unit": "MS Earth & Space · U3: Weather and climate"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:weather/a/weather-ms",
+                    "wordCount": 171,
+                    "title": "Key points: Weather",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 43,
+                    "lesson": "Weather",
+                    "unit": "MS Earth & Space · U3: Weather and climate"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "JMaqaspDpr0",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "The Sun's energy and Earth's weather | Middle school Earth and space science | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 374,
+                    "lesson": "Global winds and currents",
+                    "unit": "MS Earth & Space · U3: Weather and climate"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:global-winds-and-currents/a/the-suns-energy-and-earths-weather",
+                    "wordCount": 1220,
+                    "title": "Learn: The Sun's energy and Earth's weather",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 308,
+                    "lesson": "Global winds and currents",
+                    "unit": "MS Earth & Space · U3: Weather and climate"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "a9muG72XZ18",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Regional climates | Weather and climate | Middle school Earth and space science | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 297,
+                    "lesson": "Regional climates",
+                    "unit": "MS Earth & Space · U3: Weather and climate"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:weather-and-climate/x87d03b443efbea0a:regional-climates/a/regional-climates",
+                    "wordCount": 175,
+                    "title": "Key points: Regional climates",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 44,
+                    "lesson": "Regional climates",
+                    "unit": "MS Earth & Space · U3: Weather and climate"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "z9xKxciHgo8",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "Earth's changing climate | Earth and society | Middle school Earth and space science | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 270,
+                    "lesson": "Earth's changing climate",
+                    "unit": "MS Earth & Space · U5: Earth and society"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:earth-and-society/x87d03b443efbea0a:earths-changing-climate/a/human-activities-and-climate-change",
+                    "wordCount": 1605,
+                    "title": "Learn: Human activities and climate change",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 405,
+                    "lesson": "Earth's changing climate",
+                    "unit": "MS Earth & Space · U5: Earth and society"
+                  },
+                  {
+                    "kind": "ARTICLE",
+                    "youtubeId": null,
+                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:earth-and-society/x87d03b443efbea0a:earths-changing-climate/a/phet-simulation-article-exploring-climate-change",
+                    "wordCount": 1857,
+                    "title": "PhET simulation: Explore climate change",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 468,
+                    "lesson": "Earth's changing climate",
+                    "unit": "MS Earth & Space · U5: Earth and society"
+                  },
+                  {
+                    "kind": "VIDEO",
+                    "youtubeId": "Yn7ICU3Q4mE",
+                    "url": null,
+                    "wordCount": null,
+                    "title": "The greenhouse effect | Physics | Khan Academy",
+                    "channelTitle": "Khan Academy",
+                    "durationSec": 808,
+                    "lesson": "EM radiation from the Sun",
+                    "unit": "HS Physics · U7: Electromagnetic radiation"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Sustainability & Society",
+            "subtopics": [
+              {
                 "name": "Natural Resources & Sustainability",
                 "description": "Compare renewable and nonrenewable resources and how they can be managed sustainably.",
                 "learningUrl": "https://www.khanacademy.org/search?page_search_query=Natural%20Resources%20%26%20Sustainability",
@@ -19432,7 +23247,7 @@ export const CURRICULUM: CurriculumSubject[] = [
             ]
           },
           {
-            "name": "Space & Earth History",
+            "name": "Solar System & Universe",
             "subtopics": [
               {
                 "name": "The Solar System & Stars",
@@ -19561,48 +23376,6 @@ export const CURRICULUM: CurriculumSubject[] = [
                     "durationSec": 558,
                     "lesson": "EM radiation from the Sun",
                     "unit": "HS Physics · U7: Electromagnetic radiation"
-                  }
-                ]
-              },
-              {
-                "name": "Earth's Age, Rock Layers & Fossils",
-                "description": "Use rock layers and fossils to reason about Earth's age and history.",
-                "learningUrl": "https://www.khanacademy.org/search?page_search_query=Earth's%20Age%2C%20Rock%20Layers%20%26%20Fossils",
-                "estimatedMinutes": 21,
-                "difficultyLevel": 2,
-                "clips": [
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "3LObb5WxMdw",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Fossils and rock layers | The geosphere | Middle school Earth and space science | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 275,
-                    "lesson": "Fossils and rock layers",
-                    "unit": "MS Earth & Space · U4: The geosphere"
-                  },
-                  {
-                    "kind": "ARTICLE",
-                    "youtubeId": null,
-                    "url": "https://www.khanacademy.org/science/middle-school-earth-and-space-science/x87d03b443efbea0a:the-geosphere/x87d03b443efbea0a:fossils-and-rock-layers/a/fossils-and-rock-layers",
-                    "wordCount": 164,
-                    "title": "Key points: Fossils and rock layers",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 41,
-                    "lesson": "Fossils and rock layers",
-                    "unit": "MS Earth & Space · U4: The geosphere"
-                  },
-                  {
-                    "kind": "VIDEO",
-                    "youtubeId": "gDpyBifg6-s",
-                    "url": null,
-                    "wordCount": null,
-                    "title": "Half-life | Physics | Khan Academy",
-                    "channelTitle": "Khan Academy",
-                    "durationSec": 656,
-                    "lesson": "Half-life",
-                    "unit": "HS Physics · U8: Nuclear physics"
                   }
                 ]
               }

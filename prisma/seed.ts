@@ -175,7 +175,7 @@ async function main() {
   // would be overwritten on the next import.
   //
   // Subjects absent from it keep their hand-written block below, and move over
-  // as their sheet arrives. MATH, SS and SCI have; RLA hasn't yet.
+  // as their sheet arrives. All four have now (RLA since 2026-10-12).
 
   for (const subject of CURRICULUM) {
     const row = subjectByCode.get(subject.code);
@@ -379,14 +379,17 @@ async function main() {
     ["Dot plots, histograms & box plots", "Mean, median, mode, range"],
     ["Probability", "Mean, median, mode, range"],
     ["Scatter plots", "Slope & linear functions"],
-    // RLA
-    ["Author's Purpose & Point of View", "Main Idea & Supporting Details"],
-    ["Argument Analysis", "Author's Purpose & Point of View"],
-    ["Figurative Language & Tone", "Reading Fiction"],
-    ["Comparing Texts", "Reading Fiction"],
-    ["Writing an Argument Essay", "Argument Analysis"],
-    ["Using Evidence & Citations", "Argument Analysis"],
-    ["Verb Tense & Modifiers", "Subject-Verb Agreement"],
+    // RLA — names follow scripts/curriculum/plan.ts. DRAFT pairs written by
+    // Claude on 2026-10-12 for the team to review.
+    ["Inference & Conclusions", "Main Ideas & Details"],
+    ["Author's Purpose & Tone", "Main Ideas & Details"],
+    ["Development of Ideas", "Main Ideas & Details"],
+    ["Text Structure & Transitions", "Development of Ideas"],
+    ["Argumentation & Evidence", "Author's Purpose & Tone"],
+    ["Comparing Texts & Opposing Claims", "Argumentation & Evidence"],
+    ["Extended Response (Essay)", "Argumentation & Evidence"],
+    ["Commas & Apostrophes", "Sentence Structure"],
+    ["Modifiers & Parallelism", "Sentence Structure"],
     // SS and SCI — names follow scripts/curriculum/plan.ts. DRAFT pairs written
     // by Claude on 2026-09-27 for the team to review.
     // SS

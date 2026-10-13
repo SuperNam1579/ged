@@ -1,12 +1,11 @@
 /**
  * Turns the hand-built curriculum sheets into seedable curriculum data.
  *
- * MATH comes from `curriculum/MATH.csv`. SS and SCI come from the `_wordcount`
- * workbooks. RLA's sheet hasn't arrived: until `curriculum/RLA.xlsx` (columns
- * found by their headers — see curriculum/sheet-layout.ts) or `RLA.csv` is
- * there, a run over all subjects skips RLA and leaves its data as it is. The
- * other workbooks are read as .xlsx because an article's address only exists as the
- * hyperlink under its title — a CSV export drops all of them. See SHEETS.
+ * Each subject comes from its `_wordcount` workbook in curriculum/: SS and SCI
+ * at fixed columns (SHEETS), MATH and RLA found by name with columns found by
+ * their headers (AUTO_SHEETS, curriculum/sheet-layout.ts). A subject with no
+ * file yet is skipped and its data left as it is. Workbooks, not CSV, because
+ * an article's address only exists as the hyperlink under its title — a CSV export drops all of them. See SHEETS.
  *
  *   npx tsx scripts/import-curriculum.ts             # all subjects in the plan
  *   npx tsx scripts/import-curriculum.ts --subject MATH
@@ -24,6 +23,13 @@
  *
  * Step 1 is where every YouTube call happens. Steps 2 and 3 are offline, so
  * re-seeding a wiped database costs no quota.
+ *
+ * Moved a subtopic to another topic or category in plan.ts? Before step 2, run
+ *   npx tsx scripts/db/regroup-subtopics.ts            (dry run, then --apply)
+ * The seed finds a subtopic by its parent and name, so without this it makes a
+ * new empty row in the new place and leaves the old one — with learners'
+ * sessions and progress — behind. Subtopics the sheets dropped are a different
+ * job: scripts/db/retire-subtopics.ts, which deletes them and their data.
  *
  * ── What it checks, and why ───────────────────────────────────────────────
  * A clip can look perfect in the spreadsheet and still be useless to us. It may
@@ -177,8 +183,23 @@ interface SheetSource {
  * curriculum/ and its columns by their headers.
  */
 const AUTO_SHEETS: Record<string, RegExp> = {
+  MATH: /^math.*\.xlsx$/i,
   RLA: /^(rla|.*language[ _-]*arts).*\.xlsx$/i,
 };
+
+/**
+ * Among a subject's workbooks, the one with word counts. Each subject arrives
+ * twice — "RLA.xlsx" and "RLA_wordcount.xlsx", "Math.xlsx" and
+ * "Math _wordcount.xlsx" — and only the second has the column articles need.
+ * Picking by directory order took RLA.xlsx, and every article would have been
+ * skipped for want of a word count.
+ */
+function pickWorkbook(files: string[]): string | undefined {
+  const byPreference = [...files].sort(
+    (a, b) => Number(/word\s*count/i.test(b)) - Number(/word\s*count/i.test(a)) || a.localeCompare(b)
+  );
+  return byPreference[0];
+}
 
 /** Subjects read from a workbook rather than a CSV. */
 const SHEETS: Record<string, SheetSource> = {
@@ -262,14 +283,23 @@ async function readSubjectSheet(code: string, src: SheetSource): Promise<CsvRow[
 async function readSubjectRows(code: string): Promise<CsvRow[] | null> {
   const sheet = SHEETS[code];
   if (sheet) return readSubjectSheet(code, sheet);
-  if (existsSync(resolve(CURRICULUM_DIR, `${code}.csv`))) return readSubjectCsv(code);
 
+  // A workbook wins over a CSV: MATH moved from MATH.csv to a workbook when its
+  // articles arrived, and a stale CSV left behind must not quietly win.
   const pattern = AUTO_SHEETS[code];
-  const file = pattern && existsSync(CURRICULUM_DIR) ? readdirSync(CURRICULUM_DIR).find((f) => pattern.test(f)) : undefined;
-  if (!file) return null;
+  const matches = pattern && existsSync(CURRICULUM_DIR)
+    ? readdirSync(CURRICULUM_DIR).filter((f) => pattern.test(f) && !f.startsWith("~$"))
+    : [];
+  const file = pickWorkbook(matches);
+  if (!file) {
+    return existsSync(resolve(CURRICULUM_DIR, `${code}.csv`)) ? readSubjectCsv(code) : null;
+  }
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(resolve(CURRICULUM_DIR, file));
   const layout = detectSheetLayout(wb, file);
+  if (!layout.cols.words) {
+    console.warn(`${code}: ${file} has no word-count column — every article in it will be skipped.`);
+  }
   console.log(`${code}: reading ${file}, sheet "${layout.sheet}" — columns ${JSON.stringify(layout.cols)}`);
   return readSubjectSheet(code, { file, ...layout });
 }

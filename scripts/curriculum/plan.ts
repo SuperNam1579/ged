@@ -266,22 +266,23 @@ const MATH: SubjectPlan = {
 
 // ─── SOCIAL STUDIES ─────────────────────────────────────────────────────────
 //
-// From curriculum/Social Studies_wordcount.xlsx. Category weights are the GED
-// Social Studies blueprint. Six sheet names are Thai; the learner-facing UI is
-// English, so those get an English `name` — the sheet value stays in `csv`,
-// which is what the importer matches on. DRAFT: descriptions and difficulty
-// were written by Claude on 2026-09-27 for the team to review.
+// Content from curriculum/Social Studies_wordcount.xlsx; structure from the
+// team's GED_Khan_Mapping.xlsx (Social Studies sheet): its Domains are the
+// categories, with their exam weights, and its Categories the topics. Six sheet
+// names are Thai; the learner-facing UI is English, so those get an English
+// `name` — the sheet value stays in `csv`, which is what the importer matches on.
+// DRAFT: descriptions were written by Claude on 2026-09-27 for the team to review.
 
 const SS: SubjectPlan = {
   code: "SS",
   name: "Social Studies",
   categories: [
     {
-      name: "Civics & Government",
+      name: "Civics & Gov",
       weight: 50,
       topics: [
         {
-          name: "Foundations of Government",
+          name: "Foundations",
           subtopics: [
             {
               csv: "ประเภทของรัฐบาล + หลักการรัฐธรรมนูญ (checks & balances, federalism)",
@@ -290,13 +291,11 @@ const SS: SubjectPlan = {
                 "Compare forms of government and explain the principles behind the US Constitution: popular sovereignty, separation of powers, checks and balances, and federalism.",
               difficulty: 2,
             },
-            {
-              csv: "เอกสารสำคัญ (Declaration, Constitution)",
-              name: "Founding Documents",
-              description:
-                "Read and interpret the Declaration of Independence, the Articles of Confederation and the Constitution as primary sources.",
-              difficulty: 3,
-            },
+          ],
+        },
+        {
+          name: "Structure",
+          subtopics: [
             {
               csv: "Branches of government",
               description:
@@ -306,7 +305,7 @@ const SS: SubjectPlan = {
           ],
         },
         {
-          name: "Rights & Civic Participation",
+          name: "Rights",
           subtopics: [
             {
               csv: "Bill of Rights & amendments",
@@ -315,17 +314,27 @@ const SS: SubjectPlan = {
               difficulty: 2,
             },
             {
-              csv: "Elections & political parties",
-              description:
-                "Explain how elections, campaigns and political parties work in the United States.",
-              difficulty: 2,
-            },
-            {
               csv: "Citizenship & civic responsibilities",
               description:
                 "Describe the rights and responsibilities of citizens and how citizenship is gained.",
               difficulty: 1,
             },
+          ],
+        },
+        {
+          name: "Elections",
+          subtopics: [
+            {
+              csv: "Elections & political parties",
+              description:
+                "Explain how elections, campaigns and political parties work in the United States.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Public Policy",
+          subtopics: [
             {
               csv: "Contemporary public policy",
               description:
@@ -341,7 +350,19 @@ const SS: SubjectPlan = {
       weight: 20,
       topics: [
         {
-          name: "Founding to Reconstruction",
+          name: "Documents",
+          subtopics: [
+            {
+              csv: "เอกสารสำคัญ (Declaration, Constitution)",
+              name: "Founding Documents",
+              description:
+                "Read and interpret the Declaration of Independence, the Articles of Confederation and the Constitution as primary sources.",
+              difficulty: 3,
+            },
+          ],
+        },
+        {
+          name: "Colonial/Revolution",
           subtopics: [
             {
               csv: "Colonial America + Revolutionary Era",
@@ -349,6 +370,11 @@ const SS: SubjectPlan = {
                 "Trace colonial settlement, the causes of the American Revolution and the founding of the new nation.",
               difficulty: 2,
             },
+          ],
+        },
+        {
+          name: "Civil War",
+          subtopics: [
             {
               csv: "Civil War & Reconstruction",
               description:
@@ -358,7 +384,7 @@ const SS: SubjectPlan = {
           ],
         },
         {
-          name: "Modern America",
+          name: "World Wars",
           subtopics: [
             {
               csv: "สงครามโลก 1 + 2 (WWI, WWII)",
@@ -367,18 +393,33 @@ const SS: SubjectPlan = {
                 "Explain US involvement in World War I and World War II and their effects at home and abroad.",
               difficulty: 2,
             },
+          ],
+        },
+        {
+          name: "Cold War",
+          subtopics: [
             {
               csv: "Cold War",
               description:
                 "Describe the rivalry between the US and the Soviet Union and its major conflicts and policies.",
               difficulty: 3,
             },
+          ],
+        },
+        {
+          name: "Civil Rights",
+          subtopics: [
             {
               csv: "Civil Rights Movement",
               description:
                 "Explain the goals, strategies and key events of the civil rights movement.",
               difficulty: 2,
             },
+          ],
+        },
+        {
+          name: "Foreign policy",
+          subtopics: [
             {
               csv: "นโยบายต่างประเทศหลัง 9/11",
               name: "Foreign Policy after 9/11",
@@ -395,7 +436,7 @@ const SS: SubjectPlan = {
       weight: 15,
       topics: [
         {
-          name: "Microeconomics",
+          name: "Micro",
           subtopics: [
             {
               csv: "Supply, demand, market equilibrium",
@@ -416,7 +457,7 @@ const SS: SubjectPlan = {
           ],
         },
         {
-          name: "Macroeconomics",
+          name: "Macro",
           subtopics: [
             {
               csv: "Banking & financial sector",
@@ -441,11 +482,11 @@ const SS: SubjectPlan = {
       ],
     },
     {
-      name: "Geography & the World",
+      name: "Geography",
       weight: 15,
       topics: [
         {
-          name: "World History",
+          name: "Civilizations",
           subtopics: [
             {
               // The sheet asks whether to keep Khan's Unit 4 (world religions and ancient
@@ -458,7 +499,7 @@ const SS: SubjectPlan = {
           ],
         },
         {
-          name: "Geography",
+          name: "Environment",
           subtopics: [
             {
               // Same Khan unit as "World history beginnings" Unit 3, per the sheet's
@@ -469,6 +510,11 @@ const SS: SubjectPlan = {
                 "Explain how natural resources and the environment shaped early agrarian societies.",
               difficulty: 2,
             },
+          ],
+        },
+        {
+          name: "Migration",
+          subtopics: [
             {
               csv: "การอพยพ (migration)",
               name: "Migration",
@@ -476,6 +522,11 @@ const SS: SubjectPlan = {
                 "Explain why people migrate and how population growth and urbanization change places.",
               difficulty: 2,
             },
+          ],
+        },
+        {
+          name: "Borders",
+          subtopics: [
             {
               csv: "พรมแดน/ภูมิภาค/เครื่องมือภูมิศาสตร์",
               name: "Borders, Regions & Geographic Tools",
@@ -492,11 +543,12 @@ const SS: SubjectPlan = {
 
 // ─── SCIENCE ────────────────────────────────────────────────────────────────
 //
-// From curriculum/Science_wordcount.xlsx. Category weights are the GED Science
-// blueprint. The sheet numbers its subtopics ("1. Cell parts…"); the number is
-// kept in `csv` for matching and dropped from the learner-facing `name`.
-// DRAFT: descriptions and difficulty were written by Claude on 2026-09-27 for
-// the team to review.
+// Content from curriculum/Science_wordcount.xlsx; structure from the team's
+// GED_Khan_Mapping.xlsx (Science sheet): its Domains are the categories, with
+// their exam weights, and its Categories the topics. The sheet numbers its
+// subtopics ("1. Cell parts…"); the number is kept in `csv` for matching and
+// dropped from the learner-facing `name`.
+// DRAFT: descriptions were written by Claude on 2026-09-27 for the team to review.
 
 const SCI: SubjectPlan = {
   code: "SCI",
@@ -507,7 +559,7 @@ const SCI: SubjectPlan = {
       weight: 40,
       topics: [
         {
-          name: "Cells & Energy",
+          name: "Cell Structure & Function",
           subtopics: [
             {
               csv: "1. Cell parts and their functions",
@@ -547,7 +599,7 @@ const SCI: SubjectPlan = {
           ],
         },
         {
-          name: "Human Body & Health",
+          name: "Human Body Systems",
           subtopics: [
             {
               csv: "6. Digestive, respiratory, nervous, immune systems",
@@ -580,7 +632,7 @@ const SCI: SubjectPlan = {
           ],
         },
         {
-          name: "Heredity & Evolution",
+          name: "Genetics & Reproduction",
           subtopics: [
             {
               csv: "10. DNA structure and heredity (Punnett squares)",
@@ -589,6 +641,11 @@ const SCI: SubjectPlan = {
                 "Describe DNA's structure and predict inheritance with Punnett squares.",
               difficulty: 3,
             },
+          ],
+        },
+        {
+          name: "Evolution",
+          subtopics: [
             {
               csv: "11. Evolution and natural selection",
               name: "Evolution & Natural Selection",
@@ -638,7 +695,7 @@ const SCI: SubjectPlan = {
       weight: 40,
       topics: [
         {
-          name: "Chemistry",
+          name: "Atoms & Matter",
           subtopics: [
             {
               csv: "16. Atomic structure and properties of matter",
@@ -661,6 +718,11 @@ const SCI: SubjectPlan = {
                 "Describe solutions and concentration, and what affects how much of a substance dissolves.",
               difficulty: 2,
             },
+          ],
+        },
+        {
+          name: "Chemical Reactions",
+          subtopics: [
             {
               csv: "19. Balancing equations, exothermic vs endothermic",
               name: "Chemical Equations & Energy Changes",
@@ -668,10 +730,17 @@ const SCI: SubjectPlan = {
                 "Balance chemical equations and classify reactions as exothermic or endothermic.",
               difficulty: 3,
             },
+            {
+              csv: "23. Heat, temperature & heat transfer",
+              name: "Heat & Heat Transfer",
+              description:
+                "Distinguish heat from temperature and explain conduction, convection and radiation.",
+              difficulty: 2,
+            },
           ],
         },
         {
-          name: "Physics",
+          name: "Energy & Forces",
           subtopics: [
             {
               csv: "20. Speed, velocity, Newton's Laws of Motion",
@@ -695,19 +764,17 @@ const SCI: SubjectPlan = {
               difficulty: 2,
             },
             {
-              csv: "23. Heat, temperature & heat transfer",
-              name: "Heat & Heat Transfer",
-              description:
-                "Distinguish heat from temperature and explain conduction, convection and radiation.",
-              difficulty: 2,
-            },
-            {
               csv: "24. Work & simple machines",
               name: "Work & Simple Machines",
               description:
                 "Calculate work and explain how simple machines trade force for distance.",
               difficulty: 2,
             },
+          ],
+        },
+        {
+          name: "Waves & Electricity",
+          subtopics: [
             {
               csv: "25. Wave theory and sound",
               name: "Waves & Sound",
@@ -738,20 +805,13 @@ const SCI: SubjectPlan = {
       weight: 20,
       topics: [
         {
-          name: "Earth Systems",
+          name: "Earth's Systems",
           subtopics: [
             {
               csv: "28. Plate tectonics, volcanoes, earthquakes",
               name: "Plate Tectonics, Volcanoes & Earthquakes",
               description:
                 "Explain plate movement and how it causes earthquakes, volcanoes and mountains.",
-              difficulty: 2,
-            },
-            {
-              csv: "29. Weather and climate change",
-              name: "Weather & Climate Change",
-              description:
-                "Distinguish weather from climate and explain the causes and effects of climate change.",
               difficulty: 2,
             },
             {
@@ -776,6 +836,30 @@ const SCI: SubjectPlan = {
               difficulty: 1,
             },
             {
+              csv: "35. Earth's age, rock layers & fossils",
+              name: "Earth's Age, Rock Layers & Fossils",
+              description:
+                "Use rock layers and fossils to reason about Earth's age and history.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Climate & Weather",
+          subtopics: [
+            {
+              csv: "29. Weather and climate change",
+              name: "Weather & Climate Change",
+              description:
+                "Distinguish weather from climate and explain the causes and effects of climate change.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Sustainability & Society",
+          subtopics: [
+            {
               csv: "33. Renewable/nonrenewable resources & sustainability",
               name: "Natural Resources & Sustainability",
               description:
@@ -785,20 +869,13 @@ const SCI: SubjectPlan = {
           ],
         },
         {
-          name: "Space & Earth History",
+          name: "Solar System & Universe",
           subtopics: [
             {
               csv: "34. Solar system and stars",
               name: "The Solar System & Stars",
               description:
                 "Describe the solar system and the life cycle of stars.",
-              difficulty: 2,
-            },
-            {
-              csv: "35. Earth's age, rock layers & fossils",
-              name: "Earth's Age, Rock Layers & Fossils",
-              description:
-                "Use rock layers and fossils to reason about Earth's age and history.",
               difficulty: 2,
             },
           ],
@@ -810,19 +887,13 @@ const SCI: SubjectPlan = {
 
 // ─── RLA ────────────────────────────────────────────────────────────────────
 //
-// Ready for RLA's sheet, which hasn't arrived yet. Until it does, the importer
-// skips RLA and the seed keeps its hand-written placeholders (estimated
-// lengths, no clips) — the planner already works with those.
-//
-// The structure is the one RLA has in the database today, so the same rows
-// carry over when the sheet is imported: learners' sessions, attempts and
-// prerequisites stay attached. When the sheet arrives:
-//   - put it in curriculum/ as RLA.xlsx (any column order: columns are found
-//     by their headers), or RLA.csv in MATH's layout (videos only — articles
-//     need the word-count column only a workbook has);
-//   - set each `csv` below to the label the sheet uses in its Subtopic column.
-//     Keep `name`: it is the database name. A sheet subtopic no entry claims,
-//     or an entry the sheet lacks, stops the import and names it.
+// Structure and descriptions from the team's GED_Khan_Mapping.xlsx (RLA sheet,
+// 2026-10-11): its Domains are the categories (with their exam weights), its
+// Categories the topics, and its "Subtopic (GED)" text the description.
+// Content comes from curriculum/RLA_wordcount.xlsx; `csv` is that sheet's label
+// exactly — 🆕 markers and GED standard codes included — because that is what
+// the importer matches. `name` is what learners see.
+// DRAFT: difficulty (not in the mapping) was set by Claude for the team to review.
 
 const RLA: SubjectPlan = {
   code: "RLA",
@@ -833,118 +904,175 @@ const RLA: SubjectPlan = {
       weight: 45,
       topics: [
         {
-          name: "Informational Text",
+          name: "Main Ideas & Details",
           subtopics: [
             {
-              csv: "Main Idea & Supporting Details",
-              name: "Main Idea & Supporting Details",
-              description: "Identify the central idea and how details support it in informational texts.",
+              csv: "Main Ideas & Details (R.2)",
+              name: "Main Ideas & Details",
+              description: "Central theme, summarizing, supporting details.",
               difficulty: 2,
-            },
-            {
-              csv: "Author's Purpose & Point of View",
-              name: "Author's Purpose & Point of View",
-              description: "Determine the author's purpose and analyze bias in non-fiction texts.",
-              difficulty: 3,
-            },
-            {
-              csv: "Text Structure & Features",
-              name: "Text Structure & Features",
-              description: "Analyze how authors use text structure (cause-effect, compare-contrast) to convey meaning.",
-              difficulty: 2,
-            },
-            {
-              csv: "Argument Analysis",
-              name: "Argument Analysis",
-              description: "Evaluate claims, evidence, and reasoning in argumentative texts.",
-              difficulty: 4,
             },
           ],
         },
         {
-          name: "Literary Text",
+          name: "Inference & Conclusion",
           subtopics: [
             {
-              csv: "Reading Fiction",
-              name: "Reading Fiction",
-              description: "Analyze plot, character, setting, and theme in literary texts.",
-              difficulty: 2,
-            },
-            {
-              csv: "Figurative Language & Tone",
-              name: "Figurative Language & Tone",
-              description: "Identify and interpret figurative language, mood, and tone in literature.",
+              csv: "Inference & Conclusion (R.2.7, R.2.8)",
+              name: "Inference & Conclusions",
+              description: "Drawing logical conclusions from text.",
               difficulty: 3,
             },
+          ],
+        },
+        {
+          name: "Author's Purpose & Tone",
+          subtopics: [
             {
-              csv: "Comparing Texts",
-              name: "Comparing Texts",
-              description: "Compare themes, arguments, and structures across multiple texts.",
-              difficulty: 4,
+              csv: "Author's Purpose & Tone (R.6)",
+              name: "Author's Purpose & Tone",
+              description: "Author's viewpoint and rhetorical techniques.",
+              difficulty: 3,
+            },
+          ],
+        },
+        {
+          name: "Vocabulary in Context",
+          subtopics: [
+            {
+              csv: "Vocabulary in Context (R.4)",
+              name: "Vocabulary in Context",
+              description: "Words and phrases from context clues.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Development of Ideas",
+          subtopics: [
+            {
+              csv: "🆕 Development of Ideas (sequence, cause–effect) (R.3)",
+              name: "Development of Ideas",
+              description: "Development of ideas, sequence, cause–effect.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Text Structure",
+          subtopics: [
+            {
+              csv: "🆕 Text Structure & Transitions (R.5)",
+              name: "Text Structure & Transitions",
+              description: "Text structure & transitional language.",
+              difficulty: 3,
             },
           ],
         },
       ],
     },
     {
-      name: "Extended Writing",
+      name: "Identifying & Creating Arguments",
       weight: 35,
       topics: [
         {
-          name: "Argument & Evidence Writing",
+          name: "Argumentation & Evidence",
           subtopics: [
             {
-              csv: "Writing an Argument Essay",
-              name: "Writing an Argument Essay",
-              description: "Structure and write a persuasive extended response using evidence.",
+              csv: "Argumentation & Evidence (R.8)",
+              name: "Argumentation & Evidence",
+              description: "Analyzing arguments and evaluating evidence.",
               difficulty: 4,
             },
+          ],
+        },
+        {
+          name: "Comparing Texts",
+          subtopics: [
             {
-              csv: "Using Evidence & Citations",
-              name: "Using Evidence & Citations",
-              description: "Integrate and cite textual evidence effectively in written responses.",
-              difficulty: 3,
+              csv: "🆕 Comparing Texts / Opposing Claims (R.7, R.9)",
+              name: "Comparing Texts & Opposing Claims",
+              description: "Comparing two texts / opposing claims.",
+              difficulty: 4,
+            },
+          ],
+        },
+        {
+          name: "Extended Response (Essay)",
+          subtopics: [
+            {
+              csv: "Extended Response (Essay) (W.2)",
+              name: "Extended Response (Essay)",
+              description: "Essay analyzing two opposing viewpoints — 45 min.",
+              difficulty: 4,
             },
           ],
         },
       ],
     },
     {
-      name: "Language & Grammar",
+      name: "Grammar and Language",
       weight: 20,
       topics: [
         {
-          name: "Grammar & Usage",
+          name: "Sentence Structure",
           subtopics: [
             {
-              csv: "Sentence Structure",
+              csv: "Sentence Structure (run-ons, fragments, S-V) (L.2.2, L.1.2)",
               name: "Sentence Structure",
-              description: "Identify and correct run-ons, fragments, and complex sentence structures.",
+              description: "Run-ons, fragments, subject-verb agreement.",
               difficulty: 2,
             },
             {
-              csv: "Punctuation & Capitalization",
-              name: "Punctuation & Capitalization",
-              description: "Apply correct punctuation (commas, semicolons, apostrophes) and capitalization rules.",
+              csv: "Conventions of Standard English (L.1)",
+              name: "Conventions of Standard English",
+              description: "Conventions of standard English.",
               difficulty: 2,
             },
             {
-              csv: "Vocabulary in Context",
-              name: "Vocabulary in Context",
-              description: "Use context clues and word parts to determine the meaning of unfamiliar words.",
-              difficulty: 2,
-            },
-            {
-              csv: "Subject-Verb Agreement",
-              name: "Subject-Verb Agreement",
-              description: "Apply subject-verb and pronoun-antecedent agreement rules.",
-              difficulty: 2,
-            },
-            {
-              csv: "Verb Tense & Modifiers",
-              name: "Verb Tense & Modifiers",
-              description: "Use consistent verb tenses and correctly place modifiers in sentences.",
+              csv: "🆕 Modifiers & Parallelism (L.1.5, L.1.6)",
+              name: "Modifiers & Parallelism",
+              description: "Modifiers & parallelism.",
               difficulty: 3,
+            },
+          ],
+        },
+        {
+          name: "Punctuation & Capitalization",
+          subtopics: [
+            {
+              csv: "Commas & Apostrophes (L.2.3, L.2.4)",
+              name: "Commas & Apostrophes",
+              description: "Commas and apostrophes.",
+              difficulty: 2,
+            },
+            {
+              csv: "Colon, Semicolon & More (+ capitalization) (L.2.4)",
+              name: "Colons, Semicolons & Capitalization",
+              description: "Colon, semicolon, and more.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Word Choice",
+          subtopics: [
+            {
+              csv: "Word Choice (informal, homonyms, precision) (L.1.1, L.1.4)",
+              name: "Word Choice",
+              description: "Vocabulary, informal language, homonyms.",
+              difficulty: 2,
+            },
+          ],
+        },
+        {
+          name: "Usage",
+          subtopics: [
+            {
+              csv: "🆕 Pronouns (L.1.3, L.1.7)",
+              name: "Pronouns",
+              description: "Pronoun–antecedent & pronoun usage.",
+              difficulty: 2,
             },
           ],
         },

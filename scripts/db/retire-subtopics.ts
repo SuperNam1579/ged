@@ -5,8 +5,10 @@
  *   npx tsx scripts/db/retire-subtopics.ts            # dry run: counts only
  *   npx tsx scripts/db/retire-subtopics.ts --apply    # delete
  *
- * Only subjects present in prisma/curriculum.data.ts are touched (today MATH,
- * SS, SCI); RLA's hand-written subtopics are left alone. A subtopic is "current"
+ * Only subjects present in prisma/curriculum.data.ts are touched (all four
+ * since 2026-10-12). A subtopic that only MOVED to another topic is not retired
+ * material — run scripts/db/regroup-subtopics.ts first, or its learner data goes
+ * with it. A subtopic is "current"
  * when its full path — subject › category › topic › name — is in that file, so a
  * retired row that shares a name with its replacement is still told apart.
  *

@@ -18,50 +18,50 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
             {
               "name": "Fractions",
               "description": "Read, compare, and compute with fractions and mixed numbers, including unlike denominators.",
-              "minutes": 430,
+              "minutes": 437,
               "level": 1,
               "videos": 88,
-              "articles": 0
+              "articles": 4
             },
             {
               "name": "Decimals",
               "description": "Read place value and add, subtract, multiply, and divide decimals.",
-              "minutes": 208,
+              "minutes": 220,
               "level": 1,
               "videos": 36,
-              "articles": 0
+              "articles": 5
             },
             {
               "name": "Positive & negative numbers",
               "description": "Add, subtract, multiply, and divide signed numbers, and interpret absolute value.",
-              "minutes": 150,
+              "minutes": 163,
               "level": 1,
               "videos": 26,
-              "articles": 0
+              "articles": 9
             },
             {
               "name": "Factors & Multiples",
               "description": "Find factors, multiples, GCF, LCM, and prime factorisations.",
-              "minutes": 68,
+              "minutes": 84,
               "level": 1,
               "videos": 10,
-              "articles": 0
+              "articles": 3
             },
             {
               "name": "Exponents & roots",
               "description": "Apply exponent rules and evaluate square and cube roots.",
-              "minutes": 202,
+              "minutes": 224,
               "level": 2,
               "videos": 30,
-              "articles": 0
+              "articles": 12
             },
             {
               "name": "Scientific notation",
               "description": "Convert between standard and scientific notation and compute with it.",
-              "minutes": 76,
+              "minutes": 78,
               "level": 2,
               "videos": 11,
-              "articles": 0
+              "articles": 1
             }
           ]
         },
@@ -71,26 +71,26 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
             {
               "name": "Ratios",
               "description": "Write and compare ratios and unit rates, and solve rate problems.",
-              "minutes": 80,
+              "minutes": 83,
               "level": 1,
               "videos": 13,
-              "articles": 0
+              "articles": 2
             },
             {
               "name": "Percentages",
               "description": "Calculate percent of a number, percent change, discount, markup, tax, and tip.",
-              "minutes": 40,
+              "minutes": 46,
               "level": 2,
               "videos": 11,
-              "articles": 0
+              "articles": 3
             },
             {
               "name": "Proportions",
               "description": "Set up and solve proportions, including scale and constant-of-proportionality problems.",
-              "minutes": 140,
+              "minutes": 146,
               "level": 2,
               "videos": 28,
-              "articles": 0
+              "articles": 1
             }
           ]
         },
@@ -100,42 +100,42 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
             {
               "name": "Mean, median, mode, range",
               "description": "Calculate mean, median, mode, range, and weighted average, and judge the effect of outliers.",
-              "minutes": 217,
+              "minutes": 257,
               "level": 2,
               "videos": 23,
-              "articles": 0
+              "articles": 12
             },
             {
               "name": "Bar & circle graphs",
               "description": "Read and interpret bar graphs, circle graphs, and pictographs.",
-              "minutes": 56,
+              "minutes": 78,
               "level": 1,
-              "videos": 12,
-              "articles": 0
+              "videos": 14,
+              "articles": 6
             },
             {
               "name": "Dot plots, histograms & box plots",
               "description": "Build and interpret dot plots, histograms, and box plots, including shape and spread.",
-              "minutes": 147,
+              "minutes": 159,
               "level": 2,
               "videos": 20,
-              "articles": 0
+              "articles": 5
             },
             {
               "name": "Scatter plots",
               "description": "Describe association in a scatter plot and use a line of best fit to make predictions.",
-              "minutes": 266,
+              "minutes": 302,
               "level": 2,
               "videos": 30,
-              "articles": 0
+              "articles": 11
             },
             {
               "name": "Probability",
               "description": "Find probabilities of simple and compound events, including independent and dependent events.",
-              "minutes": 330,
+              "minutes": 382,
               "level": 2,
-              "videos": 38,
-              "articles": 0
+              "videos": 40,
+              "articles": 9
             }
           ]
         },
@@ -145,34 +145,34 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
             {
               "name": "Area & perimeter",
               "description": "Calculate area and perimeter of rectangles, triangles, and composite figures.",
-              "minutes": 98,
+              "minutes": 103,
               "level": 2,
               "videos": 21,
-              "articles": 0
+              "articles": 3
             },
             {
               "name": "Surface area & volume",
               "description": "Calculate surface area and volume of prisms, cylinders, cones, spheres, and pyramids.",
-              "minutes": 82,
+              "minutes": 89,
               "level": 3,
               "videos": 13,
-              "articles": 0
+              "articles": 3
             },
             {
               "name": "Circles",
               "description": "Calculate circumference, area, radius, and diameter of circles.",
-              "minutes": 37,
+              "minutes": 40,
               "level": 2,
               "videos": 6,
-              "articles": 0
+              "articles": 2
             },
             {
               "name": "Pythagorean theorem",
               "description": "Apply the Pythagorean theorem to find missing side lengths in right triangles.",
-              "minutes": 74,
+              "minutes": 78,
               "level": 3,
               "videos": 11,
-              "articles": 0
+              "articles": 3
             }
           ]
         }
@@ -188,10 +188,10 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
             {
               "name": "Variables & expressions",
               "description": "Write, evaluate, and simplify algebraic expressions using the properties of operations.",
-              "minutes": 64,
+              "minutes": 68,
               "level": 2,
               "videos": 14,
-              "articles": 0
+              "articles": 3
             }
           ]
         },
@@ -201,18 +201,18 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
             {
               "name": "Solving equations & inequalities",
               "description": "Solve one- and two-step linear equations and inequalities, including word problems.",
-              "minutes": 193,
+              "minutes": 199,
               "level": 2,
               "videos": 28,
-              "articles": 0
+              "articles": 3
             },
             {
               "name": "Systems of equations",
               "description": "Solve systems of two linear equations by graphing, substitution, and elimination.",
-              "minutes": 160,
+              "minutes": 167,
               "level": 3,
               "videos": 20,
-              "articles": 0
+              "articles": 3
             }
           ]
         },
@@ -222,18 +222,231 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
             {
               "name": "Slope & linear functions",
               "description": "Find slope and intercepts, and graph and interpret linear functions.",
-              "minutes": 171,
+              "minutes": 203,
               "level": 3,
-              "videos": 21,
-              "articles": 0
+              "videos": 22,
+              "articles": 7
             },
             {
               "name": "Quadratic functions",
               "description": "Factor, solve, and graph quadratic expressions and functions.",
-              "minutes": 196,
+              "minutes": 272,
               "level": 4,
-              "videos": 28,
+              "videos": 29,
+              "articles": 13
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "RLA": [
+    {
+      "name": "Reading for Meaning",
+      "weight": 45,
+      "topics": [
+        {
+          "name": "Main Ideas & Details",
+          "subtopics": [
+            {
+              "name": "Main Ideas & Details",
+              "description": "Central theme, summarizing, supporting details.",
+              "minutes": 27,
+              "level": 2,
+              "videos": 2,
+              "articles": 2
+            }
+          ]
+        },
+        {
+          "name": "Inference & Conclusion",
+          "subtopics": [
+            {
+              "name": "Inference & Conclusions",
+              "description": "Drawing logical conclusions from text.",
+              "minutes": 27,
+              "level": 3,
+              "videos": 2,
+              "articles": 2
+            }
+          ]
+        },
+        {
+          "name": "Author's Purpose & Tone",
+          "subtopics": [
+            {
+              "name": "Author's Purpose & Tone",
+              "description": "Author's viewpoint and rhetorical techniques.",
+              "minutes": 58,
+              "level": 3,
+              "videos": 3,
+              "articles": 4
+            }
+          ]
+        },
+        {
+          "name": "Vocabulary in Context",
+          "subtopics": [
+            {
+              "name": "Vocabulary in Context",
+              "description": "Words and phrases from context clues.",
+              "minutes": 69,
+              "level": 2,
+              "videos": 6,
+              "articles": 8
+            }
+          ]
+        },
+        {
+          "name": "Development of Ideas",
+          "subtopics": [
+            {
+              "name": "Development of Ideas",
+              "description": "Development of ideas, sequence, cause–effect.",
+              "minutes": 18,
+              "level": 2,
+              "videos": 2,
+              "articles": 1
+            }
+          ]
+        },
+        {
+          "name": "Text Structure",
+          "subtopics": [
+            {
+              "name": "Text Structure & Transitions",
+              "description": "Text structure & transitional language.",
+              "minutes": 20,
+              "level": 3,
+              "videos": 1,
+              "articles": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identifying & Creating Arguments",
+      "weight": 35,
+      "topics": [
+        {
+          "name": "Argumentation & Evidence",
+          "subtopics": [
+            {
+              "name": "Argumentation & Evidence",
+              "description": "Analyzing arguments and evaluating evidence.",
+              "minutes": 51,
+              "level": 4,
+              "videos": 3,
+              "articles": 3
+            }
+          ]
+        },
+        {
+          "name": "Comparing Texts",
+          "subtopics": [
+            {
+              "name": "Comparing Texts & Opposing Claims",
+              "description": "Comparing two texts / opposing claims.",
+              "minutes": 40,
+              "level": 4,
+              "videos": 4,
+              "articles": 2
+            }
+          ]
+        },
+        {
+          "name": "Extended Response (Essay)",
+          "subtopics": [
+            {
+              "name": "Extended Response (Essay)",
+              "description": "Essay analyzing two opposing viewpoints — 45 min.",
+              "minutes": 64,
+              "level": 4,
+              "videos": 10,
               "articles": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Grammar and Language",
+      "weight": 20,
+      "topics": [
+        {
+          "name": "Sentence Structure",
+          "subtopics": [
+            {
+              "name": "Sentence Structure",
+              "description": "Run-ons, fragments, subject-verb agreement.",
+              "minutes": 36,
+              "level": 2,
+              "videos": 3,
+              "articles": 5
+            },
+            {
+              "name": "Conventions of Standard English",
+              "description": "Conventions of standard English.",
+              "minutes": 176,
+              "level": 2,
+              "videos": 18,
+              "articles": 22
+            },
+            {
+              "name": "Modifiers & Parallelism",
+              "description": "Modifiers & parallelism.",
+              "minutes": 17,
+              "level": 3,
+              "videos": 2,
+              "articles": 2
+            }
+          ]
+        },
+        {
+          "name": "Punctuation & Capitalization",
+          "subtopics": [
+            {
+              "name": "Commas & Apostrophes",
+              "description": "Commas and apostrophes.",
+              "minutes": 56,
+              "level": 2,
+              "videos": 8,
+              "articles": 7
+            },
+            {
+              "name": "Colons, Semicolons & Capitalization",
+              "description": "Colon, semicolon, and more.",
+              "minutes": 72,
+              "level": 2,
+              "videos": 6,
+              "articles": 15
+            }
+          ]
+        },
+        {
+          "name": "Word Choice",
+          "subtopics": [
+            {
+              "name": "Word Choice",
+              "description": "Vocabulary, informal language, homonyms.",
+              "minutes": 77,
+              "level": 2,
+              "videos": 4,
+              "articles": 16
+            }
+          ]
+        },
+        {
+          "name": "Usage",
+          "subtopics": [
+            {
+              "name": "Pronouns",
+              "description": "Pronoun–antecedent & pronoun usage.",
+              "minutes": 87,
+              "level": 2,
+              "videos": 10,
+              "articles": 10
             }
           ]
         }
@@ -242,11 +455,11 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
   ],
   "SS": [
     {
-      "name": "Civics & Government",
+      "name": "Civics & Gov",
       "weight": 50,
       "topics": [
         {
-          "name": "Foundations of Government",
+          "name": "Foundations",
           "subtopics": [
             {
               "name": "Types of Government & Constitutional Principles",
@@ -255,15 +468,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 33,
               "articles": 32
-            },
-            {
-              "name": "Founding Documents",
-              "description": "Read and interpret the Declaration of Independence, the Articles of Confederation and the Constitution as primary sources.",
-              "minutes": 166,
-              "level": 3,
-              "videos": 3,
-              "articles": 5
-            },
+            }
+          ]
+        },
+        {
+          "name": "Structure",
+          "subtopics": [
             {
               "name": "Branches of government",
               "description": "Describe the powers of Congress, the presidency and the courts, and how each branch checks the others.",
@@ -275,7 +485,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
           ]
         },
         {
-          "name": "Rights & Civic Participation",
+          "name": "Rights",
           "subtopics": [
             {
               "name": "Bill of Rights & amendments",
@@ -286,21 +496,31 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "articles": 19
             },
             {
-              "name": "Elections & political parties",
-              "description": "Explain how elections, campaigns and political parties work in the United States.",
-              "minutes": 227,
-              "level": 2,
-              "videos": 19,
-              "articles": 13
-            },
-            {
               "name": "Citizenship & civic responsibilities",
               "description": "Describe the rights and responsibilities of citizens and how citizenship is gained.",
               "minutes": 169,
               "level": 1,
               "videos": 20,
               "articles": 6
-            },
+            }
+          ]
+        },
+        {
+          "name": "Elections",
+          "subtopics": [
+            {
+              "name": "Elections & political parties",
+              "description": "Explain how elections, campaigns and political parties work in the United States.",
+              "minutes": 227,
+              "level": 2,
+              "videos": 19,
+              "articles": 13
+            }
+          ]
+        },
+        {
+          "name": "Public Policy",
+          "subtopics": [
             {
               "name": "Contemporary public policy",
               "description": "Analyze how political ideology, public opinion and government institutions shape current policy debates.",
@@ -318,7 +538,20 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
       "weight": 20,
       "topics": [
         {
-          "name": "Founding to Reconstruction",
+          "name": "Documents",
+          "subtopics": [
+            {
+              "name": "Founding Documents",
+              "description": "Read and interpret the Declaration of Independence, the Articles of Confederation and the Constitution as primary sources.",
+              "minutes": 166,
+              "level": 3,
+              "videos": 3,
+              "articles": 5
+            }
+          ]
+        },
+        {
+          "name": "Colonial/Revolution",
           "subtopics": [
             {
               "name": "Colonial America + Revolutionary Era",
@@ -327,7 +560,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 33,
               "articles": 33
-            },
+            }
+          ]
+        },
+        {
+          "name": "Civil War",
+          "subtopics": [
             {
               "name": "Civil War & Reconstruction",
               "description": "Explain the causes, major events and outcomes of the Civil War and Reconstruction.",
@@ -339,7 +577,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
           ]
         },
         {
-          "name": "Modern America",
+          "name": "World Wars",
           "subtopics": [
             {
               "name": "World Wars I & II",
@@ -348,7 +586,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 19,
               "articles": 25
-            },
+            }
+          ]
+        },
+        {
+          "name": "Cold War",
+          "subtopics": [
             {
               "name": "Cold War",
               "description": "Describe the rivalry between the US and the Soviet Union and its major conflicts and policies.",
@@ -356,7 +599,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 3,
               "videos": 6,
               "articles": 23
-            },
+            }
+          ]
+        },
+        {
+          "name": "Civil Rights",
+          "subtopics": [
             {
               "name": "Civil Rights Movement",
               "description": "Explain the goals, strategies and key events of the civil rights movement.",
@@ -364,7 +612,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 0,
               "articles": 17
-            },
+            }
+          ]
+        },
+        {
+          "name": "Foreign policy",
+          "subtopics": [
             {
               "name": "Foreign Policy after 9/11",
               "description": "Analyze US foreign policy from the late Cold War through the September 11 attacks and the war on terror.",
@@ -382,7 +635,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
       "weight": 15,
       "topics": [
         {
-          "name": "Microeconomics",
+          "name": "Micro",
           "subtopics": [
             {
               "name": "Supply, demand, market equilibrium",
@@ -403,7 +656,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
           ]
         },
         {
-          "name": "Macroeconomics",
+          "name": "Macro",
           "subtopics": [
             {
               "name": "Banking & financial sector",
@@ -434,11 +687,11 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
       ]
     },
     {
-      "name": "Geography & the World",
+      "name": "Geography",
       "weight": 15,
       "topics": [
         {
-          "name": "World History",
+          "name": "Civilizations",
           "subtopics": [
             {
               "name": "World history beginnings",
@@ -451,7 +704,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
           ]
         },
         {
-          "name": "Geography",
+          "name": "Environment",
           "subtopics": [
             {
               "name": "Resources and society",
@@ -460,7 +713,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 12,
               "articles": 31
-            },
+            }
+          ]
+        },
+        {
+          "name": "Migration",
+          "subtopics": [
             {
               "name": "Migration",
               "description": "Explain why people migrate and how population growth and urbanization change places.",
@@ -468,7 +726,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 4,
               "articles": 0
-            },
+            }
+          ]
+        },
+        {
+          "name": "Borders",
+          "subtopics": [
             {
               "name": "Borders, Regions & Geographic Tools",
               "description": "Use maps and geographic tools, and explain how regions and borders are defined and contested.",
@@ -488,7 +751,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
       "weight": 40,
       "topics": [
         {
-          "name": "Cells & Energy",
+          "name": "Cell Structure & Function",
           "subtopics": [
             {
               "name": "Cell Parts and Their Functions",
@@ -533,7 +796,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
           ]
         },
         {
-          "name": "Human Body & Health",
+          "name": "Human Body Systems",
           "subtopics": [
             {
               "name": "Human Body Systems",
@@ -570,7 +833,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
           ]
         },
         {
-          "name": "Heredity & Evolution",
+          "name": "Genetics & Reproduction",
           "subtopics": [
             {
               "name": "DNA & Heredity",
@@ -579,7 +842,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 3,
               "videos": 22,
               "articles": 16
-            },
+            }
+          ]
+        },
+        {
+          "name": "Evolution",
+          "subtopics": [
             {
               "name": "Evolution & Natural Selection",
               "description": "Explain how natural selection drives evolution and the evidence for it.",
@@ -634,7 +902,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
       "weight": 40,
       "topics": [
         {
-          "name": "Chemistry",
+          "name": "Atoms & Matter",
           "subtopics": [
             {
               "name": "Atomic Structure & Properties of Matter",
@@ -659,7 +927,12 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 7,
               "articles": 3
-            },
+            }
+          ]
+        },
+        {
+          "name": "Chemical Reactions",
+          "subtopics": [
             {
               "name": "Chemical Equations & Energy Changes",
               "description": "Balance chemical equations and classify reactions as exothermic or endothermic.",
@@ -667,11 +940,19 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 3,
               "videos": 10,
               "articles": 3
+            },
+            {
+              "name": "Heat & Heat Transfer",
+              "description": "Distinguish heat from temperature and explain conduction, convection and radiation.",
+              "minutes": 61,
+              "level": 2,
+              "videos": 4,
+              "articles": 0
             }
           ]
         },
         {
-          "name": "Physics",
+          "name": "Energy & Forces",
           "subtopics": [
             {
               "name": "Motion & Newton's Laws",
@@ -698,21 +979,18 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "articles": 0
             },
             {
-              "name": "Heat & Heat Transfer",
-              "description": "Distinguish heat from temperature and explain conduction, convection and radiation.",
-              "minutes": 61,
-              "level": 2,
-              "videos": 4,
-              "articles": 0
-            },
-            {
               "name": "Work & Simple Machines",
               "description": "Calculate work and explain how simple machines trade force for distance.",
               "minutes": 25,
               "level": 2,
               "videos": 1,
               "articles": 1
-            },
+            }
+          ]
+        },
+        {
+          "name": "Waves & Electricity",
+          "subtopics": [
             {
               "name": "Waves & Sound",
               "description": "Describe wave properties and how sound travels.",
@@ -746,7 +1024,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
       "weight": 20,
       "topics": [
         {
-          "name": "Earth Systems",
+          "name": "Earth's Systems",
           "subtopics": [
             {
               "name": "Plate Tectonics, Volcanoes & Earthquakes",
@@ -755,14 +1033,6 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 7,
               "articles": 9
-            },
-            {
-              "name": "Weather & Climate Change",
-              "description": "Distinguish weather from climate and explain the causes and effects of climate change.",
-              "minutes": 80,
-              "level": 2,
-              "videos": 5,
-              "articles": 7
             },
             {
               "name": "Oceans & Currents",
@@ -789,6 +1059,32 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "articles": 1
             },
             {
+              "name": "Earth's Age, Rock Layers & Fossils",
+              "description": "Use rock layers and fossils to reason about Earth's age and history.",
+              "minutes": 21,
+              "level": 2,
+              "videos": 2,
+              "articles": 1
+            }
+          ]
+        },
+        {
+          "name": "Climate & Weather",
+          "subtopics": [
+            {
+              "name": "Weather & Climate Change",
+              "description": "Distinguish weather from climate and explain the causes and effects of climate change.",
+              "minutes": 80,
+              "level": 2,
+              "videos": 5,
+              "articles": 7
+            }
+          ]
+        },
+        {
+          "name": "Sustainability & Society",
+          "subtopics": [
+            {
               "name": "Natural Resources & Sustainability",
               "description": "Compare renewable and nonrenewable resources and how they can be managed sustainably.",
               "minutes": 40,
@@ -799,7 +1095,7 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
           ]
         },
         {
-          "name": "Space & Earth History",
+          "name": "Solar System & Universe",
           "subtopics": [
             {
               "name": "The Solar System & Stars",
@@ -808,14 +1104,6 @@ export const GENERATED_CURRICULUM: Record<string, LandingCategory[]> = {
               "level": 2,
               "videos": 7,
               "articles": 4
-            },
-            {
-              "name": "Earth's Age, Rock Layers & Fossils",
-              "description": "Use rock layers and fossils to reason about Earth's age and history.",
-              "minutes": 21,
-              "level": 2,
-              "videos": 2,
-              "articles": 1
             }
           ]
         }
