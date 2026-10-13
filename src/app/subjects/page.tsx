@@ -4,12 +4,7 @@ import { ArrowRight } from "lucide-react";
 import LandingNavbar from "@/components/layout/LandingNavbar";
 import LandingFooter from "@/components/layout/LandingFooter";
 import Reveal from "@/components/ui/Reveal";
-import {
-  LANDING_SUBJECTS,
-  TOTAL_MID_TOPICS,
-  subtopicCount,
-  topicCount,
-} from "@/components/landing/subjects";
+import { LANDING_SUBJECTS, subtopicCount } from "@/components/landing/subjects";
 
 const INK = "#0f2748";
 const MUTED = "#5b769a";
@@ -18,7 +13,7 @@ const TOTAL_LESSONS = LANDING_SUBJECTS.reduce((n, s) => n + subtopicCount(s), 0)
 
 export const metadata: Metadata = {
   title: "What you'll study",
-  description: `The full GED syllabus — ${TOTAL_MID_TOPICS} topics and ${TOTAL_LESSONS} lessons across all four subjects, with the real exam weightings.`,
+  description: `The full GED syllabus — ${TOTAL_LESSONS} topics across all four subjects, with the real exam weightings.`,
   alternates: { canonical: "/subjects" },
 };
 
@@ -74,8 +69,7 @@ export default function SubjectsPage() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-5">
             {[
               { value: LANDING_SUBJECTS.length, label: "subjects" },
-              { value: 15, label: "topics" },
-              { value: totalLessons, label: "lessons" },
+              { value: totalLessons, label: "topics" },
             ].map((stat) => (
               <span key={stat.label} className="flex items-baseline gap-1.5">
                 <span
@@ -182,9 +176,7 @@ export default function SubjectsPage() {
                       className="shrink-0 tabular-nums text-right hidden sm:block"
                       style={{ fontSize: 12, color: MUTED, fontWeight: 600, paddingTop: 4 }}
                     >
-                      {topicCount(subject)} topics
-                      <br />
-                      {subtopicCount(subject)} lessons
+                      {subtopicCount(subject)} topics
                     </span>
                   </div>
 

@@ -141,7 +141,7 @@ function HeroSection() {
 
           {/* Trust pills */}
           <div className="flex items-center flex-wrap gap-[14px]">
-            {["Free forever", "57 topics", "AI plan"].map((label) => (
+            {["Free forever", `${TOTAL_TOPICS} topics`, "AI plan"].map((label) => (
               <div key={label} className="flex items-center gap-[5px]">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="#22C55E">
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -288,7 +288,7 @@ function StatsSection() {
   return (
     <Reveal className="px-4 py-8 md:px-[40px] md:py-[40px]" style={{ background: "#1e90e8" }}>
       <div className="max-w-[1200px] mx-auto grid grid-cols-2 gap-6 md:flex md:items-center md:justify-between md:gap-0">
-        <StatItem value="57" label="Topics covered" />
+        <StatItem value={String(TOTAL_TOPICS)} label="Topics covered" />
         <div className="hidden md:block" style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
         <StatItem value="4" label="GED subjects" />
         <div className="hidden md:block" style={{ width: 1, height: 52, background: "rgba(255,255,255,.15)" }} />
@@ -370,7 +370,7 @@ function FeaturesSection() {
                 </svg>
               </div>
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 6 }}>Diagnostic Assessment</h3>
-              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Ten questions for each subject you pick. Every question belongs to one lesson, so your results come back lesson by lesson — not one score per subject.</p>
+              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Ten questions for each subject you pick. Every question belongs to one topic, so your results come back topic by topic — not one score per subject.</p>
             </div>
           </Reveal>
 
@@ -407,7 +407,7 @@ function FeaturesSection() {
                 </svg>
               </div>
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "white", marginBottom: 6 }}>Adaptive AI Planning</h3>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,.6)", lineHeight: 1.5 }}>Weak spots get more time, finished lessons get skipped, and the basics come first — all inside the hours you are free.</p>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,.6)", lineHeight: 1.5 }}>Your weak topics come first and get more time, the basics come before harder topics, and it all fits the hours you are free.</p>
             </div>
           </Reveal>
 
@@ -456,7 +456,7 @@ function FeaturesSection() {
                 </svg>
               </div>
               <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 6 }}>Progress Tracking</h3>
-              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Lesson-by-lesson scores, your study streak, and a nudge when something is not sticking.</p>
+              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>Topic-by-topic scores, your study streak, and a heads-up when a topic you build on isn&apos;t passed yet.</p>
             </div>
           </Reveal>
 
@@ -475,7 +475,7 @@ function FeaturesSection() {
               minHeight: 260,
             }}
           >
-            {/* Subject + timer mockup */}
+            {/* Subject + question-count mockup */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16, position: "relative", zIndex: 1 }}>
               {[
                 { label: "Mathematical Reasoning", color: "#2563EB", bg: "#e4edfd" },
@@ -489,7 +489,7 @@ function FeaturesSection() {
                   style={{ padding: "8px 12px", borderRadius: 10, background: s.bg, fontSize: 12, fontWeight: 600, color: s.color }}
                 >
                   <span>{s.label}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.7 }}>30:00</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.7 }}>10 Qs</span>
                 </div>
               ))}
             </div>
@@ -500,8 +500,8 @@ function FeaturesSection() {
                   <path d="M12 7v5l3 3" />
                 </svg>
               </div>
-              <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 6 }}>Full-Length Mock Test</h3>
-              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>A timed, full-length practice exam for each subject — 30 minutes a piece, the same structure as test day.</p>
+              <h3 style={{ fontFamily: "var(--font-feather)", fontSize: 20, fontWeight: 700, color: "#0f2748", marginBottom: 6 }}>Practice Test</h3>
+              <p style={{ fontSize: 13, color: "#5b769a", lineHeight: 1.5 }}>A practice test for each subject — ten questions across its topics, about 30 minutes, scored topic by topic.</p>
             </div>
           </Reveal>
         </div>
@@ -532,7 +532,7 @@ function SubjectsSection() {
             </h2>
           </div>
           <p className="hidden md:block" style={{ fontSize: 15, color: "#5b769a", maxWidth: 280, lineHeight: 1.6 }}>
-            {TOTAL_TOPICS} topics. Every subtopic on exam day. Nothing left out.
+            {TOTAL_TOPICS} topics. Every one on exam day. Nothing left out.
           </p>
         </Reveal>
 
@@ -636,7 +636,7 @@ function LiveGaSection() {
             style={{ color: "#5b769a", lineHeight: 1.7, marginTop: 14, maxWidth: 620 }}
           >
             This isn&apos;t a recording. Press the button and the planner runs in your browser on
-            real lessons from the syllabus, scored by the same function that builds a real study
+            real topics from the syllabus, scored by the same function that builds a real study
             plan.
           </p>
         </Reveal>
@@ -647,7 +647,7 @@ function LiveGaSection() {
 
         <Reveal>
           <p style={{ fontSize: 12, color: "#5b769a", lineHeight: 1.6, marginTop: 12 }}>
-            Real lessons and real scoring, for one example learner — a public page has no signed-in
+            Real topics and real scoring, for one example learner — a public page has no signed-in
             student to plan for.
           </p>
         </Reveal>

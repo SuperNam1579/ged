@@ -9,7 +9,7 @@ import HowItWorksContent from "@/components/landing/HowItWorksContent";
 export const metadata: Metadata = {
   title: "How it works",
   description:
-    "How your study plan gets built: a short test that scores every lesson, an algorithm that weighs six goals at once, and a schedule you can rebuild whenever your results move.",
+    "How your study plan gets built: pick your subjects, give your free time, take a short test — we plan every day to your exam once, and after that the plan is yours to change.",
   alternates: { canonical: "/how-it-works" },
 };
 

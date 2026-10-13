@@ -3,11 +3,12 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowRight, Check, RefreshCw, TrendingDown } from "lucide-react";
+import { ArrowRight, Check, Flag, Lock, MoreHorizontal, Plus, RotateCcw, Trash2, ArrowLeftRight, CalendarClock, Replace } from "lucide-react";
 import LandingNavbar from "@/components/layout/LandingNavbar";
 import LandingFooter from "@/components/layout/LandingFooter";
-import { LANDING_SUBJECTS, TOTAL_TOPICS, formatStudyTime, sampleLesson as pickSample } from "@/components/landing/subjects";
-import { DEFAULT_CONFIG } from "@/lib/ga/constants";
+import { LANDING_SUBJECTS, subtopicCount, type LandingSubject } from "@/components/landing/subjects";
+import { DEFAULT_CONFIG, WEAKNESS_THRESHOLD } from "@/lib/ga/constants";
+import { MAX_PART_MINUTES } from "@/lib/schedule/parts";
 import { WEIGHTS } from "@/lib/ga/fitness";
 
 const INK = "#0f2748";
@@ -22,21 +23,32 @@ const inView = {
   transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
 };
 
-function Card({
+/** Hours of study a subject's content takes, from the curriculum data. */
+function subjectHours(s: LandingSubject): number {
+  const mins = s.categories.flatMap((c) => c.topics.flatMap((t) => t.subtopics)).reduce((n, st) => n + st.minutes, 0);
+  return Math.round(mins / 60);
+}
+
+// ─── Step card ───────────────────────────────────────────────────────────────
+
+function Step({
   num,
   eyebrow,
   title,
   body,
   color,
   visual,
+  dark,
   last,
 }: {
   num: string;
   eyebrow: string;
   title: string;
-  body: string;
+  body: ReactNode;
   color: string;
   visual: ReactNode;
+  /** The planner's step: the part we do, set apart from the learner's. */
+  dark?: boolean;
   last?: boolean;
 }) {
   return (
@@ -49,17 +61,16 @@ function Card({
           style={{ left: 25, top: 62, bottom: 0, width: 4, background: RULE, borderRadius: 2 }}
         />
       )}
-
       <span
         className="relative shrink-0 flex items-center justify-center tabular-nums"
         style={{
           width: 54,
           height: 54,
           borderRadius: "50%",
-          background: "white",
-          border: `4px solid ${color}`,
-          boxShadow: `0 4px 0 ${color}33`,
-          color,
+          background: dark ? INK : "white",
+          border: `4px solid ${dark ? INK : color}`,
+          boxShadow: `0 4px 0 ${dark ? "rgba(15,39,72,.25)" : color + "33"}`,
+          color: dark ? "white" : color,
           fontFamily: "var(--font-feather)",
           fontWeight: 700,
           fontSize: 17,
@@ -70,186 +81,368 @@ function Card({
 
       <div
         className="flex-1 min-w-0 rounded-2xl overflow-hidden"
-        style={{ background: "white", boxShadow: "0 4px 0 " + RULE }}
+        style={{ background: dark ? INK : "white", boxShadow: `0 4px 0 ${dark ? "rgba(15,39,72,.25)" : RULE}` }}
       >
-        <div className="px-5 pt-4 pb-3">
-          <p
-            style={{
-              fontSize: 10.5,
-              fontWeight: 700,
-              letterSpacing: ".14em",
-              textTransform: "uppercase",
-              color,
-              marginBottom: 4,
-            }}
-          >
-            {eyebrow}
-          </p>
-          <h2
-            className="text-[19px] md:text-[22px]"
-            style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: INK, lineHeight: 1.2 }}
-          >
-            {title}
-          </h2>
-          <p
-            className="text-[14px] md:text-[14.5px]"
-            style={{ color: MUTED, lineHeight: 1.65, marginTop: 6 }}
-          >
-            {body}
-          </p>
+        {/* Words on the left, the picture on the right; stacked on a phone. */}
+        <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-5 p-5">
+          <div className="min-w-0">
+            <p
+              style={{
+                fontSize: 10.5,
+                fontWeight: 700,
+                letterSpacing: ".14em",
+                textTransform: "uppercase",
+                color: dark ? "#7fb6e8" : color,
+                marginBottom: 4,
+              }}
+            >
+              {eyebrow}
+            </p>
+            <h2
+              className="text-[19px] md:text-[22px]"
+              style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: dark ? "white" : INK, lineHeight: 1.2 }}
+            >
+              {title}
+            </h2>
+            <div
+              className="text-[14px] md:text-[14.5px] space-y-2"
+              style={{ color: dark ? "rgba(255,255,255,.66)" : MUTED, lineHeight: 1.65, marginTop: 8 }}
+            >
+              {body}
+            </div>
+          </div>
+          <div className="min-w-0 self-center">{visual}</div>
         </div>
-        {/* Every step carries a small mock-up of the screen it describes, so the
-            page shows the product rather than only narrating it. */}
-        <div className="px-5 pb-5">{visual}</div>
       </div>
     </motion.div>
   );
 }
 
-/** Shared shell for the little UI mock-ups inside each card. */
-function Mock({ children }: { children: ReactNode }) {
+/** The frame the pictures sit in. */
+function Frame({ children, dark }: { children: ReactNode; dark?: boolean }) {
   return (
     <div
-      className="rounded-xl p-3.5"
-      style={{ background: "#f8fbff", border: `1px solid ${RULE}` }}
+      className="rounded-xl p-4"
+      style={{ background: dark ? "rgba(255,255,255,.06)" : "#f8fbff", border: `1px solid ${dark ? "rgba(255,255,255,.12)" : RULE}` }}
     >
       {children}
     </div>
   );
 }
 
+// ─── Pictures ────────────────────────────────────────────────────────────────
 
-/** The six scoring goals, quoted from the fitness function itself. */
-const OBJECTIVES = [
-  { key: "coverage", name: "Reaches your weak spots", hint: "Anything scoring under 60" },
-  { key: "weaknessFocus", name: "More time where you're weakest", hint: "The lower the score, the more time" },
-  { key: "timeFeasibility", name: "Fits the hours you have", hint: "No day packed past your free time" },
-  { key: "prerequisiteOrder", name: "Basics before the hard stuff", hint: "No quadratics before expressions" },
-  { key: "variety", name: "Mixes your subjects", hint: "Not one subject for a whole week" },
-  { key: "balance", name: "Spreads out the hard days", hint: "No two heavy days back to back" },
-] as const;
-
-/**
- * The algorithm gets a card of its own: it's the part that turns a diagnostic
- * into a timetable, and the only part a visitor can't guess at.
- */
-function GaCard() {
-  const weights = WEIGHTS;
-  const top = Math.max(...OBJECTIVES.map((o) => weights[o.key]));
-
+/** 1 — the four subjects, two picked. */
+function SubjectsPicture({ picked }: { picked: string[] }) {
   return (
-    <motion.div {...inView} className="relative flex gap-4 md:gap-6 pb-6">
-      <span
-        aria-hidden="true"
-        className="absolute"
-        style={{ left: 25, top: 62, bottom: 0, width: 4, background: RULE, borderRadius: 2 }}
-      />
-      <span
-        className="relative shrink-0 flex items-center justify-center tabular-nums"
-        style={{
-          width: 54,
-          height: 54,
-          borderRadius: "50%",
-          background: "#0f2748",
-          border: "4px solid #0f2748",
-          boxShadow: "0 4px 0 rgba(15,39,72,.25)",
-          color: "white",
-          fontFamily: "var(--font-feather)",
-          fontWeight: 700,
-          fontSize: 17,
-        }}
-      >
-        04
-      </span>
-
-      <div
-        className="flex-1 min-w-0 rounded-2xl overflow-hidden"
-        style={{ background: "#0f2748", boxShadow: "0 4px 0 rgba(15,39,72,.25)" }}
-      >
-        <div className="px-5 pt-4 pb-4">
-          <p
-            style={{
-              fontSize: 10.5,
-              fontWeight: 700,
-              letterSpacing: ".14em",
-              textTransform: "uppercase",
-              color: "#7fb6e8",
-              marginBottom: 4,
-            }}
-          >
-            The planner
-          </p>
-          <h2
-            className="text-[19px] md:text-[24px]"
-            style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: "white", lineHeight: 1.2 }}
-          >
-            {DEFAULT_CONFIG.populationSize} draft timetables compete
-          </h2>
-          <p
-            className="text-[14px] md:text-[14.5px]"
-            style={{ color: "rgba(255,255,255,.62)", lineHeight: 1.65, marginTop: 6 }}
-          >
-            They run against each other for {DEFAULT_CONFIG.generations} rounds. Each round keeps the
-            best ones, mixes them, and throws the rest away. Every draft is judged on six things at
-            the same time — the bars show how much each one counts.
-          </p>
-
-          <div className="flex flex-col gap-2.5 mt-5">
-            {OBJECTIVES.map((o, i) => (
-              <motion.div
-                key={o.key}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.15 + i * 0.07, duration: 0.35 }}
-                className="grid gap-x-3 items-center"
-                style={{ gridTemplateColumns: "1fr 78px 34px" }}
-              >
-                <div className="min-w-0">
-                  <p style={{ fontSize: 12.5, fontWeight: 700, color: "white", lineHeight: 1.3 }}>
-                    {o.name}
-                  </p>
-                  <p style={{ fontSize: 11, color: "rgba(255,255,255,.45)", lineHeight: 1.35 }}>
-                    {o.hint}
-                  </p>
-                </div>
+    <Frame>
+      <div className="grid grid-cols-2 gap-2">
+        {LANDING_SUBJECTS.map((s, i) => {
+          const on = picked.includes(s.code);
+          return (
+            <motion.div
+              key={s.slug}
+              initial={{ opacity: 0, scale: 0.94 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 + i * 0.08, duration: 0.3 }}
+              className="relative rounded-xl px-3 py-2.5"
+              style={{ background: on ? s.iconBg : "white", border: `1.5px solid ${on ? s.color : RULE}` }}
+            >
+              {on && (
                 <span
-                  className="h-1.5 rounded-full overflow-hidden"
-                  style={{ background: "rgba(255,255,255,.14)" }}
+                  className="absolute top-2 right-2 flex items-center justify-center rounded-full"
+                  style={{ width: 16, height: 16, background: s.color }}
                 >
-                  <motion.span
-                    className="block h-full rounded-full"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${(weights[o.key] / top) * 100}%` }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.25 + i * 0.07, duration: 0.6, ease: "easeOut" }}
-                    style={{ background: "#4aa8f0" }}
-                  />
+                  <Check className="w-2.5 h-2.5 text-white" strokeWidth={4} />
                 </span>
-                <span
-                  className="tabular-nums text-right"
-                  style={{ fontSize: 12, fontWeight: 700, color: "#4aa8f0" }}
-                >
-                  {Math.round(weights[o.key] * 100)}%
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+              )}
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: on ? INK : MUTED }}>{s.shortName}</p>
+              <p className="tabular-nums" style={{ fontSize: 11, color: MUTED, marginTop: 2 }}>
+                {subtopicCount(s)} topics · {subjectHours(s)} h
+              </p>
+            </motion.div>
+          );
+        })}
       </div>
-    </motion.div>
+    </Frame>
   );
 }
 
+/** 2 — a usual week, and the fit check's answer. */
+function FreeTimePicture({ need, have }: { need: number; have: number }) {
+  const week = [2, 2, 2, 2, 2, 4, 4]; // hours free each day, Mon–Sun
+  return (
+    <Frame>
+      <div className="grid grid-cols-7 gap-1.5 items-end" style={{ height: 78 }}>
+        {week.map((h, i) => (
+          <div key={i} className="flex flex-col items-center justify-end gap-1 h-full">
+            <motion.span
+              initial={{ scaleY: 0 }}
+              whileInView={{ scaleY: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 + i * 0.05, duration: 0.35 }}
+              className="w-full rounded-md"
+              style={{ height: h * 14, background: "#16A34A", opacity: 0.85, transformOrigin: "bottom" }}
+            />
+            <span style={{ fontSize: 9.5, color: MUTED, fontWeight: 700 }}>{"MTWTFSS"[i]}</span>
+          </div>
+        ))}
+      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.55, duration: 0.35 }}
+        className="mt-3 flex items-center gap-2 rounded-lg px-3 py-2"
+        style={{ background: "#ecfdf3", border: "1px solid #bbf0cf" }}
+      >
+        <span className="flex items-center justify-center rounded-full shrink-0" style={{ width: 18, height: 18, background: "#16A34A" }}>
+          <Check className="w-3 h-3 text-white" strokeWidth={4} />
+        </span>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: "#166534" }}>Fits</span>
+        <span className="ml-auto tabular-nums" style={{ fontSize: 11.5, color: "#166534" }}>
+          {need} h needed · {have} h free
+        </span>
+      </motion.div>
+    </Frame>
+  );
+}
+
+/** 3 — a score for every topic. */
+function ScoresPicture({ rows }: { rows: { name: string; score: number }[] }) {
+  return (
+    <Frame>
+      <div className="flex flex-col gap-2.5">
+        {rows.map((row, i) => {
+          const tone = row.score < 60 ? "#EF4444" : row.score < 75 ? "#F59E0B" : "#16A34A";
+          return (
+            <div key={row.name} className="flex items-center gap-2.5">
+              <span className="truncate" style={{ fontSize: 11.5, color: INK, fontWeight: 600, width: 128 }}>
+                {row.name}
+              </span>
+              <span className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "#e6eefa" }}>
+                <motion.span
+                  className="block h-full rounded-full"
+                  initial={{ width: 0 }}
+                  whileInView={{ width: `${row.score}%` }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.15 + i * 0.1, duration: 0.6, ease: "easeOut" }}
+                  style={{ background: tone }}
+                />
+              </span>
+              <span className="tabular-nums shrink-0 text-right" style={{ fontSize: 11, fontWeight: 700, color: tone, width: 22 }}>
+                {row.score}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </Frame>
+  );
+}
+
+/** 4 — the plan filling every day up to the exam, review at the end. */
+function PlanPicture({ colors }: { colors: [string, string] }) {
+  const days = 35;
+  return (
+    <Frame dark>
+      <div className="grid grid-cols-7 gap-1">
+        {Array.from({ length: days }, (_, i) => {
+          const exam = i === days - 1;
+          const review = i >= days - 3 && !exam;
+          const weekend = i % 7 >= 5;
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.6 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.15 + i * 0.025, duration: 0.25 }}
+              className="flex items-center justify-center gap-0.5 rounded-md"
+              style={{
+                height: 26,
+                background: exam ? "#EF4444" : "rgba(255,255,255,.08)",
+              }}
+            >
+              {exam ? (
+                <Flag className="w-3 h-3 text-white" />
+              ) : review ? (
+                <RotateCcw className="w-3 h-3" style={{ color: "#5eead4" }} />
+              ) : (
+                <>
+                  <span className="rounded-full" style={{ width: 6, height: 6, background: colors[i % 2] }} />
+                  {weekend && <span className="rounded-full" style={{ width: 6, height: 6, background: colors[(i + 1) % 2] }} />}
+                </>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3" style={{ fontSize: 10.5, color: "rgba(255,255,255,.55)" }}>
+        <span className="inline-flex items-center gap-1"><span className="rounded-full" style={{ width: 6, height: 6, background: colors[0] }} />Math</span>
+        <span className="inline-flex items-center gap-1"><span className="rounded-full" style={{ width: 6, height: 6, background: colors[1] }} />Science</span>
+        <span className="inline-flex items-center gap-1"><RotateCcw className="w-2.5 h-2.5" style={{ color: "#5eead4" }} />Review</span>
+        <span className="inline-flex items-center gap-1"><Flag className="w-2.5 h-2.5" style={{ color: "#f87171" }} />Exam</span>
+      </div>
+    </Frame>
+  );
+}
+
+/** The six things every draft timetable is scored on, with their weights from the code. */
+const OBJECTIVES = [
+  { key: "coverage", name: "Reaches your weak topics" },
+  { key: "weaknessFocus", name: "More time where you're weakest" },
+  { key: "timeFeasibility", name: "Fits the hours you have" },
+  { key: "prerequisiteOrder", name: "Basics before harder topics" },
+  { key: "variety", name: "Mixes your subjects" },
+  { key: "balance", name: "Spreads out the hard days" },
+] as const;
+
+function Objectives() {
+  const top = Math.max(...OBJECTIVES.map((o) => WEIGHTS[o.key]));
+  return (
+    <div className="flex flex-col gap-1.5 mt-4">
+      {OBJECTIVES.map((o, i) => (
+        <div key={o.key} className="grid items-center gap-x-2" style={{ gridTemplateColumns: "1fr 64px" }}>
+          <span style={{ fontSize: 11.5, color: "rgba(255,255,255,.8)", fontWeight: 600 }}>{o.name}</span>
+          <span className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,.14)" }}>
+            <motion.span
+              className="block h-full rounded-full"
+              initial={{ width: 0 }}
+              whileInView={{ width: `${(WEIGHTS[o.key] / top) * 100}%` }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 + i * 0.07, duration: 0.6, ease: "easeOut" }}
+              style={{ background: "#4aa8f0" }}
+            />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 5 — watch the videos, part 2 opens, then the quiz. */
+function StudyPicture({ color }: { color: string }) {
+  const R = 20;
+  const C = 2 * Math.PI * R;
+  const box = "flex-1 min-w-0 flex flex-col items-center gap-1.5 rounded-xl px-2 py-3";
+  return (
+    <Frame>
+      <div className="flex items-stretch gap-1.5">
+        <div className={box} style={{ background: "white", border: `1px solid ${RULE}` }}>
+          <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
+            <circle cx="24" cy="24" r={R} fill="none" stroke="#e6eefa" strokeWidth="5" />
+            <motion.circle
+              cx="24" cy="24" r={R} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
+              strokeDasharray={C}
+              initial={{ strokeDashoffset: C }}
+              whileInView={{ strokeDashoffset: C * 0.2 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.9, ease: "easeOut" }}
+            />
+          </svg>
+          <span style={{ fontSize: 11, fontWeight: 700, color: INK }}>Part 1</span>
+          <span style={{ fontSize: 10, color: MUTED }}>80% watched</span>
+        </div>
+        <ArrowRight className="w-4 h-4 self-center shrink-0" style={{ color: "#b6c8de" }} />
+        <div className={box} style={{ background: "white", border: `1px solid ${RULE}` }}>
+          <motion.span
+            className="flex items-center justify-center rounded-full"
+            style={{ width: 48, height: 48 }}
+            initial={{ background: "#e6eefa" }}
+            whileInView={{ background: color + "22" }}
+            viewport={{ once: true }}
+            transition={{ delay: 1.1, duration: 0.3 }}
+          >
+            <motion.span initial={{ opacity: 1 }} whileInView={{ opacity: 0 }} viewport={{ once: true }} transition={{ delay: 1.1, duration: 0.2 }} className="absolute">
+              <Lock className="w-5 h-5" style={{ color: "#9fb3cc" }} />
+            </motion.span>
+            <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.25, duration: 0.25 }}>
+              <Check className="w-5 h-5" style={{ color }} strokeWidth={3} />
+            </motion.span>
+          </motion.span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: INK }}>Part 2</span>
+          <span style={{ fontSize: 10, color: MUTED }}>opens next</span>
+        </div>
+        <ArrowRight className="w-4 h-4 self-center shrink-0" style={{ color: "#b6c8de" }} />
+        <motion.div
+          className={box}
+          style={{ border: "1px solid #bbf0cf" }}
+          initial={{ background: "#ffffff" }}
+          whileInView={{ background: "#ecfdf3" }}
+          viewport={{ once: true }}
+          transition={{ delay: 1.6, duration: 0.3 }}
+        >
+          <span className="flex items-center justify-center tabular-nums" style={{ width: 48, height: 48, fontSize: 15, fontWeight: 800, color: "#166534" }}>
+            8/10
+          </span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: INK }}>Quiz</span>
+          <span style={{ fontSize: 10, color: "#166534" }}>Passed</span>
+        </motion.div>
+      </div>
+    </Frame>
+  );
+}
+
+/** 6 — a session moved to another day by the learner; the rest stay put. */
+function YoursPicture({ colors }: { colors: [string, string] }) {
+  const days = ["Tue", "Wed", "Thu"];
+  const chip = (c: string) => ({ background: c + "1f", borderLeft: `3px solid ${c}` });
+  return (
+    <Frame>
+      <div className="relative grid grid-cols-3 gap-2">
+        {days.map((d, i) => (
+          <div key={d} className="rounded-lg p-1.5 flex flex-col gap-1.5" style={{ background: "white", border: `1px solid ${RULE}`, minHeight: 96 }}>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: MUTED }}>{d}</span>
+            <span className="rounded-md h-5" style={chip(colors[i % 2])} />
+            {i === 1 && <span className="rounded-md h-5" style={chip(colors[0])} />}
+          </div>
+        ))}
+        {/* The moving session: from Tuesday's second slot to Thursday's. */}
+        <motion.span
+          className="absolute rounded-md h-5 flex items-center justify-end pr-1"
+          style={{ ...chip(colors[1]), top: 64, width: "calc((100% - 16px) / 3 - 12px)", boxShadow: "0 4px 10px rgba(15,39,72,.12)" }}
+          initial={{ left: "6px" }}
+          animate={{ left: ["6px", "6px", "calc(66.666% + 4px)", "calc(66.666% + 4px)"] }}
+          transition={{ duration: 3.2, times: [0, 0.3, 0.7, 1], repeat: Infinity, repeatDelay: 1, ease: "easeInOut" }}
+        >
+          <MoreHorizontal className="w-3 h-3" style={{ color: MUTED }} />
+        </motion.span>
+      </div>
+      <div className="flex flex-wrap gap-1.5 mt-3">
+        {[
+          { icon: CalendarClock, label: "Move" },
+          { icon: ArrowLeftRight, label: "Swap" },
+          { icon: Replace, label: "Change topic" },
+          { icon: Trash2, label: "Remove" },
+          { icon: Plus, label: "Add" },
+          { icon: RotateCcw, label: "Reset" },
+        ].map(({ icon: Icon, label }) => (
+          <span key={label} className="inline-flex items-center gap-1 rounded-full px-2.5 py-1" style={{ background: "white", border: `1px solid ${RULE}`, fontSize: 11, fontWeight: 600, color: INK }}>
+            <Icon className="w-3 h-3" style={{ color: MUTED }} /> {label}
+          </span>
+        ))}
+      </div>
+    </Frame>
+  );
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
 export default function HowItWorksContent() {
   const [math, rla, science, social] = LANDING_SUBJECTS;
-  // The weak lesson the mock-ups follow through: scored low in the test, then
-  // picked for a session — so one that fits in a single sitting. The other two
-  // score rows are real MATH lessons too, never names the product doesn't teach.
-  const sampleLesson = pickSample(math);
-  const [otherA, otherB] = math.categories
-    .flatMap((c) => c.topics.flatMap((t) => t.subtopics))
-    .filter((st) => st.name !== sampleLesson.name);
+  // The example the pictures follow: Math and Science, three months out,
+  // two hours on weekdays and four on weekend days.
+  const need = subjectHours(math) + subjectHours(science);
+  const have = (2 * 5 + 4 * 2) * 13;
+  const mathTopics = math.categories.flatMap((c) => c.topics.flatMap((t) => t.subtopics));
+  const sciTopics = science.categories.flatMap((c) => c.topics.flatMap((t) => t.subtopics));
+  const scores = [
+    { name: mathTopics[0]?.name ?? "Fractions", score: 42 },
+    { name: sciTopics[0]?.name ?? "Cells", score: 68 },
+    { name: mathTopics[5]?.name ?? "Percents", score: 86 },
+  ];
 
   return (
     <>
@@ -258,286 +451,140 @@ export default function HowItWorksContent() {
       {/* ── Masthead ── */}
       <header
         className="px-5 md:px-10"
-        style={{
-          background: "linear-gradient(160deg,#e8f2ff 0%,#f4f8ff 70%)",
-          paddingTop: 64 + 52,
-          paddingBottom: 40,
-        }}
+        style={{ background: "linear-gradient(160deg,#e8f2ff 0%,#f4f8ff 70%)", paddingTop: 64 + 52, paddingBottom: 40 }}
       >
-        <div className="max-w-[880px] mx-auto">
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: ".16em",
-              textTransform: "uppercase",
-              color: "#1e90e8",
-              marginBottom: 12,
-            }}
-          >
+        <div className="max-w-[980px] mx-auto">
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".16em", textTransform: "uppercase", color: "#1e90e8", marginBottom: 12 }}>
             How it works
           </p>
-          <h1
-            className="text-[36px] md:text-[52px]"
-            style={{
-              fontFamily: "var(--font-feather)",
-              fontWeight: 700,
-              color: INK,
-              lineHeight: 1.05,
-            }}
-          >
-            From first click to exam day.
+          <h1 className="text-[36px] md:text-[52px]" style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: INK, lineHeight: 1.05 }}>
+            From sign-up to exam day.
           </h1>
-          <p
-            className="text-[15px] md:text-[16px]"
-            style={{ color: MUTED, lineHeight: 1.65, marginTop: 16, maxWidth: 540 }}
-          >
-            Seven steps. You do six of them — step four is the part we handle.
+          <p className="text-[15px] md:text-[16px]" style={{ color: MUTED, lineHeight: 1.65, marginTop: 16, maxWidth: 580 }}>
+            You tell us what to study and when you&apos;re free. We plan every day up to your exam, once. After
+            that the plan is yours to change.
           </p>
         </div>
       </header>
 
       <main className="px-5 md:px-10 py-12" style={{ background: "#f4f8ff" }}>
-        <div className="max-w-[880px] mx-auto">
-          {/* 01 — subjects */}
-          <Card
+        <div className="max-w-[980px] mx-auto">
+          <Step
             num="01"
-            eyebrow="Setup"
+            eyebrow="You"
             color={math.color}
             title="Pick your subjects"
-            body="Take all four, or just the ones you still need. Your test, your schedule, everything after this follows what you pick here."
-            visual={
-              <Mock>
-                <div className="flex flex-col gap-2">
-                  {LANDING_SUBJECTS.map((s, i) => {
-                    const picked = i === 0 || i === 3;
-                    return (
-                      <motion.div
-                        key={s.slug}
-                        initial={{ opacity: 0, x: -8 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 + i * 0.07, duration: 0.3 }}
-                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2"
-                        style={{
-                          background: picked ? s.iconBg : "white",
-                          border: `1px solid ${picked ? s.color : RULE}`,
-                        }}
-                      >
-                        <span
-                          className="shrink-0 flex items-center justify-center"
-                          style={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: 4,
-                            background: picked ? s.color : "white",
-                            border: `1.5px solid ${picked ? s.color : "#c9d9ee"}`,
-                          }}
-                        >
-                          {picked && <Check className="w-2.5 h-2.5 text-white" strokeWidth={4} />}
-                        </span>
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: INK }}>
-                          {s.shortName}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </Mock>
+            body={
+              <>
+                <p>Take all four, or only the ones you still need to pass.</p>
+                <p>
+                  Every subject is a list of topics, and every topic has real videos and articles behind it. The hours
+                  you see are what that content takes to study, with time to pause and take notes.
+                </p>
+              </>
             }
+            visual={<SubjectsPicture picked={[math.code, science.code]} />}
           />
 
-          {/* 02 — exam date + availability */}
-          <Card
+          <Step
             num="02"
-            eyebrow="Setup"
+            eyebrow="You"
             color={rla.color}
-            title="Exam date and free hours"
-            body="Tell us your exam date and which hours you are free each week. Your plan only uses those hours, so it fits your real life."
-            visual={
-              <Mock>
-                <div
-                  className="inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 mb-3"
-                  style={{ background: "white", border: `1px solid ${RULE}` }}
-                >
-                  <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>Exam</span>
-                  <span style={{ fontSize: 12, color: INK, fontWeight: 700 }}>18 Oct</span>
-                </div>
-                <div className="grid grid-cols-7 gap-1.5">
-                  {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => {
-                    const free = [0, 2, 4, 5].includes(i);
-                    return (
-                      <div key={i} className="flex flex-col items-center gap-1">
-                        <span style={{ fontSize: 9.5, color: MUTED, fontWeight: 700 }}>{d}</span>
-                        <motion.span
-                          initial={{ scaleY: 0 }}
-                          whileInView={{ scaleY: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.15 + i * 0.05, duration: 0.35 }}
-                          className="w-full rounded"
-                          style={{
-                            height: free ? 30 : 12,
-                            background: free ? rla.color : "#e6eefa",
-                            transformOrigin: "bottom",
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </Mock>
+            title="Tell us your free time"
+            body={
+              <>
+                <p>Set your exam date, and the hours you&apos;re usually free on each day of the week.</p>
+                <p>
+                  Then we add it up: the hours your subjects need against the hours you have before the exam. If
+                  they don&apos;t fit, you see it straight away, with what would fix it: more hours a week, a later
+                  exam, or one subject fewer.
+                </p>
+                <p>Your usual week is only where we start. You can still study on any other day later.</p>
+              </>
             }
+            visual={<FreeTimePicture need={need} have={have} />}
           />
 
-          {/* 03 — diagnostic */}
-          <Card
+          <Step
             num="03"
-            eyebrow="Diagnostic"
+            eyebrow="You"
             color={science.color}
-            title="A short test to see where you are"
-            body={`Ten questions for each subject you picked. Every question belongs to one lesson, so you get a score for each of the ${TOTAL_TOPICS} lessons — not just one score per subject.`}
-            visual={
-              <Mock>
-                <div className="flex flex-col gap-2">
-                  {[
-                    { name: otherA.name, score: 82 },
-                    { name: sampleLesson.name, score: 41 },
-                    { name: otherB.name, score: 58 },
-                  ].map((row, i) => (
-                    <div key={row.name} className="flex items-center gap-2.5">
-                      <span
-                        className="truncate"
-                        style={{ fontSize: 11.5, color: INK, fontWeight: 600, width: 150 }}
-                      >
-                        {row.name}
-                      </span>
-                      <span
-                        className="flex-1 h-2 rounded-full overflow-hidden"
-                        style={{ background: "#e6eefa" }}
-                      >
-                        <motion.span
-                          className="block h-full rounded-full"
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${row.score}%` }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.2 + i * 0.1, duration: 0.6, ease: "easeOut" }}
-                          style={{ background: row.score < 60 ? "#EF4444" : science.color }}
-                        />
-                      </span>
-                      <span
-                        className="tabular-nums shrink-0"
-                        style={{ fontSize: 11, fontWeight: 700, color: MUTED, width: 24 }}
-                      >
-                        {row.score}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </Mock>
+            title="Take a short test"
+            body={
+              <>
+                <p>Ten questions for each subject you picked.</p>
+                <p>
+                  Every question belongs to one topic, so you get a score for each topic, not just one for the
+                  subject. Red means weak, and weak topics are planned first.
+                </p>
+              </>
             }
+            visual={<ScoresPicture rows={scores} />}
           />
 
-          {/* 04 — the algorithm, given its own treatment */}
-          <GaCard />
+          <Step
+            num="04"
+            eyebrow="We do this"
+            color="#4aa8f0"
+            dark
+            title="We plan every day to your exam — once"
+            body={
+              <>
+                <p>
+                  First, topics longer than {MAX_PART_MINUTES / 60} hours are split into even parts of up to{" "}
+                  {MAX_PART_MINUTES / 60} hours, always at the end of a unit or lesson, never mid-lesson.
+                </p>
+                <p>
+                  Then a genetic algorithm makes {DEFAULT_CONFIG.populationSize} draft timetables and improves them
+                  for up to {DEFAULT_CONFIG.generations} rounds, keeping the best each time. Every draft is scored on
+                  six things:
+                </p>
+                <Objectives />
+                <p className="pt-2">
+                  The best one is spread evenly over every day up to your exam, so no week is crammed and none is
+                  empty. The last few days before the exam are for review.
+                </p>
+              </>
+            }
+            visual={<PlanPicture colors={[math.color, science.color]} />}
+          />
 
-          {/* 05 — study + quiz */}
-          <Card
+          <Step
             num="05"
-            eyebrow="Study"
+            eyebrow="You"
             color={social.color}
-            title="Work the plan, take the quiz"
-            body="One session a day, then a quiz on that lesson. Your score updates each time: 70% from the new result, 30% from before. It moves quickly, but one bad day will not wreck it."
-            visual={
-              <Mock>
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>Today</p>
-                    <p style={{ fontSize: 13, color: INK, fontWeight: 700 }}>{sampleLesson.name}</p>
-                  </div>
-                  <span
-                    className="shrink-0 rounded-full px-2.5 py-1"
-                    style={{ background: social.iconBg, color: social.color, fontSize: 11, fontWeight: 700 }}
-                  >
-                    {formatStudyTime(sampleLesson.minutes)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>41</span>
-                  <span className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "#e6eefa" }}>
-                    <motion.span
-                      className="block h-full rounded-full"
-                      initial={{ width: "41%" }}
-                      whileInView={{ width: "68%" }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.35, duration: 0.8, ease: "easeOut" }}
-                      style={{ background: social.color }}
-                    />
-                  </span>
-                  <span style={{ fontSize: 11, color: social.color, fontWeight: 700 }}>68</span>
-                </div>
-              </Mock>
+            title="Study, then take the quiz"
+            body={
+              <>
+                <p>Open today&apos;s session and watch or read at least 80% of each video and article to finish it.</p>
+                <p>A long topic comes in parts. Part 2 stays locked until part 1 is done, so you learn it in order.</p>
+                <p>
+                  After the last part comes a short quiz. {WEAKNESS_THRESHOLD}% passes. If you don&apos;t pass, go
+                  back over the material and take it again.
+                </p>
+                <p>Want a full check-up? A practice exam covers every subject at once.</p>
+              </>
             }
+            visual={<StudyPicture color={social.color} />}
           />
 
-          {/* 06 — rebuild */}
-          <Card
+          <Step
             num="06"
-            eyebrow="Adjust"
+            eyebrow="You"
             color="#DB2777"
-            title="Change your week, or rebuild"
-            body="Change your free hours any time and the schedule refits itself. And if lessons you have quizzed on are still scoring low, your dashboard tells you and offers to rebuild the plan."
-            visual={
-              <Mock>
-                <div className="flex items-center gap-3">
-                  <TrendingDown className="w-4 h-4 shrink-0" style={{ color: "#1e90e8" }} />
-                  <div className="flex-1 min-w-0">
-                    <p style={{ fontSize: 12, fontWeight: 700, color: "#1e90e8" }}>
-                      2 topics haven&apos;t stuck yet
-                    </p>
-                  </div>
-                  <span
-                    className="shrink-0 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5"
-                    style={{ background: "#1e90e8", color: "white", fontSize: 11, fontWeight: 700 }}
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    Rebuild
-                  </span>
-                </div>
-              </Mock>
+            title="After that, the plan is yours"
+            body={
+              <>
+                <p>We never reshuffle your schedule behind your back. Every change is yours.</p>
+                <p>
+                  Move a session to another day, swap two, remove one, or study another topic instead. Add a
+                  session on any day, including days you didn&apos;t mark as free, with a topic from any subject.
+                </p>
+                <p>Parts of a topic always stay in order. Changed your mind? Reset brings back the plan we made.</p>
+              </>
             }
-          />
-
-          {/* 07 — mock test */}
-          <Card
-            num="07"
-            eyebrow="Measure"
-            color="#0891B2"
-            title="Take a full practice exam"
-            body="A quiz checks one lesson. A practice exam checks everything together. The results feed the same scores your planner reads."
+            visual={<YoursPicture colors={[math.color, science.color]} />}
             last
-            visual={
-              <Mock>
-                <div className="flex items-end gap-2">
-                  {[52, 61, 58, 74, 81].map((v, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <motion.span
-                        className="w-full rounded"
-                        initial={{ scaleY: 0 }}
-                        whileInView={{ scaleY: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.15 + i * 0.08, duration: 0.4 }}
-                        style={{
-                          height: v * 0.6,
-                          background: i === 4 ? "#0891B2" : "#bcd7ee",
-                          transformOrigin: "bottom",
-                        }}
-                      />
-                      <span style={{ fontSize: 9.5, color: MUTED, fontWeight: 600 }}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-              </Mock>
-            }
           />
         </div>
       </main>
@@ -546,51 +593,24 @@ export default function HowItWorksContent() {
       <section className="px-5 md:px-10 pb-14 md:pb-20" style={{ background: "#f4f8ff" }}>
         <motion.div
           {...inView}
-          className="max-w-[880px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-5 rounded-2xl px-6 py-6"
+          className="max-w-[980px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-5 rounded-2xl px-6 py-6"
           style={{ background: "white", boxShadow: "0 4px 0 " + RULE }}
         >
-          <p
-            className="text-[19px] md:text-[24px]"
-            style={{
-              fontFamily: "var(--font-feather)",
-              fontWeight: 700,
-              color: INK,
-              lineHeight: 1.25,
-              maxWidth: 440,
-            }}
-          >
+          <p className="text-[19px] md:text-[24px]" style={{ fontFamily: "var(--font-feather)", fontWeight: 700, color: INK, lineHeight: 1.25, maxWidth: 440 }}>
             Step one takes about a minute.
           </p>
           <div className="flex flex-wrap gap-3 shrink-0">
             <Link
               href="/subjects"
               className="inline-flex items-center gap-2 transition-transform hover:scale-[1.03] active:scale-[0.97]"
-              style={{
-                padding: "13px 22px",
-                background: "white",
-                color: "#1e90e8",
-                border: "2px solid #1e90e8",
-                borderRadius: 14,
-                fontSize: 15,
-                fontWeight: 700,
-                textDecoration: "none",
-              }}
+              style={{ padding: "13px 22px", background: "white", color: "#1e90e8", border: "2px solid #1e90e8", borderRadius: 14, fontSize: 15, fontWeight: 700, textDecoration: "none" }}
             >
               See the syllabus
             </Link>
             <Link
               href="/register"
               className="inline-flex items-center gap-2 transition-transform hover:scale-[1.03] active:scale-[0.97]"
-              style={{
-                padding: "13px 26px",
-                background: "#1e90e8",
-                color: "white",
-                borderRadius: 14,
-                fontSize: 15,
-                fontWeight: 700,
-                boxShadow: "0 4px 0 #1670be",
-                textDecoration: "none",
-              }}
+              style={{ padding: "13px 26px", background: "#1e90e8", color: "white", borderRadius: 14, fontSize: 15, fontWeight: 700, boxShadow: "0 4px 0 #1670be", textDecoration: "none" }}
             >
               Start free
               <ArrowRight className="w-4 h-4" />

@@ -1,160 +1,112 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Check, X } from "lucide-react";
 import MethodWeek from "./MethodWeek";
-import {
-  BLUE,
-  FINAL_STAGE,
-  HAND_MADE_SCORE,
-  HAND_MADE_WEEK,
-  INK,
-  LINE,
-  MUTED,
-} from "./methodData";
+import { BLUE, GOALS, INK, LINE, MUTED } from "./methodData";
+import { POP, runDemo, type DemoPlan, type DemoRun } from "./demoRun";
 
-const HAND_FAULTS = [
-  { ok: false, text: "Two subjects never appear at all" },
-  { ok: false, text: "Books Wednesday and Saturday, both marked busy" },
-  { ok: false, text: "Quadratics lands before Expressions" },
-  { ok: false, text: "Four Math sessions in the first three days" },
-];
-
-const GA_WINS = [
-  { ok: true, text: "All four subjects covered" },
-  { ok: true, text: "Nothing booked on a busy day" },
-  { ok: true, text: "Expressions comes before Quadratics" },
-  { ok: true, text: "Heavy days separated, subjects rotating" },
-];
+/** A fixed seed, so the comparison doesn't change between visits. */
+const SEED = 7;
 
 function Panel({
   kicker,
-  score,
-  week,
-  points,
+  note,
+  plan,
+  other,
   accent,
   highlight,
 }: {
   kicker: string;
-  score: number;
-  week: typeof HAND_MADE_WEEK;
-  points: { ok: boolean; text: string }[];
+  note: string;
+  plan: DemoPlan;
+  /** The other plan, to mark which goals this one does better on. */
+  other: DemoPlan;
   accent: string;
   highlight: boolean;
 }) {
   return (
     <div
       className="rounded-2xl p-5 min-w-0"
-      style={{
-        background: "white",
-        border: `1px solid ${highlight ? "#bcdcfa" : LINE}`,
-        boxShadow: highlight ? "0 4px 0 #cfe6fb" : "0 4px 0 #e8eef6",
-      }}
+      style={{ background: "white", border: `1px solid ${highlight ? "#bcdcfa" : LINE}`, boxShadow: highlight ? "0 4px 0 #cfe6fb" : "0 4px 0 #e8eef6" }}
     >
       <div className="flex items-baseline justify-between gap-3">
-        <p
-          style={{
-            fontSize: 10.5,
-            fontWeight: 700,
-            letterSpacing: ".12em",
-            textTransform: "uppercase",
-            color: MUTED,
-          }}
-        >
-          {kicker}
-        </p>
-        <span
-          className="tabular-nums"
-          style={{
-            fontFamily: "var(--font-feather)",
-            fontSize: 30,
-            fontWeight: 700,
-            color: accent,
-            lineHeight: 1,
-          }}
-        >
-          {score}
+        <div className="min-w-0">
+          <p style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: MUTED }}>{kicker}</p>
+          <p style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{note}</p>
+        </div>
+        <span className="tabular-nums shrink-0" style={{ fontFamily: "var(--font-feather)", fontSize: 30, fontWeight: 700, color: accent, lineHeight: 1 }}>
+          {plan.score}
         </span>
       </div>
 
       <div className="mt-4">
-        <MethodWeek week={week} minColumnHeight={104} />
+        <MethodWeek week={plan.week} minColumnHeight={104} />
       </div>
 
-      <ul className="mt-4 flex flex-col gap-2">
-        {points.map((p) => (
-          <li key={p.text} className="flex items-start gap-2">
-            <span
-              className="shrink-0 flex items-center justify-center"
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: "50%",
-                background: p.ok ? "#e3f6ec" : "#fdecea",
-                marginTop: 1,
-              }}
-            >
-              {p.ok ? (
-                <Check className="w-2.5 h-2.5" style={{ color: "#17a673" }} strokeWidth={3.5} />
-              ) : (
-                <X className="w-2.5 h-2.5" style={{ color: "#c2553f" }} strokeWidth={3.5} />
-              )}
-            </span>
-            <span style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>{p.text}</span>
-          </li>
-        ))}
-      </ul>
+      {/* The six goals, each as scored for this plan. */}
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2">
+        {GOALS.map((g) => {
+          const v = Math.round(plan.goals[g.key] * 100);
+          const better = v > Math.round(other.goals[g.key] * 100);
+          return (
+            <div key={g.key} className="min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate" style={{ fontSize: 11, color: MUTED }}>{g.name}</span>
+                <span className="tabular-nums shrink-0" style={{ fontSize: 11.5, fontWeight: 700, color: better ? accent : INK }}>{v}</span>
+              </div>
+              <div className="rounded-full overflow-hidden mt-0.5" style={{ height: 4, background: "#e2edfa" }}>
+                <div className="h-full rounded-full" style={{ width: `${v}%`, background: better ? accent : "#a9c8e6" }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 export default function MethodComparison() {
-  const gain = FINAL_STAGE.score - HAND_MADE_SCORE;
+  // Computed in the browser only, after the first paint: the GA's random
+  // choices go through Array.sort, which a server's JavaScript engine and a
+  // browser's may order differently, so a server render wouldn't match.
+  const [run, setRun] = useState<DemoRun | null>(null);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setRun(runDemo(SEED)));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  if (!run) {
+    return <div className="rounded-2xl" style={{ minHeight: 420, background: "white", border: `1px solid ${LINE}` }} />;
+  }
+  const gain = run.result.score - run.baseline.score;
+  const improved = GOALS.filter((g) => Math.round(run.result.goals[g.key] * 100) > Math.round(run.baseline.goals[g.key] * 100)).map((g) => g.name.toLowerCase());
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.5 }}
-    >
+    <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.5 }}>
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel
-          kicker="Planned by hand"
-          score={HAND_MADE_SCORE}
-          week={HAND_MADE_WEEK}
-          points={HAND_FAULTS}
+          kicker="A simple rule"
+          note="Weakest topics first, basics before — no evolution"
+          plan={run.baseline}
+          other={run.result}
           accent="#c2553f"
           highlight={false}
         />
         <Panel
-          kicker="Planned by the algorithm"
-          score={FINAL_STAGE.score}
-          week={FINAL_STAGE.week}
-          points={GA_WINS}
+          kicker="The algorithm"
+          note={`${run.generationsRun} rounds of ${POP} competing drafts`}
+          plan={run.result}
+          other={run.baseline}
           accent={BLUE}
           highlight
         />
       </div>
 
-      <p
-        className="rounded-xl mt-4"
-        style={{
-          fontSize: 13.5,
-          color: INK,
-          lineHeight: 1.6,
-          background: "#f4f8ff",
-          border: `1px solid ${LINE}`,
-          padding: "14px 16px",
-        }}
-      >
-        <strong style={{ fontWeight: 700 }}>
-          {"+"}
-          {gain}
-          {" points"}
-        </strong>
-        {" — and the gap isn't a matter of taste. Every point of it is one of the six goals below "}
-        {"being met or missed, counted the same way for both timetables."}
+      <p className="rounded-xl mt-4" style={{ fontSize: 13.5, color: INK, lineHeight: 1.6, background: "#f4f8ff", border: `1px solid ${LINE}`, padding: "14px 16px" }}>
+        <strong style={{ fontWeight: 700 }}>{gain >= 0 ? `+${gain}` : gain} points</strong>
+        {improved.length > 0
+          ? ` — the algorithm does better on ${improved.join(", ")}. Both plans are scored by the same function that makes every learner's plan, on the same week and the same topics.`
+          : " — both plans are scored by the same function that makes every learner's plan, on the same week and the same topics."}
       </p>
     </motion.div>
   );

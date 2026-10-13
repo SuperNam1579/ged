@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import LandingNavbar from "@/components/layout/LandingNavbar";
 import LandingFooter from "@/components/layout/LandingFooter";
-import MethodDemo from "@/components/method/MethodDemo";
+import LiveGaDemo from "@/components/method/LiveGaDemo";
 import MethodGoals from "@/components/method/MethodGoals";
 import MethodComparison from "@/components/method/MethodComparison";
 import { GENS, INK, MUTED, POP } from "@/components/method/methodData";
@@ -97,9 +97,9 @@ export default function MethodPage() {
               lineHeight: 1.06,
             }}
           >
-            Planning your own week
+            Planning months of study
             <br />
-            is where studying dies.
+            by hand is where it falls apart.
           </h1>
 
           {/* The navbar only has room for "GA", so the two letters get spelled
@@ -112,7 +112,7 @@ export default function MethodPage() {
             <strong style={{ color: INK, fontWeight: 700 }}>GA</strong>{" "}
             stands for{" "}
             <strong style={{ color: INK, fontWeight: 700 }}>genetic algorithm</strong>
-            {" — the part of this product that decides which lesson you study on which day. "}
+            {" — the part of this product that decides which topic you study on which day, from today to your exam. "}
             {"This page is about why that job is harder than it looks, and how it gets done."}
           </p>
 
@@ -146,7 +146,7 @@ export default function MethodPage() {
               maxWidth: 660,
             }}
           >
-            What if something drafted {POP} versions of your week
+            What if something drafted {POP} versions of your whole plan
             {" "}
             and handed you the best one?
           </p>
@@ -157,10 +157,11 @@ export default function MethodPage() {
           <SectionHeading kicker="In plain terms" title="That's all this does." />
           <ol className="flex flex-col gap-3" style={{ maxWidth: 660 }}>
             {[
-              `It drafts ${POP} rough timetables at once, all different.`,
-              "It scores every one of them against what a good week looks like.",
+              `It drafts ${POP} rough plans at once — every day up to your exam — all different.`,
+              "It scores every one of them against what a good plan looks like.",
               "It throws out the weak ones and combines the strong ones.",
-              `It does that ${GENS} times, and keeps the best week that survives.`,
+              `It does that ${GENS} times, and keeps the best plan that survives.`,
+              "It runs once, when you start. After that the plan is yours to change; nothing reshuffles it.",
             ].map((line, i) => (
               <li key={line} className="flex items-start gap-3.5">
                 <span
@@ -192,13 +193,15 @@ export default function MethodPage() {
         <section className="max-w-[1060px] mx-auto" style={{ paddingTop: 80 }}>
           <SectionHeading
             kicker="Watch it happen"
-            title="One week, sorting itself out."
-            lead="Press Run to let it evolve, or Step through a generation at a time. Watch the sessions move off the days this learner isn't free, spread across the week, and put the basics before the hard lessons."
+            title="One week of a plan, sorting itself out."
+            lead="Press Run, or Step through a round at a time. This is the planner's own code running in your browser: each draft is an order of topics, laid onto the learner's free days — long topics cut into parts — and scored on the six goals."
           />
-          <MethodDemo />
+          <LiveGaDemo showGoals moreLink={false} />
           <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.6, marginTop: 12 }}>
-            An illustration of how a run behaves, using one example learner&apos;s week — not
-            measured output from the engine.
+            The planner and its scoring are the real ones; the learner is an example — Math, Language Arts
+            and Science, made-up test scores, one week of free time (a real plan covers every day to the
+            exam). Topics are the real curriculum, with each topic&apos;s videos and articles taken at their
+            average length.
           </p>
         </section>
 
@@ -218,9 +221,9 @@ export default function MethodPage() {
           style={{ paddingTop: 80, paddingBottom: 90 }}
         >
           <SectionHeading
-            kicker="Does it beat doing it yourself"
+            kicker="Is the algorithm worth it"
             title="The same week, two ways."
-            lead="A plan a learner would plausibly write for themselves, next to the one the algorithm settles on — both marked by the same six goals."
+            lead="The plan a simple rule gives — weakest topics first, basics before — next to the one the algorithm settles on. Same learner, same week, same scoring."
           />
           <MethodComparison />
         </section>

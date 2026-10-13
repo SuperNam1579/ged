@@ -9,7 +9,6 @@ import {
   LANDING_SUBJECTS,
   findSubject,
   subtopicCount,
-  topicCount,
 } from "@/components/landing/subjects";
 
 /** Pre-render all four subject pages at build time — the list is static. */
@@ -27,14 +26,13 @@ export async function generateMetadata({
   if (!subject) return {};
   return {
     title: subject.name,
-    description: `${subject.name} on the GED: ${topicCount(subject)} topics and ${subtopicCount(subject)} lessons — ${subject.desc}.`,
+    description: `${subject.name} on the GED: ${subtopicCount(subject)} topics — ${subject.desc}.`,
     alternates: { canonical: `/subjects/${subject.slug}` },
   };
 }
 
 const INK = "#0f2748";
 const MUTED = "#5b769a";
-const LEVEL_LABELS = ["", "Foundation", "Core", "Advanced", "Challenge"];
 
 export default async function SubjectDetailPage({
   params,
@@ -113,7 +111,7 @@ export default async function SubjectDetailPage({
                 {subject.name}
               </h1>
               <p style={{ fontSize: 14, color: MUTED, marginTop: 4 }}>
-                {topicCount(subject)} topics · {subtopicCount(subject)} lessons
+                {subtopicCount(subject)} topics
               </p>
               {totalVideos + totalArticles > 0 && (
                 <p style={{ fontSize: 13, color: MUTED, marginTop: 2 }}>
@@ -303,17 +301,6 @@ export default async function SubjectDetailPage({
                               {subtopic.description}
                             </p>
                             <div className="flex items-center gap-2 mt-2.5">
-                              <span
-                                className="rounded-full px-2 py-0.5"
-                                style={{
-                                  background: subject.iconBg,
-                                  color: subject.color,
-                                  fontSize: 10.5,
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {LEVEL_LABELS[subtopic.level] ?? `Level ${subtopic.level}`}
-                              </span>
                               {subtopic.videos !== undefined && (
                                 <span style={{ fontSize: 11.5, color: MUTED, fontWeight: 600 }}>
                                   {subtopic.videos} {subtopic.videos === 1 ? "video" : "videos"}
@@ -386,7 +373,7 @@ export default async function SubjectDetailPage({
                           className="block tabular-nums"
                           style={{ fontSize: 11.5, color: MUTED, fontWeight: 600, marginTop: 2 }}
                         >
-                          {subtopicCount(other)} lessons
+                          {subtopicCount(other)} topics
                         </span>
                       </span>
                       <ArrowRight
@@ -416,7 +403,7 @@ export default async function SubjectDetailPage({
                   maxWidth: 460,
                 }}
               >
-                Which of these {subtopicCount(subject)} lessons do you actually need?
+                Which of these {subtopicCount(subject)} topics do you actually need?
               </p>
               <Link
                 href="/register"
