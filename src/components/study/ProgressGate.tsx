@@ -24,6 +24,8 @@ interface ProgressGateProps {
   /** More parts of this subtopic follow — hold the quiz until the last one. */
   isLastPart?: boolean;
   nextPartDate?: string | null;
+  /** The next part's session: the footer link opens it rather than the schedule. */
+  nextPartId?: string | null;
   /** Test mode (STUDY_SKIP_WATCH_CHECK): the session can be completed straight away. */
   skipWatchCheck?: boolean;
 }
@@ -56,6 +58,7 @@ export function ProgressGate({
   onCompleted,
   isLastPart = true,
   nextPartDate = null,
+  nextPartId = null,
   skipWatchCheck = false,
 }: ProgressGateProps) {
   const reduceMotion = useReducedMotion();
@@ -187,11 +190,11 @@ export function ProgressGate({
                   </Link>
                 ) : (
                   <Link
-                    href={returnTo}
+                    href={nextPartId ? withReturnTo(`/study/${nextPartId}`, returnTo) : returnTo}
                     className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                   >
                     {nextPartDate
-                      ? `Next part: ${new Date(`${nextPartDate}T00:00:00`).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}`
+                      ? `Next part (${new Date(`${nextPartDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" })}) →`
                       : "Back to schedule"}
                   </Link>
                 )}

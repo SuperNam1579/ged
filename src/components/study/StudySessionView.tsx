@@ -39,6 +39,8 @@ interface StudySessionViewProps {
   skipWatchCheck?: boolean;
   /** When the next part is scheduled, for the "part complete" footer. */
   nextPartDate?: string | null;
+  /** The next part's session, opened from the footer once this one is done. */
+  nextPartId?: string | null;
 }
 
 interface ResourcesResponse {
@@ -73,6 +75,7 @@ export function StudySessionView({
   isLastPart = true,
   skipWatchCheck = false,
   nextPartDate = null,
+  nextPartId = null,
 }: StudySessionViewProps) {
   const reduceMotion = useReducedMotion();
 
@@ -380,6 +383,7 @@ export function StudySessionView({
         isLastPart={isLastPart}
         skipWatchCheck={skipWatchCheck}
         nextPartDate={nextPartDate}
+        nextPartId={nextPartId}
         onCompleted={() => {
           setStatus("COMPLETED");
           onCompleted?.();

@@ -332,6 +332,7 @@ function StudySessionPageInner() {
                 isLastPart={session.isLastPart ?? true}
                 skipWatchCheck={session.skipWatchCheck ?? false}
                 nextPartDate={session.nextPart?.scheduledDate ?? null}
+                nextPartId={session.nextPart?.id ?? null}
                 fallback={
                   /* Videos when the subtopic has them, the original external link
                      when it doesn't. Coverage is still partial, so the link is a
