@@ -9,5 +9,6 @@
  * in order.
  */
 export function skipWatchCheck(): boolean {
-  return process.env.STUDY_SKIP_WATCH_CHECK === "1";
+  const v = (process.env.STUDY_SKIP_WATCH_CHECK ?? "").trim().replace(/^["']|["']$/g, "").toLowerCase();
+  return v === "1" || v === "true";
 }
