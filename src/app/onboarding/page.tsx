@@ -430,9 +430,10 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  // The fit check that stopped Finish: the free time doesn't cover the subjects.
-  const [notFit, setNotFit] = useState<FeasibilityResult | null>(null);
+  // The last Finish's error and fit verdict, each with the inputs it was for:
+  // once the learner changes their subjects, date or week they no longer
+  // apply, and the live check below takes over without another click.
+  const [failure, setFailure] = useState<{ key: string | null; error: string; notFit: FeasibilityResult | null } | null>(null);
   // What the plan came out as, for the last step's notes.
   const [planResult, setPlanResult] = useState<PlanResult | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
@@ -465,7 +466,13 @@ export default function OnboardingPage() {
   const liveFit = fitResult && fitResult.request === fitRequest ? fitResult.fit : null;
   const checkingFit = fitRequest !== null && fitResult?.request !== fitRequest;
   // What blocks Finish: the server's answer on Finish, or the live check before it.
+  const stale = failure !== null && failure.key !== fitRequest;
+  const error = failure && !stale ? failure.error : "";
+  const notFit = failure && !stale ? failure.notFit : null;
   const fitProblem = notFit ?? (liveFit && !liveFit.canPlan ? liveFit : null);
+  // Continue waits for the live check and stays off while the time doesn't fit,
+  // instead of sending a request the server would turn down.
+  const canFinish = !checkingFit && !fitProblem;
 
   // Google sign-ups skip the credentials form, so they never provided a date
   // of birth. If it's missing we collect it here (with the same 16+ rule).
@@ -557,8 +564,7 @@ export default function OnboardingPage() {
   // ── Submit ──────────────────────────────────────────────────────────────
 
   const handleFinish = async () => {
-    setError("");
-    setNotFit(null);
+    setFailure(null);
     setLoading(true);
     try {
       // Persist the date of birth first for Google accounts that never gave one.
@@ -605,6 +611,9 @@ export default function OnboardingPage() {
         // from it instead of asking the user to re-enter everything.
         body: JSON.stringify({ weekStartDate: thisMonday(), slots, applyToFutureWeeks: true }),
       });
+      if (availRes.status === 429) {
+        throw new Error("You've tried several times in a few minutes. Wait about 10 minutes, then press Continue again — nothing you entered is lost.");
+      }
       if (!availRes.ok) throw new Error((await availRes.json()).error ?? "Failed to generate plan");
 
       // The plan is only made when the free time fits the subjects. When it
@@ -612,14 +621,14 @@ export default function OnboardingPage() {
       // their schedule or subjects and finishes again.
       const avail = (await availRes.json().catch(() => ({}))) as PlanResult & { planCreated?: boolean };
       if (avail.planCreated === false && avail.feasibility && !avail.feasibility.canPlan) {
-        setNotFit(avail.feasibility);
+        setFailure({ key: fitRequest, error: "", notFit: avail.feasibility });
         return;
       }
 
       setPlanResult(avail);
       setStep(4);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setFailure({ key: fitRequest, error: err instanceof Error ? err.message : "Something went wrong. Please try again.", notFit: null });
     } finally {
       setLoading(false);
     }
@@ -1228,7 +1237,7 @@ export default function OnboardingPage() {
               <Button variant="ghost" onClick={() => setStep(2)}>
                 Back
               </Button>
-              <Button onClick={handleFinish} loading={loading} disabled={loading}>
+              <Button onClick={handleFinish} loading={loading} disabled={loading || !canFinish}>
                 Continue
               </Button>
             </div>
