@@ -30,7 +30,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   // Icons come from files in this folder: favicon.ico (browser tab) and
-  // apple-icon.png (home screen). The share image is opengraph-image.tsx.
+  // apple-icon.png (home screen). The share image is opengraph-image.png, a
+  // screenshot of the home page at 1200×630.
   openGraph: {
     title: "GED Prep — Adaptive Study Platform",
     description:
