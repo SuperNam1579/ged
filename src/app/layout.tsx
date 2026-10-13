@@ -28,6 +28,21 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  openGraph: {
+      title: "GED Prep — Adaptive Study Platform",
+      description:
+        "AI-powered adaptive GED exam preparation with personalized study plans driven by Genetic Algorithm optimization.",
+      siteName: "GED Prep",
+      images: [
+        {
+          url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrxNElUnztpn_6a3Y0RuS_dnTmNGiLo8fHqsPCK57yJQ&s=10",
+          width: 1024,
+          height: 1024,
+        },
+      ],
+      locale: "th_TH",
+      type: "website",
+    },
 };
 
 export default function RootLayout({
