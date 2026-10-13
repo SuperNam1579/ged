@@ -3,7 +3,7 @@
 
 import { db } from "@/lib/db";
 import type { SubtopicData } from "@/types";
-import { clipMinutes, type WorkItem } from "./parts";
+import { clipMinutes, splitIntoParts, type WorkItem } from "./parts";
 
 /**
  * - "regenerate": a new plan is being made. Only content the learner has
@@ -81,18 +81,23 @@ export async function loadWorkItems(
     const all = bySubtopic.get(s.id) ?? [];
     const remaining = all.filter((r) => !coveredClips.has(r.id));
     if (all.length > 0 && remaining.length === 0) continue;
+    // Parts come from the whole subtopic, so they stay put as it gets studied.
+    const parted = splitIntoParts(
+      all.map((r) => ({
+        resourceId: r.id,
+        unitKey: r.lessonRef?.unitId ?? null,
+        lessonKey: r.lessonId,
+        minutes: clipMinutes(r.durationSec, r.kind),
+      }))
+    );
+    const left = new Set(remaining.map((r) => r.id));
 
     items.push({
       subtopicId: s.id,
       subjectCode: s.subjectCode,
       difficultyLevel: s.difficultyLevel,
       prerequisiteIds: s.prerequisiteIds,
-      clips: remaining.map((r) => ({
-        resourceId: r.id,
-        unitKey: r.lessonRef?.unitId ?? null,
-        lessonKey: r.lessonId,
-        minutes: clipMinutes(r.durationSec, r.kind),
-      })),
+      clips: parted.filter((c) => left.has(c.resourceId)),
       atomicMinutes: all.length === 0 ? s.estimatedMinutes : 0,
       started: remaining.length < all.length,
     });
@@ -105,9 +110,9 @@ export async function loadWorkItems(
  *
  * Numbered across everything the learner has for the subtopic — parts
  * completed under an earlier plan included — so a regenerated plan continues
- * at "part 3" rather than restarting at 1. M is only filled in once the parts
- * known so far cover every clip; until the rest is scheduled the label reads
- * "part 3" alone rather than promising a total that isn't true yet.
+ * at "part 3" rather than restarting at 1. M counts the sessions so far plus
+ * the subtopic's fixed parts (parts.ts) none of whose clips are in a session
+ * yet — so a topic in 7 parts reads "part 1 of 7" before the rest is planned.
  *
  * A subtopic that fits in a single session gets no numbers at all.
  */
@@ -120,7 +125,7 @@ export async function refreshPartNumbers(userId: string, studyPlanId: string): P
   const subtopicIds = active.map((a) => a.subtopicId);
   if (subtopicIds.length === 0) return;
 
-  const [sessions, clipCounts] = await Promise.all([
+  const [sessions, resources] = await Promise.all([
     db.studySession.findMany({
       where: {
         subtopicId: { in: subtopicIds },
@@ -135,9 +140,29 @@ export async function refreshPartNumbers(userId: string, studyPlanId: string): P
         resources: { select: { resourceId: true, resource: { select: { order: true } } } },
       },
     }),
-    db.resource.groupBy({ by: ["subtopicId"], where: { subtopicId: { in: subtopicIds } }, _count: { _all: true } }),
+    db.resource.findMany({
+      where: { subtopicId: { in: subtopicIds } },
+      orderBy: [{ subtopicId: "asc" }, { order: "asc" }],
+      select: { id: true, subtopicId: true, kind: true, durationSec: true, lessonId: true, lessonRef: { select: { unitId: true } } },
+    }),
   ]);
-  const totalBySubtopic = new Map(clipCounts.map((c) => [c.subtopicId, c._count._all]));
+  // Each subtopic's fixed parts, as the clip ids in each.
+  const fixedParts = new Map<string, string[][]>();
+  for (const subtopicId of subtopicIds) {
+    const clips = splitIntoParts(
+      resources
+        .filter((r) => r.subtopicId === subtopicId)
+        .map((r) => ({
+          resourceId: r.id,
+          unitKey: r.lessonRef?.unitId ?? null,
+          lessonKey: r.lessonId,
+          minutes: clipMinutes(r.durationSec, r.kind),
+        }))
+    );
+    const parts = new Map<string, string[]>();
+    for (const c of clips) parts.set(c.part!, [...(parts.get(c.part!) ?? []), c.resourceId]);
+    fixedParts.set(subtopicId, [...parts.values()]);
+  }
 
   // Sessions grouped by the numbers they get, so a plan of hundreds of sessions
   // is a few dozen statements rather than one per session.
@@ -152,13 +177,14 @@ export async function refreshPartNumbers(userId: string, studyPlanId: string): P
       .sort((a, b) => a.first - b.first);
 
     const covered = new Set(parts.flatMap((p) => p.resources.map((r) => r.resourceId)));
-    const complete = covered.size >= (totalBySubtopic.get(subtopicId) ?? 0);
-    const single = complete && parts.length === 1;
+    const untouched = (fixedParts.get(subtopicId) ?? []).filter((ids) => !ids.some((id) => covered.has(id))).length;
+    const total = parts.length + untouched;
+    const single = total === 1;
 
     parts.forEach((p, i) => {
       if (p.studyPlanId !== studyPlanId) return;
       const partIndex = single ? null : i + 1;
-      const partCount = single || !complete ? null : parts.length;
+      const partCount = single ? null : total;
       const key = `${partIndex}/${partCount}`;
       const group = idsByNumbers.get(key) ?? { partIndex, partCount, ids: [] };
       group.ids.push(p.id);

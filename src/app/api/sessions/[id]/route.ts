@@ -6,6 +6,7 @@ import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { deleteSession, PlanEditError, updateSession } from "@/lib/schedule/manual";
 import { earlierPartPending } from "@/lib/schedule/part-gate";
+import { displayUnitName } from "@/lib/curriculum/display-names";
 
 export async function GET(
   req: NextRequest,
@@ -56,6 +57,7 @@ export async function GET(
       [...session.resources]
         .sort((a, b) => a.resource.order - b.resource.order)
         .map((r) => r.resource.lessonRef?.unit.name)
+          .map((n) => (n ? displayUnitName(n) : n))
         .filter((n): n is string => !!n)
     ),
   ];

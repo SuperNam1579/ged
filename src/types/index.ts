@@ -65,6 +65,12 @@ export interface StudySessionWithSubtopic {
   /** Only from GET /api/sessions/[id]: whether the subtopic quiz follows this session. */
   isLastPart?: boolean;
   nextPart?: { id: string; scheduledDate: string } | null;
+  /**
+   * Only from GET /api/sessions/[id]: an earlier part of this subtopic still to
+   * finish, which this part waits for. sessionId null = that content is in the
+   * backlog, not the plan.
+   */
+  lockedBy?: { subtopicName: string; sessionId: string | null; scheduledDate: string | null; partIndex: number | null } | null;
 }
 
 export interface ProficiencyMap {

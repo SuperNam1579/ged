@@ -83,11 +83,9 @@ export function mutate(
   subtopics: SubtopicData[]
 ): Chromosome {
   const result = chromosome.map((gene) => ({ ...gene }));
-  let mutatedCount = 0;
 
   for (let i = 0; i < result.length; i++) {
     if (random() > mutationRate) continue;
-    mutatedCount++;
     const mutationType = Math.floor(random() * 3);
 
     if (mutationType === 0 && result.length > 1) {
@@ -113,7 +111,6 @@ export function mutate(
       };
     }
   }
-  if (mutatedCount > 0) console.log(`  ⟳ mutation: โดน ${mutatedCount} ยีน`);  
   return result;
 }
 

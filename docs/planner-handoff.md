@@ -44,6 +44,25 @@ share of its free time — the smallest share at which it all fits, plus 10%
 up to the exam, not full days for three weeks and nothing after. Spare time is
 the learner's: nothing fills it.
 
+**Parts are fixed by content** (changed 2026-10-13, replaces "ข3" for
+subtopics with videos; `splitIntoParts` in `src/lib/schedule/parts.ts`):
+
+- A subtopic up to 2 h (`MAX_PART_MINUTES`) is one session, never split.
+- A longer one is cut into as few parts as fit under 2 h, as even as the cuts
+  allow (e.g. 160 min → 90 + 70, not 120 + 40). Cuts fall between units; a unit
+  over 2 h is cut between lessons, a lesson over 2 h between clips. A clip is
+  never cut.
+- Parts come from the whole subtopic's content, so every learner gets the same
+  parts whatever their timetable. A session is one whole part, and a subtopic
+  gets at most one part a day. A part that doesn't fit what is left of a day
+  waits for the next day. Only a part longer than the learner's *whole* day is
+  cut further (at lessons, then clips).
+- A new subtopic doesn't start in the room left at the end of a day unless all
+  of it fits there or the opening is at least 30 min (`MIN_OPENING_MINUTES`);
+  less than that is left free.
+- `POST /api/sessions` (STUDY) and `PATCH … { subtopicId }` give the topic's
+  **next part**; `durationMins` is ignored for a subtopic with parts.
+
 The GA's plan also includes **review sessions** (`kind: "REVIEW"`, 30 min, at
 most 2 a day) on the last 1–3 study days before the exam. More review or
 study is the learner's choice — add it with `POST /api/sessions`.
@@ -113,6 +132,34 @@ interface PlanStatus {
 
 404 when the learner has no plan.
 
+#### `GET /api/plans/topics` — added 2026-10-13
+
+Every topic of **every** subject, with where it stands for the learner, in
+`recommendOrder()`'s order (curriculum order breaks ties). What the schedule's
+"add a session" picker shows, filtered by subject on the page.
+
+```ts
+interface TopicCatalog {
+  selected: string[];            // the subjects picked at onboarding
+  topics: {
+    subtopicId: string; name: string; subjectCode: string;
+    category: string; topic: string;
+    status: "new" | "partly" | "planned" | "done";
+    remainingMinutes: number;    // content not yet planned or done
+    nextPartMinutes: number;     // what adding a study session of it covers
+    nextPart: { index: number; total: number } | null; // null = one-part topic
+    nextDate: string | null;     // first unfinished session in the plan
+    score: number | null;        // proficiency, null when never tested
+  }[];
+}
+```
+
+**Any subject may be planned.** `POST /api/sessions` and `PATCH … { subtopicId }`
+no longer refuse a subject the learner didn't pick (the old 409 "Add X to your
+subjects"). Adding topics from another subject doesn't change the chosen
+subjects and needs no placement test. A topic that is already planned or done
+is added as `kind: "REVIEW"` by the page.
+
 #### `GET /api/plans/backlog` — new
 
 What the learner studies that isn't in the plan: content that didn't fit before
@@ -150,8 +197,8 @@ interface Horizon {
 
 | Call | Body | Does |
 |---|---|---|
-| `POST /api/sessions` | `{ subtopicId, scheduledDate, durationMins?, kind? }` | Adds a session at the end of that day. `STUDY` (default) covers the next part of the subtopic not yet planned — as many remaining clips as fit `durationMins` (5–600), at least one; all of them if no length. `REVIEW` covers no clips (default 30 min). → `201 { sessionId }` |
-| `PATCH /api/sessions/[id]` | any of `{ scheduledDate, order, durationMins, subtopicId }` | Move to another day (goes to the end of it unless `order` is given), reorder within a day, change length, or put another subtopic in its place (a study session gives its clips back and takes the new subtopic's next part). → `{ ok: true }` |
+| `POST /api/sessions` | `{ subtopicId, scheduledDate, durationMins?, kind? }` | Adds a session at the end of that day. `STUDY` (default) covers the next part of the subtopic not yet planned — as many remaining clips as fit `durationMins` (5–600), at least one; all of them if no length. The session's length is what those clips take, not the number sent. `REVIEW` covers no clips (default 30 min). → `201 { sessionId }` |
+| `PATCH /api/sessions/[id]` | any of `{ scheduledDate, order, durationMins, subtopicId }` | Move to another day (goes to the end of it unless `order` is given), reorder within a day, change length, or put another subtopic in its place (a study session gives its clips back and takes the new subtopic's next part — all of what's left, or as much as `durationMins` holds — at that content's length). → `{ ok: true }` |
 | `DELETE /api/sessions/[id]` | — | Removes it; its content goes back to the backlog. |
 | `POST /api/sessions/swap` | `{ a, b }` (session ids) | Swaps the two sessions' days and positions ("study this here instead"). |
 | `POST /api/plans/reset` | — | Puts the GA's original sessions back. Removes every not-done session, restores the original ones less what was completed since and less dropped subjects. → `{ restored: number }` |
@@ -162,7 +209,9 @@ interface Horizon {
 
 `GET` checks the saved settings. `POST` checks with any of these in place of
 the saved ones, **saving nothing** — for showing the result live while the
-learner adjusts sliders:
+learner adjusts sliders. A learner still in onboarding has no saved settings
+yet: `POST` with both `examDate` and `subjectCodes` (and `template`) checks
+those alone (onboarding's review step does this); without them it answers 400.
 
 ```jsonc
 { "examDate": "2026-12-15", "template": [ { "dayOfWeek": 1, "startTime": "18:00", "endTime": "21:00" } ], "subjectCodes": ["MATH"] }
@@ -220,7 +269,8 @@ check counts it. After the plan exists:
   keeps working and shows all the new videos, but its length is the old guess.
   `GET /api/plans/active` lists it under `contentUpdates`
   (`{ sessionId, subtopicId, scheduledDate, plannedMinutes, contentMinutes }`);
-  offer to set the length (`PATCH /api/sessions/[id] { durationMins }`).
+  offer to set the length (`PATCH /api/sessions/[id] { durationMins }`). Once
+  its length equals `contentMinutes` (clamped to 5–600) it is no longer listed.
 - **New lessons (subtopics), or new videos in a subtopic planned from clips** —
   they appear in `GET /api/plans/backlog`, ready to be added by hand.
 
@@ -338,7 +388,8 @@ settings following a `not-enough` result (save the new usual week with `PUT
 | Edit rules (clip picking, what reset restores, conflicts) | `src/lib/schedule/edits.ts` |
 | Study calendar (today → exam, per-week availability) | `src/lib/schedule/calendar.ts` |
 | Review day selection | `src/lib/schedule/review.ts` |
-| GA run (`planDays`), saving (`savePlan`, `insertSessions`) | `src/lib/ga/engine.ts` |
+| GA run (`evolve`, `planDays`) — pure, no database; also runs in the browser for the landing-page demos (optional `onGeneration` callback) | `src/lib/ga/plan.ts` |
+| Saving a plan (`savePlan`, `insertSessions`); re-exports `evolve`/`planDays` so old imports work | `src/lib/ga/engine.ts` |
 | Fitness | `src/lib/ga/fitness.ts` |
 | Cutting subtopics into sessions | `src/lib/schedule/parts.ts` |
 | What is left to study, part numbers | `src/lib/schedule/work-items.ts` |

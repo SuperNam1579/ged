@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { packDays, remainingMinutes, takeCount, type Clip, type Day, type WorkItem } from "../parts";
+import { packDays, remainingMinutes, splitIntoParts, takeCount, type Clip, type Day, type WorkItem } from "../parts";
 
 // Fractions as it is in the curriculum today: 5 units, lesson study-minutes as
 // computed from the real clip runtimes (rounded). One clip per lesson keeps the
@@ -171,6 +171,24 @@ describe("packDays — filling days (ก1)", () => {
     expect(longDays).toEqual(["2026-09-22", "2026-09-23"]);
   });
 
+  it("leaves a short end of day free rather than open a subtopic there", () => {
+    // 110 min used, 10 left: a 10-min first unit fits, but the subtopic's
+    // other 20 min would wait for tomorrow. It starts tomorrow, whole.
+    const first = atomic("first", 110);
+    const short = item("short", clipsFrom("s", [["A", [10]], ["B", [20]]]));
+    const { placements } = packDays([first, short], weekdays(120, 2));
+
+    expect(placements.filter((p) => p.date === "2026-09-21").map((p) => p.subtopicId)).toEqual(["first"]);
+    expect(placements.filter((p) => p.subtopicId === "short").map((p) => [p.date, Math.round(p.minutes)])).toEqual([["2026-09-22", 30]]);
+  });
+
+  it("still fits a whole short subtopic into the end of a day", () => {
+    const first = atomic("first", 100);
+    const tiny = item("tiny", clipsFrom("t", [["A", [8]], ["B", [7]]]));
+    const { placements } = packDays([first, tiny], weekdays(120, 1));
+    expect(placements.map((p) => p.subtopicId)).toEqual(["first", "tiny"]);
+  });
+
   it("does not mutate its inputs", () => {
     const f = fractions();
     const before = remainingMinutes(f);
@@ -194,5 +212,76 @@ describe("takeCount", () => {
 
   it("returns 0 with no room", () => {
     expect(takeCount(clips, 0, 120, true)).toBe(0);
+  });
+});
+
+describe("splitIntoParts", () => {
+  const minutesOfParts = (clips: Clip[]) => {
+    const out = new Map<string, number>();
+    for (const c of clips) out.set(c.part!, (out.get(c.part!) ?? 0) + c.minutes);
+    return [...out.entries()].map(([k, m]) => [k, Math.round(m)]);
+  };
+
+  it("keeps a subtopic up to two hours whole", () => {
+    expect(minutesOfParts(splitIntoParts(clipsFrom("s", [["A", [40, 30]], ["B", [45]]])))).toEqual([["1/1", 115]]);
+  });
+
+  it("cuts between units, never inside one that fits a part", () => {
+    // No two neighbouring Fractions units fit in two hours together.
+    const parts = minutesOfParts(splitIntoParts(clipsFrom("fr", FRACTIONS_UNITS)));
+    expect(parts).toEqual(FRACTIONS_UNITS.map(([, l], i) => [`${i + 1}/5`, totalOf([["", l]])]));
+  });
+
+  it("makes the parts even rather than filling the first ones", () => {
+    // 160 min: 90 + 70, not 120 + 40.
+    const clips = clipsFrom("e", [["A", [30]], ["B", [30]], ["C", [30]], ["D", [30]], ["E", [30]], ["F", [10]]]);
+    expect(minutesOfParts(splitIntoParts(clips))).toEqual([["1/2", 90], ["2/2", 70]]);
+  });
+
+  it("cuts a unit longer than a part between its lessons", () => {
+    expect(minutesOfParts(splitIntoParts(clipsFrom("u", [["A", [50, 50, 50, 50]]])))).toEqual([["1/2", 100], ["2/2", 100]]);
+  });
+
+  it("keeps a clip longer than a part whole, as a part of its own", () => {
+    const clips: Clip[] = [
+      { resourceId: "a", unitKey: "U", lessonKey: "L1", minutes: 30 },
+      { resourceId: "b", unitKey: "U", lessonKey: "L2", minutes: 150 },
+    ];
+    expect(minutesOfParts(splitIntoParts(clips))).toEqual([["1/2", 30], ["2/2", 150]]);
+  });
+});
+
+describe("packDays — fixed parts", () => {
+  const parted = (id: string, units: [string, number[]][]) => item(id, splitIntoParts(clipsFrom(id, units)));
+
+  it("gives each session one whole part, one part of a subtopic a day", () => {
+    const { placements } = packDays([parted("fr", FRACTIONS_UNITS)], weekdays(240));
+    expect(placements.map((p) => [p.date, unitsOf(p.resourceIds).length])).toEqual(
+      weekdays(240).map((d) => [d.date, 1])
+    );
+  });
+
+  it("lets a part wait for a day it fits rather than cutting it", () => {
+    // Parts 120 + 60. Day 1 has 30 min left after "first": part 1 waits for day 2.
+    const { placements } = packDays([atomic("first", 90), parted("p", [["A", [60]], ["B", [60]], ["C", [60]]])], weekdays(120, 3));
+    expect(placements.filter((p) => p.subtopicId === "p").map((p) => [p.date, Math.round(p.minutes)])).toEqual([
+      ["2026-09-22", 120],
+      ["2026-09-23", 60],
+    ]);
+  });
+
+  it("cuts a part only when it is longer than the learner's whole day", () => {
+    const { placements } = packDays([parted("p", [["A", [30, 30, 30]]])], weekdays(60, 3));
+    expect(placements.map((p) => Math.round(p.minutes))).toEqual([60, 30]);
+  });
+});
+
+describe("packDays — fixed parts on paced days", () => {
+  it("measures a part against the real free time, not the paced share", () => {
+    // 120 min free, paced to 75: a 92-min part goes in whole on an empty day.
+    const clips = splitIntoParts(clipsFrom("m", [["A", [77]], ["B", [50, 42]], ["C", [88]]]));
+    const days = weekdays(120, 3).map((d) => ({ ...d, capacity: 75, free: 120 }));
+    const { placements } = packDays([item("m", clips)], days);
+    expect(placements.map((p) => Math.round(p.minutes))).toEqual([77, 92, 88]);
   });
 });

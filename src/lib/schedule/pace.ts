@@ -21,7 +21,7 @@ export const PACE_MARGIN = 0.1;
 
 /** Each day's capacity scaled to `share` of it. */
 export function scaleDays(days: Day[], share: number): Day[] {
-  return days.map((d) => ({ date: d.date, capacity: d.capacity * share }));
+  return days.map((d) => ({ date: d.date, capacity: d.capacity * share, free: d.free ?? d.capacity }));
 }
 
 /**

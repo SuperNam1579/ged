@@ -3,6 +3,7 @@ import { getAuthUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getSessionResourceIds, getSubtopicResourcesWithProgress } from "@/lib/resources";
 import { requiredSecFor } from "@/lib/resources/types";
+import { displayLessonName, displayUnitName } from "@/lib/curriculum/display-names";
 
 /**
  * GET /api/subtopics/:id/resources
@@ -56,9 +57,9 @@ export async function GET(
       title: r.title,
       channelTitle: r.channelTitle,
       durationSec: r.durationSec,
-      lesson: r.placement?.lessonName ?? "",
+      lesson: r.placement ? displayLessonName(r.placement.lessonName) : "",
       lessonId: r.placement?.lessonId ?? null,
-      unit: r.placement?.unitName ?? "",
+      unit: r.placement ? displayUnitName(r.placement.unitName) : "",
       unitId: r.placement?.unitId ?? null,
       order: r.order,
       requiredSec,

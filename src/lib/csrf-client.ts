@@ -36,16 +36,26 @@ export interface PostOptions {
   keepalive?: boolean;
 }
 
-export async function postJson<T>(
+export function postJson<T>(
   url: string,
   body: unknown,
   options: PostOptions = {}
 ): Promise<T> {
+  return sendJson<T>("POST", url, body, options);
+}
+
+/** Like postJson, for the other methods that change things. `body` is left out when undefined. */
+export async function sendJson<T>(
+  method: "POST" | "PATCH" | "PUT" | "DELETE",
+  url: string,
+  body?: unknown,
+  options: PostOptions = {}
+): Promise<T> {
   const send = async (token: string) =>
     fetch(url, {
-      method: "POST",
+      method,
       headers: { "Content-Type": "application/json", "x-csrf-token": token },
-      body: JSON.stringify(body),
+      body: body === undefined ? undefined : JSON.stringify(body),
       keepalive: options.keepalive,
     });
 

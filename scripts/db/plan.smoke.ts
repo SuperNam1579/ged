@@ -13,6 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { checkFeasibility, createInitialPlan } from "@/lib/schedule/create-plan";
 import { addDaysStr, bangkokDateStr } from "@/lib/schedule/calendar";
+import { clipMinutes } from "@/lib/schedule/parts";
 import {
   addSession,
   deleteSession,
@@ -153,7 +154,17 @@ describe("plan lifecycle", () => {
     const { sessionId } = await addSession(userId, { subtopicId: pick.subtopicId, scheduledDate: day, durationMins: 30 });
     const added = (await sessionsOf(planId)).find((s) => s.id === sessionId)!;
     expect(dateOf(added.scheduledDate)).toBe(day);
-    expect(added.durationMins).toBe(30);
+    // As long as the clips it covers take — as many as fit in 30 minutes
+    // (at least one) — never the number asked for when the content differs.
+    const clips = await db.resource.findMany({
+      where: { id: { in: added.resources.map((r) => r.resourceId) } },
+      select: { durationSec: true, kind: true },
+    });
+    if (clips.length > 0) {
+      const covered = clips.reduce((a, c) => a + clipMinutes(c.durationSec, c.kind), 0);
+      expect(added.durationMins).toBe(Math.max(1, Math.round(covered)));
+      if (clips.length > 1) expect(covered).toBeLessThanOrEqual(30 + 1e-6);
+    }
 
     expect((await getPlanStatus(userId)).plan.customized).toBe(true);
     const after = await getBacklog(userId);

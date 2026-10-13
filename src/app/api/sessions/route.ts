@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getAuthUser, getAuthUserStrict } from "@/lib/auth";
 import { checkCsrf } from "@/lib/csrf";
 import { addSession, PlanEditError } from "@/lib/schedule/manual";
+import { displayUnitName } from "@/lib/curriculum/display-names";
 
 export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req);
@@ -73,6 +74,7 @@ export async function GET(req: NextRequest) {
         [...s.resources]
           .sort((a, b) => a.resource.order - b.resource.order)
           .map((r) => r.resource.lessonRef?.unit.name)
+          .map((n) => (n ? displayUnitName(n) : n))
           .filter((n): n is string => !!n)
       ),
     ],

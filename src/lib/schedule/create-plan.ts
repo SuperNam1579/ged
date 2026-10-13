@@ -151,9 +151,12 @@ export interface WhatIf {
 /** Everything the check and the GA need, from saved settings or a what-if. */
 async function loadPlanInputs(userId: string, whatIf: WhatIf = {}) {
   const preferences = await db.userPreferences.findUnique({ where: { userId } });
-  if (!preferences) return null;
-  const examDate = whatIf.examDate ? new Date(`${whatIf.examDate}T00:00:00Z`) : preferences.targetExamDate;
-  const subjectCodes = whatIf.subjectCodes ?? preferences.selectedSubjectCodes ?? [];
+  // A learner still in onboarding has no preferences yet; a what-if that names
+  // the exam date and the subjects is enough to check with (the live check on
+  // onboarding's review step). Making a plan always needs saved preferences.
+  if (!preferences && !(whatIf.examDate && whatIf.subjectCodes)) return null;
+  const examDate = whatIf.examDate ? new Date(`${whatIf.examDate}T00:00:00Z`) : preferences!.targetExamDate;
+  const subjectCodes = whatIf.subjectCodes ?? preferences?.selectedSubjectCodes ?? [];
 
   const [calendar, subtopics, proficiencies] = await Promise.all([
     loadStudyCalendar(userId, examDate, whatIf.template),

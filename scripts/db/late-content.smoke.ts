@@ -86,6 +86,11 @@ describe("content that arrives later", () => {
     expect(update).toBeDefined();
     expect(update!.contentMinutes).toBe(13); // 10 minutes of video × 1.3 study time
 
+    // Once its length is set to that, it is settled and no longer listed.
+    await db.studySession.update({ where: { id: update!.sessionId }, data: { durationMins: 13 } });
+    const after = await getPlanStatus(userId);
+    expect(after.contentUpdates.find((u) => u.sessionId === update!.sessionId)).toBeUndefined();
+
     // A fresh check counts the clip instead of the estimate.
     const f = (await checkFeasibility(userId))!;
     const before = f.subjects.find((s) => s.subjectCode === "RLA")!;

@@ -5,7 +5,15 @@
 //
 // ── The two rules this file implements ─────────────────────────────────────
 //
-// Where a session may be cut (agreed as "ข3"):
+// Fixed parts (replaces "ข3" for subtopics with videos):
+//   Each subtopic is cut into fixed parts once, from its content alone (see
+//   splitIntoParts): up to MAX_PART_MINUTES is one part; longer is cut at unit,
+//   then lesson, then clip boundaries into even parts under that. A session is
+//   one whole part, and a subtopic gets at most one session a day. A part that
+//   doesn't fit what is left of today waits for a later day. Only a part longer
+//   than the learner's whole day is cut further, by the rule below.
+//
+// Where a session may be cut (agreed as "ข3"; clips without fixed parts):
 //   A subtopic is a run of clips grouped into lessons, and lessons into units.
 //   A session holds whole units wherever it can. A unit is only cut into its
 //   lessons when it is longer than a whole study day, a lesson into its clips
@@ -20,7 +28,9 @@
 //   fit in favour of a later, shorter one, but never skipping ahead of an
 //   unfinished prerequisite. A subtopic only starts in leftover room with at
 //   least a whole unit: starting a long unit with a 17-minute sliver and then
-//   leaving it for a week is worse than starting it fresh on a later day.
+//   leaving it for a week is worse than starting it fresh on a later day. And
+//   unless all of it fits, that opening must be at least MIN_OPENING_MINUTES;
+//   less room than that is left free — the learner ends the day early.
 //
 // Nothing is dropped. What doesn't fit this week comes back as leftovers, for
 // the caller to carry into the next week.
@@ -32,6 +42,15 @@ import { READING_TIME_FACTOR } from "../resources/types";
 /** Minutes of study per minute of video: pausing, rewinding, notes. */
 export const STUDY_TIME_FACTOR = 1.3;
 
+/**
+ * The least a new subtopic may start with in the room left at the end of a
+ * day, unless all of it fits there. Below this the room is left free.
+ */
+export const MIN_OPENING_MINUTES = 30;
+
+/** The longest a part of a subtopic may be. A subtopic up to this long is one part. */
+export const MAX_PART_MINUTES = 120;
+
 /** Float slack for minute arithmetic, so 119.9999 counts as fitting in 120. */
 const EPS = 1e-6;
 
@@ -42,6 +61,11 @@ export interface Clip {
   /** Contiguous clips sharing a lesson key form a lesson. Null = no structure. */
   lessonKey: string | null;
   minutes: number;
+  /**
+   * The fixed part of its subtopic this clip belongs to (see splitIntoParts),
+   * as "n/total". Absent = the subtopic isn't cut into fixed parts.
+   */
+  part?: string;
 }
 
 export interface WorkItem {
@@ -62,7 +86,14 @@ export interface WorkItem {
 
 export interface Day {
   date: string;
+  /** Minutes to plan into the day: its free time, or a share of it (./pace.ts). */
   capacity: number;
+  /**
+   * The learner's whole free time that day, when `capacity` is only a share of
+   * it. A fixed part is cut only when it is longer than this, and an empty day
+   * takes a whole part that fits this even when it goes past `capacity`.
+   */
+  free?: number;
 }
 
 export interface Placement {
@@ -82,6 +113,84 @@ export function clipMinutes(durationSec: number, kind: "VIDEO" | "ARTICLE" = "VI
 
 export function remainingMinutes(item: WorkItem): number {
   return item.clips.length ? item.clips.reduce((n, c) => n + c.minutes, 0) : item.atomicMinutes;
+}
+
+// ─── Parts ──────────────────────────────────────────────────────────────────
+
+/**
+ * Cuts a subtopic's clips into its fixed parts. Same content, same parts — for
+ * every learner, whatever their timetable:
+ *
+ *   - a subtopic up to `cap` minutes is one part;
+ *   - a longer one is cut into as few parts as fit under `cap`, as even in
+ *     length as the cuts allow (no 2 h + 2 h + 15 min);
+ *   - cuts fall between units; a unit longer than `cap` is cut between its
+ *     lessons, and a lesson longer than `cap` between its clips. A clip is
+ *     never cut, so a clip longer than `cap` is a part on its own.
+ *
+ * Returns the clips with `part` set. Pass the subtopic's *whole* clip list, so
+ * the parts don't move as the learner gets through it.
+ */
+export function splitIntoParts(clips: Clip[], cap = MAX_PART_MINUTES): Clip[] {
+  // The pieces a cut may fall between: units, or lessons / clips of a unit too long for a part.
+  const pieces: Run[] = [];
+  let at = 0;
+  for (const unit of runs(clips, (c) => c.unitKey)) {
+    const unitClips = clips.slice(at, at + unit.size);
+    at += unit.size;
+    if (unit.minutes <= cap + EPS) {
+      pieces.push(unit);
+      continue;
+    }
+    let lessonAt = 0;
+    for (const lesson of runs(unitClips, (c) => c.lessonKey)) {
+      const lessonClips = unitClips.slice(lessonAt, lessonAt + lesson.size);
+      lessonAt += lesson.size;
+      if (lesson.minutes <= cap + EPS) pieces.push(lesson);
+      else for (const c of lessonClips) pieces.push({ size: 1, minutes: c.minutes });
+    }
+  }
+
+  // Fewest parts, then the most even: dp[i] is the best way to cut the first i pieces.
+  const n = pieces.length;
+  const dp: { parts: number; squares: number; from: number }[] = [{ parts: 0, squares: 0, from: -1 }];
+  for (let i = 1; i <= n; i++) {
+    let best = { parts: Infinity, squares: Infinity, from: i - 1 };
+    let minutes = 0;
+    for (let j = i - 1; j >= 0; j--) {
+      minutes += pieces[j].minutes;
+      // A single piece over the cap (one long clip) is still a part.
+      if (minutes > cap + EPS && j < i - 1) break;
+      const parts = dp[j].parts + 1;
+      const squares = dp[j].squares + minutes * minutes;
+      if (parts < best.parts || (parts === best.parts && squares < best.squares - EPS)) best = { parts, squares, from: j };
+    }
+    dp.push(best);
+  }
+
+  // Walk back to the cuts, then label the clips.
+  const sizes: number[] = [];
+  for (let i = n; i > 0; i = dp[i].from) {
+    sizes.unshift(pieces.slice(dp[i].from, i).reduce((a, p) => a + p.size, 0));
+  }
+  const out: Clip[] = [];
+  sizes.forEach((size, k) => {
+    for (const c of clips.slice(out.length, out.length + size)) out.push({ ...c, part: `${k + 1}/${sizes.length}` });
+  });
+  return out;
+}
+
+/** Part number and part count of a clip from splitIntoParts. */
+export function partOf(clip: Clip): { index: number; total: number } | null {
+  if (!clip.part) return null;
+  const [index, total] = clip.part.split("/").map(Number);
+  return { index, total };
+}
+
+/** The leading clips that make up the next part (all of them for a subtopic without parts). */
+export function nextPart(clips: Clip[]): Clip[] {
+  if (clips.length === 0 || !clips[0].part) return clips;
+  return clips.slice(0, runs(clips, (c) => c.part ?? null)[0].size);
 }
 
 // ─── Cutting ────────────────────────────────────────────────────────────────
@@ -145,6 +254,19 @@ export function takeCount(
 ): number {
   if (clips.length === 0 || room <= EPS) return 0;
 
+  // A subtopic in fixed parts: a session is its next part, whole. Only a part
+  // longer than the learner's whole day is cut further, by the rule below.
+  if (clips[0].part) {
+    const part = nextPart(clips);
+    const minutes = part.reduce((a, c) => a + c.minutes, 0);
+    if (minutes <= room + EPS) return part.length;
+    // A day with nothing in it yet takes a whole part that fits in it, even
+    // past a paced day's target (`dayCapacity` is then the real free time).
+    if (dayIsEmpty && minutes <= dayCapacity + EPS) return part.length;
+    if (minutes <= dayCapacity + EPS || !mayCut) return 0;
+    return takeCount(part.map((c) => ({ ...c, part: undefined })), room, dayCapacity, dayIsEmpty, mayCut);
+  }
+
   const units = runs(clips, (c) => c.unitKey);
   const wholeUnits = fitRuns(units, room);
   if (wholeUnits.clips > 0) return wholeUnits.clips;
@@ -201,7 +323,11 @@ export function packDays(items: WorkItem[], days: Day[]): PackResult {
   const startNeed = (w: WorkItem): number => {
     let need = startNeeds.get(w);
     if (need === undefined) {
-      need = w.clips.length ? runs(w.clips, (c) => c.unitKey)[0].minutes : w.atomicMinutes;
+      need = !w.clips.length
+        ? w.atomicMinutes
+        : w.clips[0].part
+          ? nextPart(w.clips).reduce((a, c) => a + c.minutes, 0)
+          : runs(w.clips, (c) => c.unitKey)[0].minutes;
       startNeeds.set(w, need);
     }
     return need;
@@ -216,8 +342,17 @@ export function packDays(items: WorkItem[], days: Day[]): PackResult {
       if (w.clips.length) {
         // Continuing work may be cut to fit; a new start in leftover room may not.
         const mayCut = w.started || dayIsEmpty;
-        const n = takeCount(w.clips, room, day.capacity, dayIsEmpty, mayCut);
+        // Fixed parts are measured against the learner's real free time, not the paced share.
+        const whole = w.clips[0].part ? (day.free ?? day.capacity) : day.capacity;
+        const n = takeCount(w.clips, room, whole, dayIsEmpty, mayCut);
         if (n === 0) return false;
+        // A new subtopic squeezed into the end of a day: all of it, or a real
+        // session's worth. A 10-minute opening whose rest waits for another day
+        // is worse than ending the day early.
+        if (!w.started && !dayIsEmpty && n < w.clips.length) {
+          const opening = w.clips.slice(0, n).reduce((a, c) => a + c.minutes, 0);
+          if (opening < MIN_OPENING_MINUTES - EPS) return false;
+        }
         const taken = w.clips.splice(0, n);
         const minutes = taken.reduce((a, c) => a + c.minutes, 0);
         placements.push({
