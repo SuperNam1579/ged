@@ -6,7 +6,7 @@ import Image from "next/image";
 import {
   BookOpen, Calculator, Globe, Atom,
   Clock, Calendar, X, Plus, Check, CheckCircle,
-  Moon, Sun, CalendarRange, Eraser,
+  Moon, Sun, CalendarRange, Eraser, AlertTriangle, Info,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Button from "@/components/ui/Button";
@@ -115,7 +115,7 @@ function emptySchedule(): Schedule {
 const DEFAULT_SCHEDULE: Schedule = emptySchedule();
 
 // ─── Quick-fill presets ─────────────────────────────────────────────────────
-// Mirror the standalone Availability page so first-time setup doesn't require
+// Presets, so first-time setup doesn't require
 // toggling every day by hand. Each preset replaces the whole schedule.
 
 function buildPreset(dows: number[], start: string, end: string): Schedule {
@@ -138,6 +138,18 @@ function slotMins(slot: TimeSlot): number {
   const [sh, sm] = slot.start.split(":").map(Number);
   const [eh, em] = slot.end.split(":").map(Number);
   return Math.max(0, eh * 60 + em - (sh * 60 + sm));
+}
+
+/** The week as the availability and fit-check APIs take it. */
+function scheduleSlots(schedule: Schedule): { dayOfWeek: number; startTime: string; endTime: string }[] {
+  const slots: { dayOfWeek: number; startTime: string; endTime: string }[] = [];
+  for (const [dowStr, day] of Object.entries(schedule)) {
+    if (!day.enabled) continue;
+    for (const s of day.slots) {
+      if (slotMins(s) > 0) slots.push({ dayOfWeek: parseInt(dowStr), startTime: s.start, endTime: s.end });
+    }
+  }
+  return slots;
 }
 
 function weeklyStats(schedule: Schedule) {
@@ -173,6 +185,19 @@ interface FeasibilityResult {
   canPlan: boolean;
   shortfallMinutes: number;
   suggestions: { extraMinutesPerWeek?: number; suggestedExamDate?: string; dropOneOf?: string[] };
+  /** Said but not blocking: long days, no review days, times that are estimates. */
+  warnings?: { code: string; message: string }[];
+  /** What the chosen subjects need, and the free time content can go in. */
+  requiredMinutes?: number;
+  contentMinutes?: number;
+}
+
+/** What the first availability save returns once the plan is made (planSummary). */
+interface PlanResult {
+  feasibility?: FeasibilityResult;
+  /** False when some content doesn't fit before the exam. */
+  fitsBeforeExam?: boolean;
+  unscheduledMinutes?: number;
 }
 
 const hours = (minutes: number) => {
@@ -180,18 +205,53 @@ const hours = (minutes: number) => {
   return `${h} hour${h === 1 ? "" : "s"}`;
 };
 
-/** What to tell a learner whose free time doesn't fit their subjects. */
-function notEnoughTimeMessage(f: FeasibilityResult): string {
-  if (f.status === "exam-passed") return "Your exam date has passed. Pick a later exam date.";
-  if (f.status === "no-time") return "Your schedule has no study time before the exam. Add some free time.";
+const SUBJECT_NAMES: Record<string, string> = { MATH: "Math", RLA: "Language Arts", SCI: "Science", SS: "Social Studies" };
+
+/** What to tell a learner whose free time doesn't fit their subjects: a line, and the ways to make it fit. */
+function notEnoughTime(f: FeasibilityResult): { summary: string; ways: string[] } {
+  if (f.status === "exam-passed") return { summary: "Your exam date has passed. Pick a later exam date.", ways: [] };
+  if (f.status === "no-time") return { summary: "Your schedule has no study time before the exam. Add some free time.", ways: [] };
 
   const ways: string[] = [];
-  if (f.suggestions.extraMinutesPerWeek) ways.push(`add about ${hours(f.suggestions.extraMinutesPerWeek)} a week`);
-  if (f.suggestions.suggestedExamDate) ways.push(`move your exam to ${f.suggestions.suggestedExamDate} or later`);
-  if (f.suggestions.dropOneOf?.length) ways.push(`study one subject fewer (${f.suggestions.dropOneOf.join(" or ")})`);
+  if (f.suggestions.extraMinutesPerWeek) ways.push(`Add about ${hours(f.suggestions.extraMinutesPerWeek)} of free time a week`);
+  if (f.suggestions.suggestedExamDate) {
+    const d = new Date(f.suggestions.suggestedExamDate + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    ways.push(`Move your exam to ${d} or later`);
+  }
+  if (f.suggestions.dropOneOf?.length) {
+    ways.push(`Study one subject fewer for now (${f.suggestions.dropOneOf.map((c) => SUBJECT_NAMES[c] ?? c).join(" or ")})`);
+  }
+  return {
+    summary: `Your free time before the exam is about ${hours(f.shortfallMinutes)} short of what these subjects need, so we can't make your plan yet.`,
+    ways,
+  };
+}
+
+/** The live fit check on the review step, once it says the time fits. */
+function FitCard({ fit }: { fit: FeasibilityResult }) {
+  const need = fit.requiredMinutes ?? 0;
+  const have = fit.contentMinutes ?? 0;
+  const look =
+    fit.status === "tight"
+      ? { box: "bg-amber-50 border-amber-200", title: "text-amber-900", text: "text-amber-800", head: "It fits — just" }
+      : { box: "bg-green-50 border-green-200", title: "text-green-900", text: "text-green-800", head: "Your time fits" };
   return (
-    `Your free time before the exam is about ${hours(f.shortfallMinutes)} short of what these subjects need, ` +
-    `so your plan wasn't made yet. To fit, ${ways.join(", or ")}. Edit your schedule or subjects, then finish again.`
+    <div className={cn("rounded-xl border p-5", look.box)}>
+      <p className={cn("flex items-center gap-2 text-sm font-semibold", look.title)}>
+        {fit.status === "tight" ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+        {look.head}
+      </p>
+      <p className={cn("text-sm mt-1", look.text)}>
+        {`Your subjects need about ${hours(need)} of study, and you have about ${hours(have)} free before the exam.`}
+        {fit.status === "tight" && " There's little to spare, so a missed day is hard to catch up."}
+        {fit.status === "light" && " That's plenty — your days will be light, and the spare time is yours."}
+      </p>
+      {(fit.warnings ?? []).length > 0 && (
+        <ul className={cn("mt-2 space-y-0.5 text-xs list-disc pl-5", look.text)}>
+          {fit.warnings!.map((w) => <li key={w.code}>{w.message}</li>)}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -371,11 +431,41 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // The fit check that stopped Finish: the free time doesn't cover the subjects.
+  const [notFit, setNotFit] = useState<FeasibilityResult | null>(null);
+  // What the plan came out as, for the last step's notes.
+  const [planResult, setPlanResult] = useState<PlanResult | null>(null);
   const [csrfToken, setCsrfToken] = useState("");
 
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [examDate, setExamDate] = useState("");
   const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
+  // The fit check for what's on the review step, run as soon as it opens —
+  // nothing is saved. Keyed by what was checked, so an answer for older inputs
+  // is never shown; liveFit is null while checking, or if the check couldn't
+  // run (the learner still finds out on Finish).
+  const fitRequest =
+    step === 3 && examDate && selectedSubjects.length > 0 && csrfToken
+      ? JSON.stringify({ examDate, template: scheduleSlots(schedule), subjectCodes: selectedSubjects })
+      : null;
+  const [fitResult, setFitResult] = useState<{ request: string; fit: FeasibilityResult | null } | null>(null);
+  useEffect(() => {
+    if (!fitRequest) return;
+    let cancelled = false;
+    fetch("/api/plans/feasibility", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+      body: fitRequest,
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { feasibility?: FeasibilityResult } | null) => !cancelled && setFitResult({ request: fitRequest, fit: d?.feasibility ?? null }))
+      .catch(() => !cancelled && setFitResult({ request: fitRequest, fit: null }));
+    return () => { cancelled = true; };
+  }, [fitRequest, csrfToken]);
+  const liveFit = fitResult && fitResult.request === fitRequest ? fitResult.fit : null;
+  const checkingFit = fitRequest !== null && fitResult?.request !== fitRequest;
+  // What blocks Finish: the server's answer on Finish, or the live check before it.
+  const fitProblem = notFit ?? (liveFit && !liveFit.canPlan ? liveFit : null);
 
   // Google sign-ups skip the credentials form, so they never provided a date
   // of birth. If it's missing we collect it here (with the same 16+ rule).
@@ -468,6 +558,7 @@ export default function OnboardingPage() {
 
   const handleFinish = async () => {
     setError("");
+    setNotFit(null);
     setLoading(true);
     try {
       // Persist the date of birth first for Google accounts that never gave one.
@@ -504,13 +595,7 @@ export default function OnboardingPage() {
       }
       if (!prefRes.ok) throw new Error((await prefRes.json()).error ?? "Failed to save preferences");
 
-      const slots: { dayOfWeek: number; startTime: string; endTime: string }[] = [];
-      for (const [dowStr, day] of Object.entries(schedule)) {
-        if (!day.enabled) continue;
-        for (const s of day.slots) {
-          if (slotMins(s) > 0) slots.push({ dayOfWeek: parseInt(dowStr), startTime: s.start, endTime: s.end });
-        }
-      }
+      const slots = scheduleSlots(schedule);
 
       const availRes = await fetch("/api/user/availability", {
         method: "POST",
@@ -525,15 +610,13 @@ export default function OnboardingPage() {
       // The plan is only made when the free time fits the subjects. When it
       // doesn't, stay on this step and say what to change; the learner edits
       // their schedule or subjects and finishes again.
-      const avail = (await availRes.json().catch(() => ({}))) as {
-        planCreated?: boolean;
-        feasibility?: FeasibilityResult;
-      };
+      const avail = (await availRes.json().catch(() => ({}))) as PlanResult & { planCreated?: boolean };
       if (avail.planCreated === false && avail.feasibility && !avail.feasibility.canPlan) {
-        setError(notEnoughTimeMessage(avail.feasibility));
+        setNotFit(avail.feasibility);
         return;
       }
 
+      setPlanResult(avail);
       setStep(4);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -845,7 +928,7 @@ export default function OnboardingPage() {
                 </div>
 
                 <p className="mt-3 text-xs text-muted-foreground text-center">
-                  This is your usual weekly availability — you can change it anytime from the Availability page.
+                  We use your usual week to plan every day up to your exam, once. After that the schedule is yours to change.
                 </p>
               </div>
             </motion.div>
@@ -871,6 +954,30 @@ export default function OnboardingPage() {
                   {error}
                 </div>
               )}
+
+              {fitProblem && (() => {
+                const { summary, ways } = notEnoughTime(fitProblem);
+                return (
+                  <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+                      <AlertTriangle className="w-4 h-4 text-amber-600" /> Not enough time yet
+                    </p>
+                    <p className="text-sm text-amber-800 mt-1">{summary}</p>
+                    {ways.length > 0 && (
+                      <>
+                        <p className="text-sm text-amber-800 mt-2">Any one of these makes it fit:</p>
+                        <ul className="mt-1 space-y-0.5 text-sm text-amber-900 list-disc pl-5">
+                          {ways.map((w) => <li key={w}>{w}</li>)}
+                        </ul>
+                      </>
+                    )}
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <Button size="sm" variant="secondary" onClick={() => setStep(2)}>Edit schedule or exam date</Button>
+                      <Button size="sm" variant="secondary" onClick={() => setStep(1)}>Edit subjects</Button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Left: Subjects */}
@@ -941,15 +1048,21 @@ export default function OnboardingPage() {
                     </div>
                   </div>
 
-                  {/* Estimate */}
-                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
-                    <p className="text-sm font-semibold text-amber-800 mb-1">Estimated Study Plan</p>
-                    <p className="text-sm text-amber-700">
-                      Based on your availability, we recommend a plan of about{" "}
-                      <strong>{totalHours} hours per week</strong> for{" "}
-                      <strong>{weeksUntilExam} weeks</strong>.
-                    </p>
-                  </div>
+                  {/* Whether it fits — the live check when it has run, the
+                      rough weekly estimate until then. Left out when the time
+                      doesn't fit: the box above says so. */}
+                  {!fitProblem && (liveFit ? <FitCard fit={liveFit} /> : (
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
+                      <p className="text-sm font-semibold text-amber-800 mb-1">
+                        {checkingFit ? "Checking your time…" : "Estimated Study Plan"}
+                      </p>
+                      <p className="text-sm text-amber-700">
+                        Based on your availability, we recommend a plan of about{" "}
+                        <strong>{totalHours} hours per week</strong> for{" "}
+                        <strong>{weeksUntilExam} weeks</strong>.
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -1017,13 +1130,60 @@ export default function OnboardingPage() {
                 ))}
               </motion.div>
 
-              {/* Tip */}
-              <div className="w-full max-w-md bg-amber-50 border border-amber-100 rounded-xl px-5 py-4 text-left mb-8">
-                <p className="text-sm font-semibold text-amber-800 mb-0.5">💡 Tip</p>
-                <p className="text-sm text-amber-700">
-                  Consistency is key! Stick to your schedule and you&apos;ll be ready to achieve your goal.
-                </p>
-              </div>
+              {/* What the plan came out as. Said, never blocking: the plan exists. */}
+              {(() => {
+                const f = planResult?.feasibility;
+                const notes: { key: string; strong?: boolean; title: string; text: string }[] = [];
+                if (planResult?.fitsBeforeExam === false) {
+                  notes.push({
+                    key: "unscheduled",
+                    strong: true,
+                    title: "Not everything fits before your exam",
+                    text: `About ${hours(planResult.unscheduledMinutes ?? 0)} of topics didn't fit. They're waiting under “Not in your plan yet” on your schedule — add them to a day when you find time.`,
+                  });
+                }
+                if (f?.status === "tight") {
+                  notes.push({
+                    key: "tight",
+                    strong: true,
+                    title: "Your plan is tight",
+                    text: "It fits with little to spare, so a missed day is hard to catch up. Try to keep every session.",
+                  });
+                }
+                for (const w of f?.warnings ?? []) notes.push({ key: w.code, title: "", text: w.message });
+
+                if (notes.length === 0) {
+                  return (
+                    <div className="w-full max-w-md bg-amber-50 border border-amber-100 rounded-xl px-5 py-4 text-left mb-8">
+                      <p className="text-sm font-semibold text-amber-800 mb-0.5">💡 Tip</p>
+                      <p className="text-sm text-amber-700">
+                        Consistency is key! Stick to your schedule and you&apos;ll be ready to achieve your goal.
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="w-full max-w-md space-y-2.5 text-left mb-8">
+                    {notes.map((n) => (
+                      <div
+                        key={n.key}
+                        className={cn(
+                          "flex items-start gap-2.5 rounded-xl border px-4 py-3",
+                          n.strong ? "bg-amber-50 border-amber-200" : "bg-card border-border"
+                        )}
+                      >
+                        {n.strong
+                          ? <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                          : <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />}
+                        <div className="text-sm">
+                          {n.title && <p className="font-semibold text-amber-900">{n.title}</p>}
+                          <p className={n.strong ? "text-amber-800" : "text-muted-foreground"}>{n.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* One way forward. "Go to Dashboard" used to sit beside this,
                   but the dashboard is built from pre-assessment results — a

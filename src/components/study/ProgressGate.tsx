@@ -105,7 +105,15 @@ export function ProgressGate({
               .join(", ")}`
       );
     } catch (err) {
-      setRejection(err instanceof Error ? err.message : "Something went wrong.");
+      // A 409 here is "part 2 waits for part 1" (earlier_part_pending): its
+      // body carries no `error` text, so postJson's message is only the status.
+      setRejection(
+        err instanceof Error && err.message.includes("409")
+          ? "Finish the earlier part of this topic first — this part completes after it."
+          : err instanceof Error
+            ? err.message
+            : "Something went wrong."
+      );
     } finally {
       setVerifying(false);
     }
@@ -113,7 +121,7 @@ export function ProgressGate({
 
   return (
     <div className="sticky bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5 sm:gap-4 sm:px-6 sm:py-3.5">
+      <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-2.5 sm:gap-4 sm:px-6 sm:py-3.5 lg:px-8">
         {/* The page header already shows this timer; on a phone the second copy
             only cost the bar a row that sat on top of the video. */}
         <div className="hidden items-center gap-2.5 text-sm sm:flex">
@@ -212,7 +220,7 @@ export function ProgressGate({
       </div>
 
       {rejection && (
-        <div className="mx-auto max-w-6xl px-6 pb-3">
+        <div className="mx-auto max-w-[1600px] px-6 pb-3 lg:px-8">
           <p role="alert" className="text-xs text-danger">
             {rejection}
           </p>

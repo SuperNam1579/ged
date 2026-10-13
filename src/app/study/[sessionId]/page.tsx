@@ -5,12 +5,11 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import {
-  ArrowLeft, BookOpen, CheckCircle, ChevronRight, Clock,
-  ExternalLink, GraduationCap, Layers, Timer, WifiOff,
+  AlertTriangle, ArrowLeft, BookOpen, CheckCircle, ChevronRight, Clock,
+  CalendarDays, ExternalLink, Layers, Lock, Timer, WifiOff,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
-import DifficultyDots from "@/components/ui/DifficultyDots";
 import { safeUrl } from "@/lib/utils/sanitize";
 import { postJson } from "@/lib/csrf-client";
 import { returnLabel, safeReturnTo, withReturnTo } from "@/lib/utils/return-to";
@@ -64,6 +63,8 @@ function StudySessionPageInner() {
   // isn't flashed on screen and then withdrawn once videos turn up.
   const [videoCount, setVideoCount] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Topics this one builds on that the learner hasn't passed a quiz on.
+  const [unmet, setUnmet] = useState<{ subtopicId: string; name: string; bestScore: number | null }[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,6 +101,20 @@ function StudySessionPageInner() {
     load();
     return () => { cancelled = true; };
   }, [sessionId]);
+
+  const subtopicId = session?.subtopicId;
+  const hasPrerequisites = (session?.prerequisites?.length ?? 0) > 0;
+  useEffect(() => {
+    if (!subtopicId || !hasPrerequisites) return;
+    let cancelled = false;
+    fetch(`/api/subtopics/${subtopicId}/readiness`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { unmet?: { subtopicId: string; name: string; bestScore: number | null }[] } | null) => {
+        if (!cancelled) setUnmet(d?.unmet ?? []);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [subtopicId, hasPrerequisites]);
 
   // Wall-clock time on the page. Deliberately separate from watch time: this
   // counts sitting with the material, which is worth showing but is not what
@@ -165,7 +180,7 @@ function StudySessionPageInner() {
     <div className="flex min-h-screen flex-col bg-background">
       {/* ── Top bar ────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2">
             <Link
               href={returnTo}
@@ -200,7 +215,7 @@ function StudySessionPageInner() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-6">
+      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
         <motion.div
           variants={studyStagger}
           initial={reduceMotion ? false : "hidden"}
@@ -210,66 +225,80 @@ function StudySessionPageInner() {
           {/* ── Session meta ─────────────────────────────────────────── */}
           <motion.section
             variants={studySection}
-            className="rounded-2xl border border-border bg-card p-5 sm:p-6"
+            className="rounded-2xl border border-border bg-card px-5 py-4 sm:px-6"
           >
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Badge variant={SUBJECT_BADGE_VARIANT[session.subjectCode] ?? "default"}>
-                {session.subjectCode}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                {scheduled.toLocaleDateString(undefined, {
-                  day: "numeric", month: "long", year: "numeric",
-                })}
-              </span>
-              {completed && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
-                  <CheckCircle className="h-3.5 w-3.5" aria-hidden />
-                  Completed
-                </span>
-              )}
-            </div>
-
-            <h1 className="mt-3 text-2xl font-bold text-foreground">{session.subtopicName}</h1>
-            {/* One part of a subtopic split across several sessions. The units
-                named are what this sitting actually covers. */}
-            {session.partIndex ? (
-              <p className="mt-1 text-sm font-medium text-primary">
-                Part {session.partIndex}
-                {session.partCount ? ` of ${session.partCount}` : ""}
-                {session.unitNames && session.unitNames.length > 0 && (
-                  <span className="font-normal text-muted-foreground"> · {session.unitNames.join(", ")}</span>
+            {/* Kept short so the player is in view without scrolling: the
+                title, the part, and one row of facts. */}
+            <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+              <div className="min-w-0">
+                <h1 className="text-xl font-bold text-foreground sm:text-2xl">{session.subtopicName}</h1>
+                {/* One part of a subtopic split across several sessions. The units
+                    named are what this sitting actually covers. */}
+                {session.partIndex ? (
+                  <p className="mt-0.5 text-sm font-medium text-primary">
+                    Part {session.partIndex}
+                    {session.partCount ? ` of ${session.partCount}` : ""}
+                    {session.unitNames && session.unitNames.length > 0 && (
+                      <span className="font-normal text-muted-foreground"> · {session.unitNames.join(", ")}</span>
+                    )}
+                  </p>
+                ) : null}
+                {session.subtopicDescription && (
+                  <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{session.subtopicDescription}</p>
                 )}
-              </p>
-            ) : null}
-            {session.subtopicDescription && (
-              <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">
-                {session.subtopicDescription}
-              </p>
-            )}
+              </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-4 border-t border-border pt-5 lg:grid-cols-4">
-              <MetaItem icon={<GraduationCap className="h-4 w-4" />} label="Subject">
-                {session.subjectName}
-              </MetaItem>
-              <MetaItem icon={<Layers className="h-4 w-4" />} label="Topic">
-                {session.topicName}
-              </MetaItem>
-              <MetaItem icon={<Clock className="h-4 w-4" />} label="Scheduled for">
-                {session.durationMins} min
-              </MetaItem>
-              <MetaItem icon={<BookOpen className="h-4 w-4" />} label="Difficulty">
-                <span className="flex items-center gap-2">
-                  <DifficultyDots level={session.difficultyLevel} />
-                  <span className="text-xs text-muted-foreground">
-                    {session.difficultyLevel}/5
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <Badge variant={SUBJECT_BADGE_VARIANT[session.subjectCode] ?? "default"}>
+                  {session.subjectName}
+                </Badge>
+                <MetaChip icon={<Layers className="h-3.5 w-3.5" />}>{session.topicName}</MetaChip>
+                <MetaChip icon={<CalendarDays className="h-3.5 w-3.5" />}>
+                  {/* English, like the rest of the site — the browser's locale
+                      showed Thai Buddhist-era dates here. */}
+                  {scheduled.toLocaleDateString("en-US", {
+                    weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
+                  })}
+                </MetaChip>
+                <MetaChip icon={<Clock className="h-3.5 w-3.5" />}>{session.durationMins} min</MetaChip>
+                {completed && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 font-semibold text-green-700">
+                    <CheckCircle className="h-3.5 w-3.5" aria-hidden />
+                    Completed
                   </span>
-                </span>
-              </MetaItem>
+                )}
+              </div>
             </div>
 
             {/* Only rendered when there is something to say — an empty
-                "Prerequisites: none" row is noise on most subtopics. */}
-            {session.prerequisites && session.prerequisites.length > 0 && (
+                "Prerequisites: none" row is noise on most subtopics. A topic it
+                builds on that isn't passed yet is a warning, never a lock. */}
+            {unmet.length > 0 && !completed ? (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <p className="flex items-center gap-1.5 text-sm font-semibold text-amber-800">
+                  <AlertTriangle className="h-4 w-4" aria-hidden />
+                  {/* One string: in a flex row, separate text pieces lose their spaces. */}
+                  {`This builds on ${unmet.length === 1 ? "a topic" : "topics"} you haven't passed yet`}
+                </p>
+                <ul className="mt-1.5 space-y-1 text-sm text-amber-900">
+                  {unmet.map((p) => (
+                    <li key={p.subtopicId} className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="font-medium">{p.name}</span>
+                      <span className="text-xs text-amber-700">
+                        {p.bestScore === null ? "no quiz yet" : `best ${Math.round(p.bestScore)}%`}
+                      </span>
+                      <Link
+                        href={withReturnTo(`/quiz/${p.subtopicId}`, `/study/${sessionId}`)}
+                        className="text-xs font-semibold text-primary hover:underline"
+                      >
+                        Take its quiz
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-1.5 text-xs text-amber-700">You can still study this now — it may just be harder.</p>
+              </div>
+            ) : session.prerequisites && session.prerequisites.length > 0 && (
               <div className="mt-4 rounded-xl bg-muted/50 px-4 py-3">
                 <p className="text-xs font-medium text-muted-foreground">
                   Builds on:{" "}
@@ -282,74 +311,82 @@ function StudySessionPageInner() {
           </motion.section>
 
           {/* ── Player + contents ────────────────────────────────────── */}
-          <motion.div variants={studySection}>
-            <StudySessionView
-              sessionId={sessionId}
-              subtopicId={session.subtopicId}
-              initialStatus={session.status}
-              elapsedSec={elapsed}
-              // Forwarded so that finishing the quiz returns to wherever this
-              // session was opened from, not to a fixed page.
-              returnTo={returnTo}
-              onResourcesLoaded={setVideoCount}
-              onCompleted={() => setCompleted(true)}
-              isLastPart={session.isLastPart ?? true}
-              nextPartDate={session.nextPart?.scheduledDate ?? null}
-              fallback={
-                /* Videos when the subtopic has them, the original external link
-                   when it doesn't. Coverage is still partial, so the link is a
-                   real fallback rather than dead code. */
-                <div className="rounded-2xl border border-border bg-card p-8">
-                  <div className="mb-4 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    <BookOpen className="h-4 w-4" />
-                    Learning resource
-                  </div>
-                  <p className="mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                    No videos are attached to this subtopic yet. Use the resource below to study
-                    the material at your own pace, then take the quiz when you feel ready.
-                  </p>
+          {/* Part 2 waits for part 1: a locked part stays closed and points to
+              the part to do first (the server refuses to complete it anyway). */}
+          {session.lockedBy && !completed ? (
+            <motion.div variants={studySection}>
+              <LockedPart lock={session.lockedBy} partIndex={session.partIndex ?? null} returnTo={returnTo} />
+            </motion.div>
+          ) : (
+            <motion.div variants={studySection}>
+              <StudySessionView
+                sessionId={sessionId}
+                subtopicId={session.subtopicId}
+                initialStatus={session.status}
+                elapsedSec={elapsed}
+                // Forwarded so that finishing the quiz returns to wherever this
+                // session was opened from, not to a fixed page.
+                returnTo={returnTo}
+                onResourcesLoaded={setVideoCount}
+                onCompleted={() => setCompleted(true)}
+                isLastPart={session.isLastPart ?? true}
+                nextPartDate={session.nextPart?.scheduledDate ?? null}
+                fallback={
+                  /* Videos when the subtopic has them, the original external link
+                     when it doesn't. Coverage is still partial, so the link is a
+                     real fallback rather than dead code. */
+                  <div className="rounded-2xl border border-border bg-card p-8">
+                    <div className="mb-4 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <BookOpen className="h-4 w-4" />
+                      Learning resource
+                    </div>
+                    <p className="mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                      No videos are attached to this subtopic yet. Use the resource below to study
+                      the material at your own pace, then take the quiz when you feel ready.
+                    </p>
 
-                  {session.learningUrl ? (
-                    <div className="flex flex-wrap items-center gap-3">
-                      <a
-                        href={safeUrl(session.learningUrl)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
-                      >
-                        Open learning resource
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                      <Button
-                        variant="secondary"
-                        onClick={handleComplete}
-                        loading={completing}
-                        disabled={completing || completed}
-                      >
-                        <CheckCircle className="mr-1.5 h-4 w-4" />
-                        {completed ? "Completed" : completeError ? "Try again" : "Mark as complete"}
-                      </Button>
-                      {completeError && (
-                        <p role="alert" className="flex w-full items-center gap-2 text-sm text-red-700">
-                          <WifiOff className="h-4 w-4 shrink-0" aria-hidden />
-                          {completeError}
+                    {session.learningUrl ? (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <a
+                          href={safeUrl(session.learningUrl)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
+                        >
+                          Open learning resource
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                        <Button
+                          variant="secondary"
+                          onClick={handleComplete}
+                          loading={completing}
+                          disabled={completing || completed}
+                        >
+                          <CheckCircle className="mr-1.5 h-4 w-4" />
+                          {completed ? "Completed" : completeError ? "Try again" : "Mark as complete"}
+                        </Button>
+                        {completeError && (
+                          <p role="alert" className="flex w-full items-center gap-2 text-sm text-red-700">
+                            <WifiOff className="h-4 w-4 shrink-0" aria-hidden />
+                            {completeError}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-border p-6 text-center">
+                        <p className="text-sm text-muted-foreground">
+                          No external resource is linked for this subtopic.
                         </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-border p-6 text-center">
-                      <p className="text-sm text-muted-foreground">
-                        No external resource is linked for this subtopic.
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Study from your textbook or notes, then take the quiz when ready.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              }
-            />
-          </motion.div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Study from your textbook or notes, then take the quiz when ready.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                }
+              />
+            </motion.div>
+          )}
 
           {/* The gate owns completion whenever videos exist, so this only shows
               for subtopics with nothing to measure. */}
@@ -366,22 +403,53 @@ function StudySessionPageInner() {
   );
 }
 
-function MetaItem({
-  icon,
-  label,
-  children,
+/** Shown instead of the player while an earlier part of the subtopic is unfinished. */
+function LockedPart({
+  lock,
+  partIndex,
+  returnTo,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
+  lock: NonNullable<StudySessionWithSubtopic["lockedBy"]>;
+  partIndex: number | null;
+  returnTo: string;
 }) {
+  const earlier = lock.partIndex ? `Part ${lock.partIndex}` : "the earlier part";
+  const when = lock.scheduledDate
+    ? new Date(`${lock.scheduledDate}T00:00:00Z`).toLocaleDateString("en-US", {
+        weekday: "short", month: "short", day: "numeric", timeZone: "UTC",
+      })
+    : null;
   return (
-    <div>
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        {icon}
-        <span className="text-xs font-medium">{label}</span>
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-6 py-8 text-center">
+      <Lock className="mx-auto h-8 w-8 text-amber-600" aria-hidden />
+      <h2 className="mt-3 text-lg font-bold text-amber-900">
+        {`Finish ${earlier} of ${lock.subtopicName} first`}
+      </h2>
+      <p className="mx-auto mt-1.5 max-w-lg text-sm text-amber-800">
+        {`${partIndex ? `Part ${partIndex}` : "This part"} builds on ${earlier}, so it opens once that one is done.`}
+        {lock.sessionId === null && " That part isn't in your schedule yet — add it from “Not in your plan yet”."}
+      </p>
+      <div className="mt-5">
+        {lock.sessionId ? (
+          <Link href={withReturnTo(`/study/${lock.sessionId}`, returnTo)}>
+            <Button>{`Go to ${earlier}${when ? ` (${when})` : ""}`}</Button>
+          </Link>
+        ) : (
+          <Link href="/schedule">
+            <Button>Open your schedule</Button>
+          </Link>
+        )}
       </div>
-      <div className="mt-1 text-sm font-semibold text-foreground">{children}</div>
     </div>
+  );
+}
+
+/** One fact about the session, as a small pill beside the title. */
+function MetaChip({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 font-medium text-muted-foreground">
+      {icon}
+      <span className="text-foreground/80">{children}</span>
+    </span>
   );
 }

@@ -37,6 +37,8 @@ function FormError({ message }: { message: string }) {
 
 interface Preferences {
   targetExamDate: string;
+  /** Sent back unchanged: the preferences API requires it on every save. */
+  targetScore: number;
 }
 
 export default function SettingsPage() {
@@ -79,6 +81,7 @@ export default function SettingsPage() {
         if (data.preferences) {
           setPrefs({
             targetExamDate: data.preferences.targetExamDate?.split("T")[0] ?? "",
+            targetScore: data.preferences.targetScore ?? 145,
           });
         }
         setLoading(false);
@@ -94,7 +97,8 @@ export default function SettingsPage() {
       const res = await fetch("/api/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
-        body: JSON.stringify({ targetExamDate: prefs.targetExamDate }),
+        // targetScore is required by the API; without it every save failed validation.
+        body: JSON.stringify({ targetExamDate: prefs.targetExamDate, targetScore: prefs.targetScore }),
       });
       if (!res.ok) {
         const d = await res.json();

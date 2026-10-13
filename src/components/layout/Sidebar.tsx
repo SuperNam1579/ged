@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import {
-  LayoutDashboard, TrendingUp, Calendar, CalendarClock, ClipboardList, Settings,
+  LayoutDashboard, TrendingUp, Calendar, ClipboardList, Settings,
   BookOpen, LogOut, X, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { logOut } from "@/lib/auth-client";
@@ -13,7 +13,6 @@ const NAV_ITEMS = [
   { href: "/dashboard",    label: "Dashboard",    icon: LayoutDashboard },
   { href: "/progress",     label: "Progress",     icon: TrendingUp      },
   { href: "/schedule",     label: "Schedule",     icon: Calendar        },
-  { href: "/availability", label: "Availability", icon: CalendarClock   },
   { href: "/mock-test",    label: "Mock Test",    icon: ClipboardList   },
   { href: "/settings",     label: "Settings",     icon: Settings        },
 ];

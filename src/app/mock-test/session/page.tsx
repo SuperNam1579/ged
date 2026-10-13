@@ -47,7 +47,6 @@ interface MockResult {
   score: number;
   rawScore: number;
   maxScore: number;
-  triggered?: { gaRerun: boolean; reason?: string } | null;
 }
 
 function MockSessionContent() {
@@ -112,7 +111,6 @@ function MockSessionContent() {
 
   if (done) {
     const totalScore = results.reduce((a, r) => a + r.score, 0) / results.length;
-    const triggered = results.some((r) => r.triggered?.gaRerun);
 
     return (
       <div className="min-h-screen bg-background py-10 px-6">
@@ -136,21 +134,6 @@ function MockSessionContent() {
             <h1 className="text-2xl font-bold text-foreground mb-2">Mock Test Complete</h1>
             <p className="text-muted-foreground">Here&apos;s how you performed across all subjects.</p>
           </div>
-
-          {/* Nothing here runs the genetic algorithm, so the plan has not
-              changed. The old copy claimed it had, and also told the user to
-              sign in again, which was never required. */}
-          {triggered && (
-            <div className="bg-primary-light border border-primary rounded-xl p-4 mb-6 text-sm text-primary">
-              <p>
-                <strong>This mock test flagged some gaps.</strong> Your dashboard can rebuild your
-                schedule around them.
-              </p>
-              <Link href="/dashboard" className="inline-block mt-1 font-bold hover:underline">
-                Go to dashboard →
-              </Link>
-            </div>
-          )}
 
           <motion.div
             className="space-y-4 mb-8"
@@ -243,7 +226,6 @@ function MockSessionContent() {
         score: data.score,
         rawScore: data.rawScore,
         maxScore: data.maxScore,
-        triggered: data.triggered,
       };
       const newResults = [...results, result];
       setResults(newResults);

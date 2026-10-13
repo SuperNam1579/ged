@@ -153,7 +153,6 @@ function QuizPageInner() {
         correctCount: number;
         maxScore: number;
         attemptId: string;
-        triggered: { gaRerun?: boolean } | null;
       }>(`/api/assessment/${quiz.assessmentId}/submit`, {
         responses: Object.entries(updatedAnswers).map(([questionId, option]) => ({
           questionId,
@@ -163,7 +162,7 @@ function QuizPageInner() {
 
       router.push(
         withReturnTo(
-          `/quiz/${subtopicId}/result?score=${data.correctCount}&max=${data.maxScore}&attemptId=${data.attemptId}&gaRerun=${data.triggered?.gaRerun ? "1" : "0"}`,
+          `/quiz/${subtopicId}/result?score=${data.correctCount}&max=${data.maxScore}&attemptId=${data.attemptId}`,
           returnTo
         )
       );

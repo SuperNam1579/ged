@@ -138,8 +138,7 @@ function SessionRow({ session, last }: { session: StudySessionWithSubtopic; last
           <span className={cn("px-2 py-0.5 text-xs font-semibold rounded", SUBJECT_TAG_CLS[session.subjectCode] ?? "bg-muted text-foreground")}>
             {session.subjectCode}
           </span>
-          <span className="text-xs text-muted-foreground">Lv {session.difficultyLevel}</span>
-          <span className="text-xs text-muted-foreground">· {session.durationMins} min</span>
+          <span className="text-xs text-muted-foreground">{session.durationMins} min</span>
         </div>
         <div className="text-sm font-semibold text-foreground truncate">{session.subtopicName}</div>
       </div>

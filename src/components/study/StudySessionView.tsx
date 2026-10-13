@@ -213,7 +213,7 @@ export function StudySessionView({
         variants={studyStagger}
         initial={reduceMotion ? false : "hidden"}
         animate="visible"
-        className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]"
+        className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_400px]"
       >
         {/* ── Player column ─────────────────────────────────────────────── */}
         <motion.div variants={studySection} className="flex flex-col gap-4">
@@ -356,7 +356,9 @@ export function StudySessionView({
         </motion.div>
 
         {/* ── Contents column ───────────────────────────────────────────── */}
-        <motion.div variants={studySection}>
+        {/* A fixed-width panel beside the player, held in view while the page
+            scrolls — the same shape as the schedule's day panel. */}
+        <motion.div variants={studySection} className="lg:sticky lg:top-[4.5rem] lg:self-start">
           <ResourceList
             resources={resources}
             activeResourceId={activeId}

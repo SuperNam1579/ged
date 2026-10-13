@@ -1,14 +1,18 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, XCircle, Info } from "lucide-react";
+import { BookOpen, CheckCircle, Info, RotateCcw, XCircle } from "lucide-react";
 import { motion } from "motion/react";
 import Button from "@/components/ui/Button";
 import AnimatedNumber from "@/components/ui/AnimatedNumber";
+import { WEAKNESS_THRESHOLD } from "@/lib/ga/constants";
 import { cn } from "@/lib/utils/cn";
 import { returnLabel, safeReturnTo, withReturnTo } from "@/lib/utils/return-to";
+
+/** A topic is passed at the line the planner calls weak below (60%). */
+const PASS_SCORE = WEAKNESS_THRESHOLD;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
@@ -97,14 +101,29 @@ function QuizResultContent() {
 
   const score = parseInt(searchParams.get("score") ?? "0", 10);
   const max = parseInt(searchParams.get("max") ?? "5", 10);
-  const gaRerun = searchParams.get("gaRerun") === "1";
-
   // Forwarded from the quiz, which got it from whichever page started this.
   const returnTo = safeReturnTo(searchParams.get("from"), "/dashboard");
   const backLabel = returnLabel(returnTo);
 
   const pct = max > 0 ? Math.round((score / max) * 100) : 0;
   const { label, color } = getLabel(pct);
+  const passed = pct >= PASS_SCORE;
+
+  // "Review material" opens this topic's first study session in the plan —
+  // the start of its material. None (not in the plan) → the button is left out.
+  const [reviewHref, setReviewHref] = useState<string | null>(null);
+  useEffect(() => {
+    if (passed) return;
+    fetch("/api/sessions")
+      .then((r) => (r.ok ? r.json() : { sessions: [] }))
+      .then((d: { sessions?: { id: string; subtopicId: string; kind: string; scheduledDate: string; order: number; partIndex?: number | null }[] }) => {
+        const first = (d.sessions ?? [])
+          .filter((s) => s.subtopicId === subtopicId && s.kind === "STUDY")
+          .sort((a, b) => (a.partIndex ?? 0) - (b.partIndex ?? 0) || a.scheduledDate.localeCompare(b.scheduledDate) || a.order - b.order)[0];
+        if (first) setReviewHref(withReturnTo(`/study/${first.id}`, returnTo));
+      })
+      .catch(() => {});
+  }, [passed, subtopicId, returnTo]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
@@ -139,22 +158,23 @@ function QuizResultContent() {
 
           {/* Body */}
           <div className="px-8 py-6">
-            {/* GA banner */}
-            {/* The plan is NOT rebuilt here — nothing on this page runs the
-                genetic algorithm. This used to claim it had been updated, which
-                was simply false. It now reports the signal and points at the
-                dashboard, where the update can actually be applied. */}
-            {gaRerun && (
-              <div className="mb-5 flex items-start gap-3 bg-primary-light border border-primary rounded-xl px-4 py-3">
-                <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <div className="text-sm text-primary">
-                  <p>
-                    <strong>This topic needs more time.</strong> We&apos;ve noted it, and your
-                    dashboard can rebuild your schedule around it.
-                  </p>
-                  <Link href="/dashboard" className="inline-block mt-1 font-bold hover:underline">
-                    Go to dashboard →
-                  </Link>
+            {/* Not passed: the plan doesn't change on its own (the planner
+                plans once), so the next step is the learner's — go back over
+                the material, retake, or add a review to their schedule. */}
+            {!passed && (
+              <div className="mb-5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+                  <div className="text-sm text-orange-900">
+                    <p>
+                      <strong>Not passed yet.</strong> You need {PASS_SCORE}% to pass this topic. Go back over the
+                      material, then try the quiz again.
+                    </p>
+                    <p className="mt-1 text-orange-800">
+                      Your schedule stays as it is. Want more time on this topic? Add a review session to a day in{" "}
+                      <Link href="/schedule" className="font-semibold underline underline-offset-2">your schedule</Link>.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -231,18 +251,39 @@ function QuizResultContent() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3">
-              <Link href={returnTo} className="flex-1">
-                <Button variant="secondary" className="w-full">
+            {passed ? (
+              <div className="flex gap-3">
+                <Link href={returnTo} className="flex-1">
+                  <Button className="w-full">Back to {backLabel}</Button>
+                </Link>
+                <Link href={withReturnTo(`/quiz/${subtopicId}`, returnTo)} className="flex-1">
+                  <Button variant="secondary" className="w-full">Try Again</Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {reviewHref && (
+                    <Link href={reviewHref} className="flex-1">
+                      <Button className="w-full">
+                        <BookOpen className="w-4 h-4 mr-2" /> Review material
+                      </Button>
+                    </Link>
+                  )}
+                  <Link href={withReturnTo(`/quiz/${subtopicId}`, returnTo)} className="flex-1">
+                    <Button variant={reviewHref ? "secondary" : "primary"} className="w-full">
+                      <RotateCcw className="w-4 h-4 mr-2" /> Retake quiz
+                    </Button>
+                  </Link>
+                </div>
+                <Link
+                  href={returnTo}
+                  className="block text-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Back to {backLabel}
-                </Button>
-              </Link>
-              <Link href={withReturnTo(`/quiz/${subtopicId}`, returnTo)} className="flex-1">
-                <Button className="w-full">
-                  Try Again
-                </Button>
-              </Link>
-            </div>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
