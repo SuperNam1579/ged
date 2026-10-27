@@ -173,13 +173,14 @@ function sessionState(s: SessionEntry, today: string): "done" | "missed" | "upco
 function notEnoughTimeMessage(f: Feasibility): string {
   if (f.status === "exam-passed") return "Your exam date has passed. Pick a later exam date in Settings.";
   if (f.status === "no-time") return "You have no study time before your exam. Add some free time first.";
-  const h = (m: number) => `${Math.ceil(m / 60)} h`;
+  const h = (m: number) => `${Math.ceil(m / 60)} hours`;
+  // The exam date is the learner's real test day, so moving it is not offered.
   const ways: string[] = [];
-  if (f.suggestions.extraMinutesPerWeek) ways.push(`add about ${h(f.suggestions.extraMinutesPerWeek)} of free time a week`);
-  if (f.suggestions.suggestedExamDate) ways.push(`move your exam to ${fmtDay(f.suggestions.suggestedExamDate, "MMMM d, yyyy")} or later`);
-  if (f.suggestions.dropOneOf?.length) ways.push(`study one subject fewer (${f.suggestions.dropOneOf.join(" or ")})`);
-  return `Your free time before the exam is about ${h(f.shortfallMinutes)} short of what your subjects need.` +
-    (ways.length ? ` To fit, ${ways.join(", or ")}.` : "");
+  const perWeek = f.suggestions.extraMinutesPerWeek;
+  if (perWeek) ways.push(`add about ${h(perWeek)} of free time a week (about ${Math.max(5, Math.ceil(perWeek / 7 / 5) * 5)} minutes a day)`);
+  if (f.suggestions.dropOneOf?.length) ways.push(`leave out ${f.suggestions.dropOneOf.map((c) => SUBJECT_LABEL[c] ?? c).join(" or ")} for now`);
+  return `Your subjects need about ${h(f.shortfallMinutes)} more study time than you have free before your exam.` +
+    (ways.length ? ` To make your plan, ${ways.join(", or ")}.` : "");
 }
 
 // ─── StatCard ────────────────────────────────────────────────────────────────

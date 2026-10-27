@@ -200,6 +200,12 @@ interface PlanResult {
   unscheduledMinutes?: number;
 }
 
+/** A weekly amount spread over the week, rounded up to 5 minutes. */
+const perDay = (minutesPerWeek: number) => {
+  const m = Math.max(5, Math.ceil(minutesPerWeek / 7 / 5) * 5);
+  return m < 60 ? `${m} minutes` : hours(m);
+};
+
 const hours = (minutes: number) => {
   const h = Math.round((minutes / 60) * 10) / 10;
   return `${h} hour${h === 1 ? "" : "s"}`;
@@ -212,17 +218,16 @@ function notEnoughTime(f: FeasibilityResult): { summary: string; ways: string[] 
   if (f.status === "exam-passed") return { summary: "Your exam date has passed. Pick a later exam date.", ways: [] };
   if (f.status === "no-time") return { summary: "Your schedule has no study time before the exam. Add some free time.", ways: [] };
 
+  // The exam date is the learner's real test day, so moving it is not offered.
   const ways: string[] = [];
-  if (f.suggestions.extraMinutesPerWeek) ways.push(`Add about ${hours(f.suggestions.extraMinutesPerWeek)} of free time a week`);
-  if (f.suggestions.suggestedExamDate) {
-    const d = new Date(f.suggestions.suggestedExamDate + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    ways.push(`Move your exam to ${d} or later`);
-  }
+  const perWeek = f.suggestions.extraMinutesPerWeek;
+  if (perWeek) ways.push(`Add about ${hours(perWeek)} of free time each week (about ${perDay(perWeek)} more a day).`);
   if (f.suggestions.dropOneOf?.length) {
-    ways.push(`Study one subject fewer for now (${f.suggestions.dropOneOf.map((c) => SUBJECT_NAMES[c] ?? c).join(" or ")})`);
+    const names = f.suggestions.dropOneOf.map((c) => SUBJECT_NAMES[c] ?? c).join(" or ");
+    ways.push(`Leave out ${names} for now. You can add its topics later from your schedule.`);
   }
   return {
-    summary: `Your free time before the exam is about ${hours(f.shortfallMinutes)} short of what these subjects need, so we can't make your plan yet.`,
+    summary: `These subjects need about ${hours(f.shortfallMinutes)} more study time than you have free before your exam.`,
     ways,
   };
 }
@@ -969,20 +974,20 @@ export default function OnboardingPage() {
                 return (
                   <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
                     <p className="flex items-center gap-2 text-sm font-semibold text-amber-900">
-                      <AlertTriangle className="w-4 h-4 text-amber-600" /> Not enough time yet
+                      <AlertTriangle className="w-4 h-4 text-amber-600" /> Your free time isn&apos;t enough yet
                     </p>
                     <p className="text-sm text-amber-800 mt-1">{summary}</p>
                     {ways.length > 0 && (
                       <>
-                        <p className="text-sm text-amber-800 mt-2">Any one of these makes it fit:</p>
+                        <p className="text-sm text-amber-800 mt-2">Do one of these and we can make your plan:</p>
                         <ul className="mt-1 space-y-0.5 text-sm text-amber-900 list-disc pl-5">
                           {ways.map((w) => <li key={w}>{w}</li>)}
                         </ul>
                       </>
                     )}
                     <div className="flex flex-wrap gap-2 mt-3">
-                      <Button size="sm" variant="secondary" onClick={() => setStep(2)}>Edit schedule or exam date</Button>
-                      <Button size="sm" variant="secondary" onClick={() => setStep(1)}>Edit subjects</Button>
+                      <Button size="sm" variant="secondary" onClick={() => setStep(2)}>Add free time</Button>
+                      <Button size="sm" variant="secondary" onClick={() => setStep(1)}>Change subjects</Button>
                     </div>
                   </div>
                 );
