@@ -211,24 +211,19 @@ const hours = (minutes: number) => {
   return `${h} hour${h === 1 ? "" : "s"}`;
 };
 
-const SUBJECT_NAMES: Record<string, string> = { MATH: "Math", RLA: "Language Arts", SCI: "Science", SS: "Social Studies" };
+/** What to tell a learner whose free time doesn't fit their subjects: how much is missing, and what to add. */
+function notEnoughTime(f: FeasibilityResult): { summary: string; advice: string | null } {
+  if (f.status === "exam-passed") return { summary: "Your exam date has passed. Pick a later exam date.", advice: null };
+  if (f.status === "no-time") return { summary: "Your schedule has no study time before the exam. Add some free time.", advice: null };
 
-/** What to tell a learner whose free time doesn't fit their subjects: a line, and the ways to make it fit. */
-function notEnoughTime(f: FeasibilityResult): { summary: string; ways: string[] } {
-  if (f.status === "exam-passed") return { summary: "Your exam date has passed. Pick a later exam date.", ways: [] };
-  if (f.status === "no-time") return { summary: "Your schedule has no study time before the exam. Add some free time.", ways: [] };
-
-  // The exam date is the learner's real test day, so moving it is not offered.
-  const ways: string[] = [];
+  // One piece of advice: more free time. Moving the exam isn't offered (it is
+  // the learner's real test day); dropping a subject is left to the learner.
   const perWeek = f.suggestions.extraMinutesPerWeek;
-  if (perWeek) ways.push(`Add about ${hours(perWeek)} of free time each week (about ${perDay(perWeek)} more a day).`);
-  if (f.suggestions.dropOneOf?.length) {
-    const names = f.suggestions.dropOneOf.map((c) => SUBJECT_NAMES[c] ?? c).join(" or ");
-    ways.push(`Leave out ${names} for now. You can add its topics later from your schedule.`);
-  }
   return {
-    summary: `These subjects need about ${hours(f.shortfallMinutes)} more study time than you have free before your exam.`,
-    ways,
+    summary: `You need about ${Math.ceil(f.shortfallMinutes / 60)} more hours of free time before your exam.`,
+    advice: perWeek
+      ? `Add about ${hours(perWeek)} of free time each week (about ${perDay(perWeek)} a day) and we can make your plan.`
+      : null,
   };
 }
 
@@ -970,21 +965,14 @@ export default function OnboardingPage() {
               )}
 
               {fitProblem && (() => {
-                const { summary, ways } = notEnoughTime(fitProblem);
+                const { summary, advice } = notEnoughTime(fitProblem);
                 return (
                   <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
                     <p className="flex items-center gap-2 text-sm font-semibold text-amber-900">
                       <AlertTriangle className="w-4 h-4 text-amber-600" /> Your free time isn&apos;t enough yet
                     </p>
                     <p className="text-sm text-amber-800 mt-1">{summary}</p>
-                    {ways.length > 0 && (
-                      <>
-                        <p className="text-sm text-amber-800 mt-2">Do one of these and we can make your plan:</p>
-                        <ul className="mt-1 space-y-0.5 text-sm text-amber-900 list-disc pl-5">
-                          {ways.map((w) => <li key={w}>{w}</li>)}
-                        </ul>
-                      </>
-                    )}
+                    {advice && <p className="text-sm text-amber-900 font-medium mt-2">{advice}</p>}
                     <div className="flex flex-wrap gap-2 mt-3">
                       <Button size="sm" variant="secondary" onClick={() => setStep(2)}>Add free time</Button>
                       <Button size="sm" variant="secondary" onClick={() => setStep(1)}>Change subjects</Button>

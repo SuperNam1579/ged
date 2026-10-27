@@ -173,14 +173,12 @@ function sessionState(s: SessionEntry, today: string): "done" | "missed" | "upco
 function notEnoughTimeMessage(f: Feasibility): string {
   if (f.status === "exam-passed") return "Your exam date has passed. Pick a later exam date in Settings.";
   if (f.status === "no-time") return "You have no study time before your exam. Add some free time first.";
-  const h = (m: number) => `${Math.ceil(m / 60)} hours`;
-  // The exam date is the learner's real test day, so moving it is not offered.
-  const ways: string[] = [];
+  // Same advice as onboarding: more free time. Moving the exam isn't offered.
   const perWeek = f.suggestions.extraMinutesPerWeek;
-  if (perWeek) ways.push(`add about ${h(perWeek)} of free time a week (about ${Math.max(5, Math.ceil(perWeek / 7 / 5) * 5)} minutes a day)`);
-  if (f.suggestions.dropOneOf?.length) ways.push(`leave out ${f.suggestions.dropOneOf.map((c) => SUBJECT_LABEL[c] ?? c).join(" or ")} for now`);
-  return `Your subjects need about ${h(f.shortfallMinutes)} more study time than you have free before your exam.` +
-    (ways.length ? ` To make your plan, ${ways.join(", or ")}.` : "");
+  return `You need about ${Math.ceil(f.shortfallMinutes / 60)} more hours of free time before your exam.` +
+    (perWeek
+      ? ` Add about ${Math.ceil(perWeek / 60)} hours each week (about ${Math.max(5, Math.ceil(perWeek / 7 / 5) * 5)} minutes a day) and we can make your plan.`
+      : "");
 }
 
 // ─── StatCard ────────────────────────────────────────────────────────────────
